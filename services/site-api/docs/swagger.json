@@ -1,0 +1,691 @@
+{
+    "schemes": [
+        "https",
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "API for reading agency site resources and triggering contact workflow",
+        "title": "Agency site API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/admin/articles/ingest/begin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Registers a draft version and returns presigned R2 PUT URLs for the blobs that still need uploading.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Begin an article publish",
+                "parameters": [
+                    {
+                        "description": "Article metadata + built file list",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.IngestBeginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.IngestBeginResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/articles/ingest/commit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Verifies all blobs were uploaded, then atomically publishes the version.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Commit an article publish",
+                "parameters": [
+                    {
+                        "description": "Version + job identifiers from begin",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.IngestCommitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ArticleDetailResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/articles/{slug}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Removes the article and purges its R2 blobs.",
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Delete an article",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Article slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/articles": {
+            "get": {
+                "description": "Paginated list of published articles/studies with topic, type and full-text filters.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articles"
+                ],
+                "summary": "List published articles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated types: blog,study",
+                        "name": "types",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated topic slugs",
+                        "name": "topics",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only featured articles",
+                        "name": "featured",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Full-text search over title/summary/body",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "recent | title | featured (default)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1-based page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default 12, max 100)",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.PaginatedArticlesResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/articles/{slug}": {
+            "get": {
+                "description": "Returns article metadata plus the render manifest (entry URL + R2 blob list).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articles"
+                ],
+                "summary": "Get a published article",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Article slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ArticleDetailResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topics": {
+            "get": {
+                "description": "Curated taxonomy with published-article counts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articles"
+                ],
+                "summary": "List topics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dtos.TopicResp"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dtos.ArticleDetailResp": {
+            "type": "object",
+            "properties": {
+                "assets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.ManifestFileResp"
+                    }
+                },
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.AuthorResp"
+                    }
+                },
+                "baseUrl": {
+                    "type": "string"
+                },
+                "canonicalUrl": {
+                    "type": "string"
+                },
+                "coverImage": {
+                    "type": "string"
+                },
+                "coverVideo": {
+                    "type": "string"
+                },
+                "datePublished": {
+                    "type": "string"
+                },
+                "dateUpdated": {
+                    "type": "string"
+                },
+                "entryUrl": {
+                    "type": "string"
+                },
+                "entrypoint": {
+                    "type": "string"
+                },
+                "featured": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "longdesc": {
+                    "type": "string"
+                },
+                "readingTime": {
+                    "type": "integer"
+                },
+                "seoDescription": {
+                    "type": "string"
+                },
+                "seoTitle": {
+                    "type": "string"
+                },
+                "shortdesc": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.TopicResp"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.ArticleSummaryResp": {
+            "type": "object",
+            "properties": {
+                "coverImage": {
+                    "type": "string"
+                },
+                "coverVideo": {
+                    "type": "string"
+                },
+                "datePublished": {
+                    "type": "string"
+                },
+                "dateUpdated": {
+                    "type": "string"
+                },
+                "featured": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "readingTime": {
+                    "type": "integer"
+                },
+                "shortdesc": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.TopicResp"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.AuthorResp": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.ErrorResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.IngestBeginReq": {
+            "type": "object",
+            "required": [
+                "files",
+                "slug",
+                "title",
+                "type"
+            ],
+            "properties": {
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "canonicalUrl": {
+                    "type": "string"
+                },
+                "coverPath": {
+                    "type": "string"
+                },
+                "coverVideoPath": {
+                    "type": "string"
+                },
+                "featured": {
+                    "type": "boolean"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.IngestFileReq"
+                    }
+                },
+                "longdesc": {
+                    "type": "string"
+                },
+                "readingMinutes": {
+                    "type": "integer"
+                },
+                "seoDescription": {
+                    "type": "string"
+                },
+                "seoTitle": {
+                    "type": "string"
+                },
+                "shortdesc": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sourceCommit": {
+                    "type": "string"
+                },
+                "sourceDir": {
+                    "type": "string"
+                },
+                "sourceRef": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.IngestBeginResp": {
+            "type": "object",
+            "properties": {
+                "alreadyPublished": {
+                    "type": "boolean"
+                },
+                "baseUrl": {
+                    "type": "string"
+                },
+                "entrypoint": {
+                    "type": "string"
+                },
+                "jobId": {
+                    "type": "string"
+                },
+                "prefix": {
+                    "type": "string"
+                },
+                "skipped": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "uploads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.IngestUploadResp"
+                    }
+                },
+                "version": {
+                    "type": "integer"
+                },
+                "versionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.IngestCommitReq": {
+            "type": "object",
+            "required": [
+                "versionId"
+            ],
+            "properties": {
+                "jobId": {
+                    "type": "string"
+                },
+                "versionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.IngestFileReq": {
+            "type": "object",
+            "required": [
+                "path",
+                "sha256"
+            ],
+            "properties": {
+                "byteSize": {
+                    "type": "integer"
+                },
+                "contentType": {
+                    "type": "string"
+                },
+                "isEntrypoint": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "sha256": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.IngestUploadResp": {
+            "type": "object",
+            "properties": {
+                "contentType": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "putUrl": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.ManifestFileResp": {
+            "type": "object",
+            "properties": {
+                "byteSize": {
+                    "type": "integer"
+                },
+                "contentType": {
+                    "type": "string"
+                },
+                "isEntrypoint": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.PaginatedArticlesResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.ArticleSummaryResp"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalBlogPosts": {
+                    "type": "integer"
+                },
+                "totalCaseStudies": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.TopicResp": {
+            "type": "object",
+            "properties": {
+                "articleCount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Admin bearer token for the publish (ingest) endpoints. Format: \"Bearer \u003ctoken\u003e\".",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

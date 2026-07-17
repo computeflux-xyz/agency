@@ -1,0 +1,63 @@
+---
+import Logo from "@atoms/Logo.astro";
+import NewsletterForm from "@molecules/NewsletterForm.astro";
+import { footerNav } from "@data/navigation";
+import { site } from "@lib/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="relative mt-24 border-t border-[var(--color-ink-line)] bg-surface">
+  <div class="container-flux py-16 md:py-20">
+    <div class="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
+      <div class="flex flex-col gap-6">
+        <Logo />
+        <p class="max-w-sm text-pretty text-sm leading-relaxed text-ink-300">
+          {site.description}
+        </p>
+        <div class="flex flex-col gap-2.5">
+          <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-400">
+            Newsletter
+          </span>
+          <NewsletterForm compact class="max-w-sm" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        {
+          footerNav.map((col) => (
+            <div class="flex flex-col gap-3.5">
+              <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-400">
+                {col.heading}
+              </span>
+              <ul class="flex flex-col gap-2.5">
+                {col.links.map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      class="text-sm text-ink-300 transition-colors hover:text-ink-50"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div
+      class="mt-14 flex flex-col gap-4 border-t border-[var(--color-ink-line)] pt-8 text-sm text-ink-400 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>© {year} {site.legalName}. {site.location}.</p>
+      <div class="flex items-center gap-5">
+        <a href={site.social.github} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">GitHub</a>
+        <a href={site.social.linkedin} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">LinkedIn</a>
+        <a href={site.social.x} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">X</a>
+        <a href="/privacy" class="transition-colors hover:text-ink-50">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>

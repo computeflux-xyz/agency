@@ -1,0 +1,108 @@
+---
+import { getCollection } from "astro:content";
+import PageLayout from "@layouts/PageLayout.astro";
+import Hero from "@organisms/Hero.astro";
+import ApproachSection from "@organisms/ApproachSection.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import SectionHeader from "@molecules/SectionHeader.astro";
+import ExpertiseCard from "@molecules/ExpertiseCard.astro";
+import ArticleCard from "@molecules/ArticleCard.astro";
+import StatBlock from "@molecules/StatBlock.astro";
+import Divider from "@atoms/Divider.astro";
+import Button from "@atoms/Button.astro";
+import { expertise } from "@data/expertise";
+
+const studies = (await getCollection("studies", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+  .slice(0, 3);
+
+const stats = [
+  { value: "40–70%", label: "typical inference cost reduction", accent: "blue" as const },
+  { value: "10×", label: "fewer agent incidents in production", accent: "magenta" as const },
+  { value: "22×", label: "throughput from Rust hot-path rewrites", accent: "amber" as const },
+  { value: "p99", label: "latency engineered, not hoped for", accent: "none" as const },
+];
+---
+
+<PageLayout dragon>
+  <Hero />
+
+  <section class="container-flux">
+    <Divider label="WHAT WE OPTIMIZE" />
+    <div class="grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16" data-reveal-stagger="100">
+      {stats.map((s) => <StatBlock value={s.value} label={s.label} accent={s.accent} />)}
+    </div>
+  </section>
+
+  <section class="container-flux py-16 md:py-24">
+    <SectionHeader
+      eyebrow="Expertise"
+      title="Four practices. One obsession with production."
+      lead="We go deep on the problems that decide whether an AI system is viable in production: cost, latency, reliability and raw performance."
+      class="mb-14"
+    />
+    <div class="grid gap-4 md:grid-cols-2" data-reveal-stagger="90">
+      {expertise.map((item) => <ExpertiseCard item={item} />)}
+    </div>
+  </section>
+
+  <section class="container-flux py-16 md:py-24">
+    <NotchedPanel tone="surface" data-reveal>
+      <div class="relative px-6 py-14 md:px-16 md:py-20">
+        <div class="flex flex-col gap-6 md:max-w-3xl">
+          <span class="eyebrow">Our thesis</span>
+          <p class="text-balance text-2xl font-semibold leading-snug tracking-tight text-ink-50 md:text-[2rem]">
+            Most AI systems don't fail because the model is bad. They fail because the
+            <span class="flux-gradient-text">engineering around the model</span>
+            is missing — the evaluation, the serving, the safety, the cost control.
+          </p>
+          <p class="max-w-2xl text-pretty text-lg leading-relaxed text-ink-300">
+            Computeflux is a deep tech R&amp;D studio. We build that engineering:
+            reliable, observable, ruthlessly efficient systems that turn promising
+            models into products you can trust in production.
+          </p>
+          <p class="text-sm text-ink-400">
+            What we don't sell:
+            <span data-dragon="burn" class="font-medium text-ink-200">slideware</span>,
+            <span data-dragon="burn" class="font-medium text-ink-200">vanity benchmarks</span>
+            or <span data-dragon="burn" class="font-medium text-ink-200">hype</span>.
+          </p>
+          <div>
+            <Button href="/about" variant="outline" arrow>How we think</Button>
+          </div>
+        </div>
+      </div>
+    </NotchedPanel>
+  </section>
+
+  <section class="container-flux py-16 md:py-24">
+    <div class="mb-14 flex flex-wrap items-end justify-between gap-6">
+      <SectionHeader
+        eyebrow="Selected work"
+        title="Measured outcomes, not slideware"
+        lead="Anonymized case studies where the numbers moved — and we can prove they did."
+      />
+      <Button href="/studies" variant="ghost" arrow class="shrink-0">All studies</Button>
+    </div>
+    <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
+      {
+        studies.map((study) => (
+          <ArticleCard
+            href={`/studies/${study.id}`}
+            title={study.data.title}
+            description={study.data.description}
+            kind="study"
+            topics={study.data.topics}
+            date={study.data.publishDate.toISOString()}
+            cover={study.data.cover}
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  <ApproachSection />
+
+  <CtaSection />
+</PageLayout>

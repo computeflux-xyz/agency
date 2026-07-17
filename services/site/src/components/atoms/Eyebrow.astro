@@ -1,0 +1,20 @@
+---
+
+interface Props {
+  class?: string;
+  tick?: boolean;
+  accent?: "blue" | "magenta" | "amber" | "muted";
+}
+const { class: className = "", tick = true, accent = "blue" } = Astro.props;
+const dot: Record<string, string> = {
+  blue: "bg-flux-blue",
+  magenta: "bg-flux-magenta",
+  amber: "bg-flux-amber",
+  muted: "bg-ink-400",
+};
+---
+
+<span class:list={["eyebrow inline-flex items-center gap-2", className]}>
+  {tick && <span class:list={["size-1.5 rounded-full", dot[accent]]} aria-hidden="true"></span>}
+  <slot />
+</span>

@@ -1,0 +1,36 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "computeflux-site"
+compatibility_date = "2025-06-20"
+compatibility_flags = ["nodejs_compat"]
+
+main = "./dist/_worker.js/index.js"
+
+[observability]
+enabled = true
+head_sampling_rate = 1.0
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Production custom domain. Uncomment once the zone is added to your Cloudflare
+# account — wrangler then provisions the DNS records + TLS certs automatically.
+# routes = [
+#   { pattern = "computeflux.xyz", custom_domain = true },
+#   { pattern = "www.computeflux.xyz", custom_domain = true },
+# ]
+
+# ---------------------------------------------------------------------------
+# Non-secret runtime configuration. Injected into the worker and readable in
+# SSR via `Astro.locals.runtime.env`. Secrets (API tokens) must be set with
+# `wrangler secret put <NAME>` and never committed here.
+# ---------------------------------------------------------------------------
+[vars]
+PUBLIC_SITE_URL = "https://computeflux.xyz"
+# API_BASE_URL is a placeholder for the future backend that will serve
+# study cases, white papers, bookings, job applications and the newsletter.
+API_BASE_URL = "https://api.computeflux.xyz"
+# Cookieless analytics (Umami). Uncomment + set both to enable the tracker; the
+# article embed also forwards in-iframe engagement to it. Public by design.
+# PUBLIC_UMAMI_SRC = "https://cloud.umami.is/script.js"
+# PUBLIC_UMAMI_WEBSITE_ID = "00000000-0000-0000-0000-000000000000"

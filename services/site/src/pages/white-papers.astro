@@ -1,0 +1,94 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import Divider from "@atoms/Divider.astro";
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import ApiNotice from "@molecules/ApiNotice.astro";
+
+const title = "White papers";
+const description =
+  "Free, in-depth technical reports from Computeflux on inference optimization, agentic systems and high-performance AI engineering.";
+
+const papers = [
+  {
+    slug: "inference-cost-playbook",
+    title: "The Inference Cost Playbook",
+    description:
+      "A practitioner's guide to cutting LLM inference cost 40–70% — routing, batching, caching, quantization and custom kernels — without regressing quality.",
+    topics: ["Inference", "Cost"],
+    pages: 24,
+  },
+  {
+    slug: "production-agents",
+    title: "Agents That Survive Production",
+    description:
+      "Architecture patterns for reliable agentic systems: explicit state, tool-calling contracts, fallback strategies and trajectory evaluation.",
+    topics: ["Agentic", "Reliability"],
+    pages: 18,
+  },
+  {
+    slug: "rust-for-ai-infra",
+    title: "Rust for AI Infrastructure",
+    description:
+      "When and how to drop into Rust/Zig for the hot path — tokenizers, caches, pipelines — with benchmarks and integration patterns.",
+    topics: ["Rust", "Performance"],
+    pages: 21,
+  },
+];
+---
+
+<PageLayout title={title} description={description}>
+  <PageHero eyebrow="Free resources" title="White papers" lead={description}>
+    <div class="mt-4" data-reveal>
+      <ApiNotice>
+        Downloads go live with our backend. Until then,
+        <a href="mailto:hello@computeflux.xyz?subject=White paper request" class="text-flux-amber underline underline-offset-2">
+          email us</a> and we'll send the PDF directly.
+      </ApiNotice>
+    </div>
+  </PageHero>
+
+  <section class="container-flux pb-24">
+    <Divider label={`${papers.length} PAPERS`} />
+    <div class="grid gap-4 py-12 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
+      {
+        papers.map((paper) => (
+          <article
+            class="group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7 transition-colors hover:border-[var(--color-border-strong)]"
+            data-reveal
+          >
+            <div class="flex items-start justify-between">
+              <span class="flex size-11 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-flux-blue">
+                <Icon name="document" size={20} />
+              </span>
+              <span class="font-mono text-xs text-ink-400">{paper.pages} pp</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-3">
+              <h2 class="text-lg font-semibold tracking-tight text-ink-50">{paper.title}</h2>
+              <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{paper.description}</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              {paper.topics.map((t) => <Tag size="xs">{t}</Tag>)}
+            </div>
+            <button
+              type="button"
+              disabled
+              class="flex items-center justify-center gap-2 rounded-full border border-[var(--color-border-strong)] px-5 py-2.5 text-sm font-medium text-ink-200 opacity-60"
+            >
+              <Icon name="arrow" size={15} />
+              Download PDF
+            </button>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaSection
+    eyebrow="Custom deep dive"
+    title="Want a report on your stack?"
+    lead="We produce tailored technical deep dives — an honest assessment of your AI system with concrete, prioritized recommendations."
+  />
+</PageLayout>

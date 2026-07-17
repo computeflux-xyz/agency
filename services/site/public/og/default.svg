@@ -1,0 +1,41 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="flux" x1="118" y1="300" x2="760" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2f6bff"/>
+      <stop offset="0.55" stop-color="#e11fd0"/>
+      <stop offset="1" stop-color="#e0a800"/>
+    </linearGradient>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.5" fill="#cfc9bb"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#f5f4ef"/>
+  <rect width="1200" height="630" fill="url(#dots)" opacity="0.7"/>
+  <circle cx="1010" cy="90" r="240" fill="#2f6bff" fill-opacity="0.06"/>
+  <circle cx="1090" cy="560" r="200" fill="#e11fd0" fill-opacity="0.05"/>
+
+  <!-- logo mark -->
+  <g transform="translate(120, 104) scale(0.11)">
+    <rect x="43.8406" y="133.841" width="126" height="447" transform="rotate(-45 43.8406 133.841)" fill="#4380FF"/>
+    <ellipse cx="91.2168" cy="92.1213" rx="63" ry="66" transform="rotate(-45 91.2168 92.1213)" fill="#4380FF"/>
+    <ellipse cx="404.465" cy="405.37" rx="63" ry="66" transform="rotate(-45 404.465 405.37)" fill="#4380FF"/>
+    <rect x="1004.75" y="44.8406" width="126" height="447" transform="rotate(45 1004.75 44.8406)" fill="#FD3CF3"/>
+    <ellipse cx="1046.47" cy="92.2168" rx="63" ry="66" transform="rotate(45 1046.47 92.2168)" fill="#FD3CF3"/>
+    <ellipse cx="733.217" cy="405.465" rx="63" ry="66" transform="rotate(45 733.217 405.465)" fill="#FD3CF3"/>
+    <rect x="510" y="704" width="126" height="447" fill="#FFC40F"/>
+    <ellipse cx="573" cy="708" rx="63" ry="66" fill="#FFC40F"/>
+    <ellipse cx="573" cy="1151" rx="63" ry="66" fill="#FFC40F"/>
+  </g>
+  <text x="180" y="148" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#201f1e">Computeflux</text>
+
+  <!-- headline -->
+  <text x="116" y="332" font-family="Helvetica, Arial, sans-serif" font-size="76" font-weight="700" fill="#201f1e">High-performance</text>
+  <text x="116" y="420" font-family="Helvetica, Arial, sans-serif" font-size="76" font-weight="700" fill="url(#flux)">AI systems.</text>
+
+  <!-- subline -->
+  <text x="118" y="500" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="400" fill="#575247">Deep tech R&#38;D — inference, agents &#38; systems programming.</text>
+
+  <!-- mono footer -->
+  <text x="118" y="576" font-family="monospace" font-size="20" letter-spacing="3" fill="#797263">INFERENCE · AGENTIC · RUST · ZIG · GO</text>
+</svg>

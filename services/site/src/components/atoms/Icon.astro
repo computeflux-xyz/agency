@@ -1,0 +1,47 @@
+---
+
+interface Props {
+  name: string;
+  size?: number;
+  class?: string;
+}
+const { name, size = 20, class: className = "" } = Astro.props;
+
+const paths: Record<string, string> = {
+  arrow: "M3.5 8h9m0 0L8.5 4m4 4-4 4",
+  "arrow-up-right": "M5 11 11 5m0 0H6m5 0v5",
+  external: "M6 3H3v10h10v-3M9 3h4v4M13 3 7 9",
+  check: "M3 8.5 6.5 12 13 4",
+  plus: "M8 3v10M3 8h10",
+  minus: "M3 8h10",
+  chevron: "M4 6l4 4 4-4",
+  menu: "M2 4h12M2 8h12M2 12h12",
+  close: "M4 4l8 8M12 4l-8 8",
+  bolt: "M9 2 3 9h4l-1 5 6-7H8l1-5Z",
+  cpu: "M5 5h6v6H5zM6 2v2M10 2v2M6 12v2M10 12v2M2 6h2M2 10h2M12 6h2M12 10h2",
+  gauge: "M8 9l3-3M3 12a5 5 0 0 1 10 0",
+  layers: "M8 2 2 5l6 3 6-3-6-3ZM2 9l6 3 6-3M2 12l6 3 6-3",
+  mail: "M2 4h12v8H2zM2 4l6 4 6-4",
+  calendar: "M3 4h10v9H3zM3 7h10M6 2v3M10 2v3",
+  document: "M4 2h5l3 3v9H4zM9 2v3h3",
+  spark: "M8 2v4M8 10v4M2 8h4M10 8h4M4.5 4.5l2 2M9.5 9.5l2 2M11.5 4.5l-2 2M6.5 9.5l-2 2",
+};
+const d = paths[name] ?? paths.arrow;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 16 16"
+  fill="none"
+  aria-hidden="true"
+  class={className}
+>
+  <path
+    d={d}
+    stroke="currentColor"
+    stroke-width="1.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

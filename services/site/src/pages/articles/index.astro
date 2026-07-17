@@ -1,0 +1,241 @@
+---
+// Server-rendered so the list reflects the live backend (published articles in
+// site-api) with working search, topic filtering and pagination. Falls back to
+// the bundled content collection when the API is unreachable.
+export const prerender = false;
+
+import { getCollection } from "astro:content";
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import ArticleCard from "@molecules/ArticleCard.astro";
+import Divider from "@atoms/Divider.astro";
+import { readingTime, slugify } from "@lib/utils";
+import { site } from "@lib/site";
+import { createApiClient, type ArticleType, type Topic } from "@lib/api";
+
+const title = "Articles";
+const description =
+  "Field notes and engineering essays on AI in production — inference, agents, performance and the discipline of AI Engineering.";
+
+const PAGE_SIZE = 6;
+const params = Astro.url.searchParams;
+const q = (params.get("q") ?? "").trim();
+const activeTopic = params.get("topic") ?? "";
+const page = Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1);
+
+type Card = {
+  href: string;
+  title: string;
+  description: string;
+  topics: string[];
+  date: string;
+  readingTime: number;
+  cover?: string | null;
+  featured: boolean;
+};
+
+const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+const apiBaseUrl = runtimeEnv?.API_BASE_URL ?? import.meta.env.API_BASE_URL;
+
+let cards: Card[] = [];
+let topics: Topic[] = [];
+let total = 0;
+let source: "api" | "content" = "content";
+
+if (apiBaseUrl) {
+  try {
+    const api = createApiClient({ baseUrl: apiBaseUrl });
+    const [list, topicList] = await Promise.all([
+      api.listArticles({
+        types: ["blog"] as ArticleType[],
+        topics: activeTopic ? [activeTopic] : undefined,
+        search: q || undefined,
+        sort: "featured",
+        page,
+        pageSize: PAGE_SIZE,
+      }),
+      api.listTopics(),
+    ]);
+    total = list.total;
+    cards = list.items.map((a) => ({
+      href: `/articles/${a.slug}`,
+      title: a.title,
+      description: a.shortdesc,
+      topics: a.topics.map((t) => t.name),
+      date: a.datePublished,
+      readingTime: a.readingTime,
+      cover: a.coverImage,
+      featured: a.featured,
+    }));
+    topics = topicList.filter((t) => (t.articleCount ?? 0) > 0);
+    source = "api";
+  } catch {
+    source = "content";
+  }
+}
+
+if (source === "content") {
+  const entries = (await getCollection("articles", ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+  );
+  const filtered = entries.filter(
+    (e) =>
+      (!activeTopic || e.data.topics.map(slugify).includes(activeTopic)) &&
+      (!q || `${e.data.title} ${e.data.description}`.toLowerCase().includes(q.toLowerCase())),
+  );
+  total = filtered.length;
+  cards = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((e) => ({
+    href: `/articles/${e.id}`,
+    title: e.data.title,
+    description: e.data.description,
+    topics: e.data.topics,
+    date: e.data.publishDate.toISOString(),
+    readingTime: readingTime(e.body ?? ""),
+    cover: e.data.cover ?? null,
+    featured: e.data.featured,
+  }));
+  const set = new Map<string, string>();
+  entries.forEach((e) => e.data.topics.forEach((t) => set.set(slugify(t), t)));
+  topics = [...set].map(([slug, name]) => ({ name, slug }));
+}
+
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+/** Build an /articles URL, overriding some params and preserving the rest. */
+function buildUrl(overrides: { topic?: string | null; q?: string | null; page?: number | null }): string {
+  const p = new URLSearchParams();
+  const topic = overrides.topic !== undefined ? overrides.topic : activeTopic;
+  const query = overrides.q !== undefined ? overrides.q : q;
+  const pg = overrides.page !== undefined ? overrides.page : page;
+  if (topic) p.set("topic", topic);
+  if (query) p.set("q", query);
+  if (pg && pg > 1) p.set("page", String(pg));
+  const s = p.toString();
+  return s ? `/articles?${s}` : "/articles";
+}
+
+const origin = Astro.site?.origin ?? site.url;
+const jsonLd = {
+  "@type": "Blog",
+  name: `${title} — ${site.name}`,
+  description,
+  url: `${origin}/articles`,
+  publisher: { "@id": `${site.url}/#organization` },
+};
+const chipBase =
+  "inline-flex items-center rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-widest transition-colors";
+---
+
+<PageLayout title={title} description={description} jsonLd={jsonLd} dragon>
+  <PageHero eyebrow="Writing" title="Articles" lead={description} />
+
+  <section class="container-flux pb-24">
+    <div class="flex flex-col gap-5 border-b border-[var(--color-border)] pb-6">
+      <form method="GET" action="/articles" class="flex w-full max-w-xl items-center gap-2">
+        {activeTopic && <input type="hidden" name="topic" value={activeTopic} />}
+        <input
+          type="search"
+          name="q"
+          value={q}
+          placeholder="Search articles…"
+          aria-label="Search articles"
+          class="w-full rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-400 focus:border-ink-50 focus:outline-none"
+        />
+        <button
+          type="submit"
+          class="rounded-[var(--radius-md)] border border-border-strong bg-ink-50 px-4 py-2.5 text-sm font-medium text-ink-950 transition-opacity hover:opacity-90"
+        >
+          Search
+        </button>
+      </form>
+
+      <div class="flex flex-wrap gap-2">
+        <a
+          href={buildUrl({ topic: null, page: null })}
+          class:list={[chipBase, !activeTopic ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
+        >
+          All
+        </a>
+        {
+          topics.map((t) => (
+            <a
+              href={buildUrl({ topic: t.slug, page: null })}
+              class:list={[chipBase, activeTopic === t.slug ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
+            >
+              {t.name}
+              {typeof t.articleCount === "number" && <span class="ml-1.5 opacity-60">{t.articleCount}</span>}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <Divider
+      class="mt-6"
+      label={`${total} ${total === 1 ? "ARTICLE" : "ARTICLES"}${q ? ` · “${q}”` : ""}${activeTopic ? ` · ${activeTopic}` : ""}`}
+    />
+
+    {
+      cards.length > 0 ? (
+        <div class="grid gap-4 py-10 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
+          {cards.map((article) => (
+            <ArticleCard
+              href={article.href}
+              title={article.title}
+              description={article.description}
+              kind="article"
+              topics={article.topics}
+              date={article.date}
+              readingTime={article.readingTime}
+              cover={article.cover}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="py-20 text-center">
+          <p class="text-lg text-ink-300">No articles match your filters.</p>
+          <a href="/articles" class="mt-3 inline-block font-mono text-xs uppercase tracking-widest text-ink-400 underline hover:text-ink-50">
+            Clear filters
+          </a>
+        </div>
+      )
+    }
+
+    {
+      totalPages > 1 && (
+        <nav class="flex items-center justify-center gap-2 pt-4" aria-label="Pagination">
+          <a
+            href={buildUrl({ page: page - 1 })}
+            aria-disabled={page <= 1}
+            class:list={["rounded-[var(--radius-md)] border border-[var(--color-ink-line)] px-3 py-2 font-mono text-xs uppercase tracking-widest", page <= 1 ? "pointer-events-none opacity-40" : "text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
+          >
+            ← Prev
+          </a>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <a
+              href={buildUrl({ page: n })}
+              aria-current={n === page ? "page" : undefined}
+              class:list={["rounded-[var(--radius-md)] border px-3.5 py-2 font-mono text-xs", n === page ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
+            >
+              {n}
+            </a>
+          ))}
+          <a
+            href={buildUrl({ page: page + 1 })}
+            aria-disabled={page >= totalPages}
+            class:list={["rounded-[var(--radius-md)] border border-[var(--color-ink-line)] px-3 py-2 font-mono text-xs uppercase tracking-widest", page >= totalPages ? "pointer-events-none opacity-40" : "text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
+          >
+            Next →
+          </a>
+        </nav>
+      )
+    }
+  </section>
+
+  <CtaSection
+    eyebrow="Stay in the loop"
+    title="Get new essays by email"
+    lead="Occasional, technical, no fluff. Subscribe to the Computeflux newsletter."
+  />
+</PageLayout>

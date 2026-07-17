@@ -1,0 +1,63 @@
+---
+import SectionHeader from "@molecules/SectionHeader.astro";
+import Icon from "@atoms/Icon.astro";
+
+const steps = [
+  {
+    n: "01",
+    icon: "gauge",
+    title: "Audit & roadmap",
+    description:
+      "A fixed-scope deep dive into your stack. We benchmark, find the bottlenecks, and hand you a concrete, prioritized plan — with estimated cost and latency wins.",
+    meta: "1–3 weeks · fixed price",
+  },
+  {
+    n: "02",
+    icon: "layers",
+    title: "Build",
+    description:
+      "We design and ship the system or component: inference runtime, agent architecture, high-throughput pipeline. Milestone-based, benchmarked, production-ready.",
+    meta: "4–12 weeks · milestones",
+  },
+  {
+    n: "03",
+    icon: "cpu",
+    title: "Staff-level embed",
+    description:
+      "Senior / principal engineering capacity plugged into your team. We work in your codebase, level up your engineers, and leave you self-sufficient.",
+    meta: "ongoing · per day",
+  },
+];
+---
+
+<section id="engagements" class="container-flux scroll-mt-24 py-20 md:py-28">
+  <SectionHeader
+    eyebrow="How we work"
+    title="Three ways to engage"
+    lead="No bloated retainers. Each engagement is scoped to a clear outcome, and every scope change is agreed before we start."
+    class="mb-14"
+  />
+
+  <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
+    {
+      steps.map((step) => (
+        <article
+          class="group relative flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface p-7 transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)]"
+          data-reveal
+        >
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs tracking-widest text-ink-400">{step.n}</span>
+            <span class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] text-ink-300 transition-colors group-hover:border-flux-blue group-hover:text-flux-blue">
+              <Icon name={step.icon} size={18} />
+            </span>
+          </div>
+          <h3 class="text-xl font-semibold tracking-tight text-ink-50">{step.title}</h3>
+          <p class="flex-1 text-pretty text-[0.95rem] leading-relaxed text-ink-300">
+            {step.description}
+          </p>
+          <span class="font-mono text-xs uppercase tracking-wider text-ink-400">{step.meta}</span>
+        </article>
+      ))
+    }
+  </div>
+</section>

@@ -1,0 +1,19 @@
+{
+  "slug": "reliable-agents",
+  "type": "blog",
+  "title": "Designing agents that survive production",
+  "shortdesc": "Memory, dependable tool-calling, fallbacks and evaluation — the unglamorous parts that separate demos from products.",
+  "longdesc": "Memory, dependable tool-calling, fallbacks and evaluation — the unglamorous parts that separate demos from products.",
+  "topics": [
+    "agentic-systems",
+    "ai-engineering"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": true,
+  "readingMinutes": 6,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

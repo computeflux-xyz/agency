@@ -1,0 +1,20 @@
+{
+  "slug": "vector-search",
+  "type": "blog",
+  "title": "Vector search that scales",
+  "shortdesc": "Recall, latency and memory form a three-way trade-off behind every approximate-nearest-neighbour index.",
+  "longdesc": "Recall, latency and memory form a three-way trade-off behind every approximate-nearest-neighbour index.",
+  "topics": [
+    "data",
+    "performance",
+    "ai-engineering"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": false,
+  "readingMinutes": 5,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

@@ -1,0 +1,217 @@
+---
+import Logo from "@atoms/Logo.astro";
+import Button from "@atoms/Button.astro";
+import Icon from "@atoms/Icon.astro";
+import { primaryNav, headerCta } from "@data/navigation";
+---
+
+<header
+  data-header
+  class="fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-300"
+>
+  <div
+    class="border-b border-transparent transition-colors duration-300 [.is-condensed_&]:border-[var(--color-ink-line)] [.is-condensed_&]:bg-[color-mix(in_srgb,var(--color-bg)_85%,transparent)] [.is-condensed_&]:backdrop-blur-xl [.has-open-menu_&]:border-[var(--color-ink-line)] [.has-open-menu_&]:bg-[color-mix(in_srgb,var(--color-bg)_92%,transparent)] [.has-open-menu_&]:backdrop-blur-xl"
+  >
+    <div class="container-flux flex h-16 items-center justify-between gap-6 md:h-[4.5rem]">
+      <Logo />
+
+      <nav class="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+        {
+          primaryNav.map((item) => (
+            <div
+              class="group/nav relative"
+              data-nav-item
+              {...item.mega ? { "data-has-mega": "" } : {}}
+            >
+              <a
+                href={item.href}
+                data-nav-trigger
+                aria-expanded={item.mega ? "false" : undefined}
+                aria-haspopup={item.mega ? "true" : undefined}
+                class="flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-ink-300 transition-colors hover:text-ink-50 [.is-open_&]:text-ink-50"
+              >
+                {item.label}
+                {item.mega && (
+                  <Icon
+                    name="chevron"
+                    size={13}
+                    class="text-ink-400 transition-transform duration-300 [.is-open_&]:rotate-180"
+                  />
+                )}
+              </a>
+
+              {item.mega && (
+                <div
+                  class="invisible absolute left-1/2 top-full z-10 w-[min(52rem,90vw)] -translate-x-1/2 translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100"
+                >
+                  <div class="overflow-hidden rounded-[var(--radius-lg)] border border-ink-50 bg-surface shadow-[6px_8px_0_0_var(--color-ink-50)]">
+                    <div class="grid grid-cols-[1.1fr_1fr] gap-0">
+                      {item.mega.feature ? (
+                        <a
+                          href={item.mega.feature.href}
+                          class="group/feat relative flex flex-col justify-between gap-6 border-r border-[var(--color-ink-line)] bg-ink-850 p-7"
+                        >
+                          <div class="grid-backdrop pointer-events-none absolute inset-0" aria-hidden="true" />
+                          <div class="relative flex flex-col gap-3">
+                            <span class="eyebrow">{item.mega.feature.eyebrow}</span>
+                            <h3 class="text-pretty text-lg font-semibold leading-snug text-ink-50">
+                              {item.mega.feature.title}
+                            </h3>
+                            <p class="text-sm leading-relaxed text-ink-300">
+                              {item.mega.feature.description}
+                            </p>
+                          </div>
+                          <span class="relative flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-flux-blue">
+                            {item.mega.feature.cta}
+                            <Icon name="arrow" size={14} class="transition-transform duration-300 group-hover/feat:translate-x-0.5" />
+                          </span>
+                        </a>
+                      ) : null}
+
+                      <div
+                        class:list={[
+                          "grid gap-6 p-7",
+                          item.mega.columns.length > 1 ? "grid-cols-2" : "grid-cols-1",
+                          !item.mega.feature ? "col-span-2 grid-cols-3" : "",
+                        ]}
+                      >
+                        {item.mega.columns.map((col) => (
+                          <div class="flex flex-col gap-3">
+                            <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-400">
+                              {col.heading}
+                            </span>
+                            <ul class="flex flex-col gap-0.5">
+                              {col.links.map((link) => (
+                                <li>
+                                  <a
+                                    href={link.href}
+                                    class="group/link flex flex-col gap-0.5 rounded-[var(--radius-sm)] px-2.5 py-2 -mx-2.5 transition-colors hover:bg-ink-800"
+                                  >
+                                    <span class="text-sm font-medium text-ink-100 transition-colors group-hover/link:text-ink-50">
+                                      {link.label}
+                                    </span>
+                                    {link.description && (
+                                      <span class="text-xs leading-snug text-ink-400">
+                                        {link.description}
+                                      </span>
+                                    )}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        }
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a
+          href="/contact"
+          class="hidden text-sm font-medium text-ink-300 transition-colors hover:text-ink-50 md:inline-flex"
+        >
+          Contact
+        </a>
+        <Button href={headerCta.href} size="sm" variant="primary" class="hidden sm:inline-flex" arrow>
+          {headerCta.label}
+        </Button>
+
+        <button
+          data-menu-toggle
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-drawer"
+          aria-label="Open menu"
+          class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-ink-50 text-ink-50 transition-colors hover:bg-ink-800 lg:hidden"
+        >
+          <Icon name="menu" size={18} />
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div
+  id="mobile-drawer"
+  data-mobile-drawer
+  class="invisible fixed inset-0 z-[60] opacity-0 transition-opacity duration-300 [&.is-open]:visible [&.is-open]:opacity-100 lg:hidden"
+>
+  <div class="absolute inset-0 bg-[color-mix(in_srgb,var(--color-ink-50)_45%,transparent)] backdrop-blur-sm" data-menu-toggle></div>
+  <div
+    class="absolute right-0 top-0 flex h-full w-[min(24rem,90vw)] translate-x-full flex-col overflow-y-auto border-l border-ink-50 bg-surface transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] [.is-open_&]:translate-x-0"
+  >
+    <div class="flex h-16 items-center justify-between border-b border-[var(--color-ink-line)] px-5">
+      <Logo />
+      <button
+        data-menu-toggle
+        type="button"
+        aria-label="Close menu"
+        class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-ink-50 text-ink-50 hover:bg-ink-800"
+      >
+        <Icon name="close" size={16} />
+      </button>
+    </div>
+
+    <nav class="flex flex-1 flex-col gap-1 px-4 py-6" aria-label="Mobile">
+      {
+        primaryNav.map((item) =>
+          item.mega ? (
+            <div data-mobile-accordion class="group border-b border-[var(--color-ink-line)]">
+              <button
+                data-accordion-btn
+                type="button"
+                aria-expanded="false"
+                class="flex w-full items-center justify-between py-4 text-left text-base font-medium text-ink-50"
+              >
+                {item.label}
+                <Icon name="chevron" size={16} class="text-ink-400 transition-transform duration-300 group-[.is-open]:rotate-180" />
+              </button>
+              <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-[.is-open]:grid-rows-[1fr]">
+                <div class="overflow-hidden">
+                  <div class="flex flex-col gap-4 pb-5">
+                    {item.mega.columns.map((col) => (
+                      <div class="flex flex-col gap-1">
+                        <span class="font-mono text-[0.6rem] font-medium uppercase tracking-widest text-ink-500">
+                          {col.heading}
+                        </span>
+                        {col.links.map((link) => (
+                          <a href={link.href} class="py-1.5 text-sm text-ink-300 hover:text-ink-50">
+                            {link.label}
+                          </a>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <a
+              href={item.href}
+              class="border-b border-[var(--color-ink-line)] py-4 text-base font-medium text-ink-50 hover:text-flux-blue"
+            >
+              {item.label}
+            </a>
+          ),
+        )
+      }
+    </nav>
+
+    <div class="flex flex-col gap-3 border-t border-[var(--color-ink-line)] p-5">
+      <Button href="/book" variant="primary" fullWidth arrow>Book a call</Button>
+      <Button href="/contact" variant="outline" fullWidth>Contact</Button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initHeader } from "@lib/client/header";
+  initHeader();
+  document.addEventListener("astro:after-swap", initHeader);
+</script>

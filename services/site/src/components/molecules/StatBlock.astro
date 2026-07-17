@@ -1,0 +1,23 @@
+---
+
+interface Props {
+  value: string;
+  label: string;
+  accent?: "blue" | "magenta" | "amber" | "none";
+  class?: string;
+}
+const { value, label, accent = "none", class: className = "" } = Astro.props;
+const accents: Record<string, string> = {
+  blue: "text-flux-blue",
+  magenta: "text-flux-magenta",
+  amber: "text-flux-amber",
+  none: "text-ink-50",
+};
+---
+
+<div class:list={["flex flex-col gap-1", className]} data-reveal>
+  <span class:list={["font-display text-4xl font-bold tracking-tight md:text-5xl", accents[accent]]}>
+    {value}
+  </span>
+  <span class="text-sm text-ink-400">{label}</span>
+</div>

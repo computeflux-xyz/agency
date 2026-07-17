@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Shared, build-only ObservableHQ config for Computeflux articles (not an article itself. The leading _ excludes it from the publish loop)."
+}

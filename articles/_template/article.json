@@ -1,0 +1,14 @@
+{
+  "slug": "template-article",
+  "type": "blog",
+  "title": "Template Article",
+  "shortdesc": "Copy this directory to start a new ObservableHQ article.",
+  "longdesc": "A minimal Observable Framework app wired for the Computeflux publish pipeline.",
+  "topics": ["ai-engineering"],
+  "authors": ["computeflux"],
+  "featured": false,
+  "readingMinutes": 3,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": ""
+}

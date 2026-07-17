@@ -1,0 +1,90 @@
+name: publish-articles
+
+on:
+  workflow_dispatch:
+    inputs:
+      article:
+        description: 'Article dir under articles/ (e.g. 0000_blog_apm), "all", or "changed"'
+        required: true
+        default: 'all'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options: [production, staging]
+
+concurrency:
+  group: publish-articles-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Resolve target article directories
+        id: targets
+        run: |
+          set -euo pipefail
+          cd articles
+          case "${{ inputs.article }}" in
+            all)
+              mapfile -t dirs < <(find . -maxdepth 1 -mindepth 1 -type d ! -name '_*' -printf '%f\n' | sort)
+              ;;
+            changed)
+              mapfile -t dirs < <(git diff --name-only HEAD^ HEAD -- . \
+                | awk -F/ 'NF>1 && $1 !~ /^_/ {print $1}' | sort -u)
+              ;;
+            *)
+              dirs=("${{ inputs.article }}")
+              ;;
+          esac
+          printf 'Targets: %s\n' "${dirs[*]:-<none>}"
+          {
+            echo 'dirs<<EOF'
+            printf '%s\n' "${dirs[@]:-}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish
+        run: |
+          set -euo pipefail
+          if [ -z "${INGEST_TOKEN:-}" ] || [ -z "${API_BASE_URL:-}" ]; then
+            echo "::error::INGEST_TOKEN secret and API_BASE_URL variable must be set for this environment"
+            exit 1
+          fi
+          while IFS= read -r dir; do
+            [ -z "$dir" ] && continue
+            [ -d "articles/$dir" ] || { echo "::error::articles/$dir not found"; exit 1; }
+            echo "::group::$dir"
+            ( cd "articles/$dir" && npm ci && npm run build )
+            go run ./tools/article-publisher \
+              -dir "articles/$dir" \
+              -api "$API_BASE_URL" \
+              -token "$INGEST_TOKEN" \
+              -actor "${GITHUB_ACTOR}" \
+              -commit "${GITHUB_SHA}" \
+              -ref "${GITHUB_REF_NAME}"
+            echo "::endgroup::"
+          done <<< "${{ steps.targets.outputs.dirs }}"

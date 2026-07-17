@@ -1,0 +1,91 @@
+---
+
+type Variant = "primary" | "secondary" | "outline" | "ghost";
+type Size = "sm" | "md" | "lg";
+
+interface Props {
+  href?: string;
+  variant?: Variant;
+  size?: Size;
+  type?: "button" | "submit" | "reset";
+  class?: string;
+  disabled?: boolean;
+  arrow?: boolean;
+  fullWidth?: boolean;
+  onDark?: boolean;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variant = "primary",
+  size = "md",
+  type = "button",
+  class: className = "",
+  disabled = false,
+  arrow = false,
+  fullWidth = false,
+  onDark = false,
+  ...rest
+} = Astro.props;
+
+const base =
+  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-mono font-bold uppercase tracking-wide transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none select-none";
+
+const variants: Record<Variant, string> = {
+  primary:
+    "bg-flux-amber border-ink-50 text-ink-50 hover:bg-[#eab20a]",
+  secondary:
+    "bg-ink-950 border-ink-50 text-ink-50 hover:bg-flux-blue-soft",
+  outline: onDark
+    ? "bg-transparent border-ink-600 text-ink-900 hover:bg-ink-100 hover:border-ink-800"
+    : "bg-transparent border-ink-50 text-ink-50 hover:bg-flux-blue hover:border-flux-blue hover:text-ink-950",
+  ghost: onDark
+    ? "border-transparent text-ink-600 hover:text-ink-950 hover:bg-ink-100/10"
+    : "border-transparent text-ink-300 hover:text-ink-50 hover:bg-ink-800",
+};
+
+const sizes: Record<Size, string> = {
+  sm: "h-8 px-3 text-[0.7rem]",
+  md: "h-11 px-5 text-[0.78rem]",
+  lg: "h-12 px-6 text-[0.85rem]",
+};
+
+const cls = [
+  base,
+  variants[variant],
+  sizes[size],
+  fullWidth ? "w-full" : "",
+  className,
+];
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  class:list={cls}
+  {...href ? { href } : { type, disabled }}
+  {...rest}
+>
+  <slot />
+  {
+    arrow && (
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+        class="transition-transform duration-150 group-hover:translate-x-0.5"
+      >
+        <path
+          d="M3.5 8h9m0 0L8.5 4m4 4-4 4"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    )
+  }
+</Tag>

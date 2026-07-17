@@ -1,0 +1,44 @@
+---
+import Icon from "@atoms/Icon.astro";
+
+interface Props {
+  variant?: "inline" | "block";
+  class?: string;
+}
+const { variant = "block", class: className = "" } = Astro.props;
+---
+
+{
+  variant === "inline" ? (
+    <span
+      class:list={[
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[#c79a1e] bg-flux-amber-soft px-2.5 py-1 font-mono text-[0.62rem] font-medium uppercase tracking-wider text-[#8a6a00]",
+        className,
+      ]}
+    >
+      <span class="size-1.5 rounded-full bg-[#c79a1e]" style="animation: flux-pulse 2s ease-in-out infinite" />
+      Coming soon
+    </span>
+  ) : (
+    <div
+      class:list={[
+        "flex items-start gap-3 rounded-[var(--radius-md)] border border-[#dcc583] bg-flux-amber-soft/50 p-4 text-sm text-ink-200",
+        className,
+      ]}
+    >
+      <span class="mt-0.5 shrink-0 text-[#a17d0a]">
+        <Icon name="bolt" size={18} />
+      </span>
+      <p>
+        <span class="font-medium text-ink-50">Preview.</span>
+        <slot>
+          This form is fully designed but not yet wired up — it activates once our
+          backend goes live. In the meantime, reach us at
+          <a href="mailto:hello@computeflux.xyz" class="font-medium text-[#8a6a00] underline underline-offset-2">
+            hello@computeflux.xyz</a
+          >.
+        </slot>
+      </p>
+    </div>
+  )
+}

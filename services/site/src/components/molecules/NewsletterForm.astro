@@ -1,0 +1,30 @@
+---
+import Button from "@atoms/Button.astro";
+import ApiNotice from "@molecules/ApiNotice.astro";
+
+interface Props {
+  compact?: boolean;
+  class?: string;
+}
+const { compact = false, class: className = "" } = Astro.props;
+---
+
+<form
+  class:list={["flex flex-col gap-3", className]}
+  data-newsletter
+  aria-label="Subscribe to the Computeflux newsletter"
+>
+  <div class:list={[compact ? "flex flex-col gap-2 sm:flex-row" : "flex flex-col gap-3 sm:flex-row"]}>
+    <label class="sr-only" for="newsletter-email">Email address</label>
+    <input
+      id="newsletter-email"
+      name="email"
+      type="email"
+      placeholder="you@company.com"
+      autocomplete="email"
+      class="w-full flex-1 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 placeholder:text-ink-400 transition-colors focus:border-flux-blue"
+    />
+    <Button type="submit" variant="primary" arrow>Subscribe</Button>
+  </div>
+  {!compact && <ApiNotice variant="inline" />}
+</form>

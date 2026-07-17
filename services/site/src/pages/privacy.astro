@@ -1,0 +1,56 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import { site } from "@lib/site";
+
+const title = "Privacy";
+const description = `How ${site.name} handles data and privacy on this website.`;
+const updated = "17 July 2026";
+---
+
+<PageLayout title={title} description={description} noindex>
+  <PageHero eyebrow="Legal" title="Privacy" lead={`Last updated: ${updated}`} />
+
+  <section class="container-prose prose-flux pb-24">
+    <p>
+      {site.name} respects your privacy. This page explains, in plain language,
+      what data this website collects and how we use it. This is placeholder
+      copy — replace it with a lawyer-reviewed policy before launch.
+    </p>
+
+    <h2>What we collect</h2>
+    <p>
+      This site is a static marketing website. It does not set advertising
+      cookies. When forms (contact, booking, applications, newsletter) go live,
+      they will collect only the information you choose to submit, in order to
+      respond to you.
+    </p>
+
+    <h2>How we use it</h2>
+    <ul>
+      <li>To reply to enquiries and scheduling requests.</li>
+      <li>To process job applications you submit.</li>
+      <li>To send the newsletter, if you subscribe (one-click unsubscribe).</li>
+    </ul>
+
+    <h2>Analytics</h2>
+    <p>
+      If we enable privacy-respecting, cookieless analytics, it will only
+      measure aggregate traffic and never track individuals across sites.
+    </p>
+
+    <h2>Your rights</h2>
+    <p>
+      Under the GDPR you may request access to, correction of, or deletion of
+      your personal data. Email
+      <a href={`mailto:${site.email}`}>{site.email}</a> and we'll respond
+      promptly.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about this policy? Reach us at
+      <a href={`mailto:${site.email}`}>{site.email}</a>.
+    </p>
+  </section>
+</PageLayout>

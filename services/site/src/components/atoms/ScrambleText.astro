@@ -1,0 +1,30 @@
+---
+
+interface Props {
+  text: string;
+  as?: keyof HTMLElementTagNameMap;
+  on?: "view" | "load";
+  delay?: number;
+  class?: string;
+}
+const {
+  text,
+  as: Tag = "span",
+  on = "view",
+  delay = 0,
+  class: className = "",
+} = Astro.props;
+---
+
+<Tag
+  class:list={["scramble", className]}
+  data-scramble
+  data-scramble-on={on}
+  data-scramble-delay={delay}>{text}</Tag>
+
+<style is:global>
+  .scramble-glyph {
+    color: var(--color-flux-blue);
+    opacity: 0.85;
+  }
+</style>

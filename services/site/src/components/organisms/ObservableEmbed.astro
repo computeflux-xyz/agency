@@ -1,0 +1,309 @@
+---
+/**
+ * ObservableEmbed renders a published article inside a sandboxed
+ * iframe pointed at its R2 entry URL, and pairs it with a sticky "Contents" rail
+ * that lives in this (parent) page.
+ *
+ * Why the rail lives here and not in the iframe: the framed app reports its
+ * content height and we grow the iframe to match, so the whole article scrolls
+ * as one document with no inner scrollbar. That means the iframe never scrolls
+ * internally, so a `position: sticky/fixed` element *inside* it has nothing to
+ * stick to and just scrolls away. Instead the framed page posts its heading
+ * outline (see articles/_shared/observable.base.js) and we render the rail here,
+ * where `position: sticky` works against the real viewport. Clicking an entry
+ * scrolls the parent window to the heading's position within the iframe, and a
+ * blue marker slides to the section currently in view.
+ *
+ * The frame also posts `cf-article-event` messages which we forward to Umami
+ * (window.umami.track) so in-article interactions can be measured even though
+ * the frame is a different origin.
+ *
+ * NOTE: the rail's <li>/<a> are created at runtime from the posted outline, so
+ * their styles are declared `:global()`. Astro's scoped styles only attach to
+ * elements present in this template, not ones created later in JS.
+ */
+interface Props {
+  src: string;
+  title: string;
+}
+const { src, title } = Astro.props;
+---
+
+<div class="observable-embed" data-embed>
+  <div class="observable-embed__main">
+    <iframe
+      data-embed-frame
+      src={src}
+      title={title}
+      loading="lazy"
+      scrolling="no"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      referrerpolicy="no-referrer"
+      allowfullscreen></iframe>
+    <noscript>
+      <p class="observable-embed__fallback">
+        This article is interactive. <a href={src} target="_blank" rel="noopener noreferrer">Open it in a new tab.</a>
+      </p>
+    </noscript>
+  </div>
+
+  <aside class="observable-embed__aside" data-embed-toc aria-label="On this page">
+    <nav class="observable-embed__toc">
+      <span class="observable-embed__toc-marker" data-embed-toc-marker aria-hidden="true"></span>
+      <p class="observable-embed__toc-title">Contents</p>
+      <ol class="observable-embed__toc-list" data-embed-toc-list></ol>
+    </nav>
+  </aside>
+</div>
+
+<script>
+  interface TocItem {
+    id: string;
+    text: string;
+    level: number;
+    top: number;
+  }
+
+  const HEADER_OFFSET = 96;
+
+  function initEmbed() {
+    const root = document.querySelector<HTMLElement>("[data-embed]");
+    if (!root || root.dataset.embedInit === "1") return;
+    const frame = root.querySelector<HTMLIFrameElement>("[data-embed-frame]");
+    const list = root.querySelector<HTMLOListElement>("[data-embed-toc-list]");
+    const toc = root.querySelector<HTMLElement>(".observable-embed__toc");
+    const marker = root.querySelector<HTMLElement>("[data-embed-toc-marker]");
+    if (!frame || !list) return;
+    root.dataset.embedInit = "1";
+
+    let items: TocItem[] = [];
+    let links: HTMLAnchorElement[] = [];
+    let activeIndex = -1;
+    let markerLive = false;
+
+    const frameTop = () => frame.getBoundingClientRect().top + window.scrollY;
+
+    const umami = () =>
+      (window as unknown as { umami?: { track?: (n: string, d?: unknown) => void } }).umami;
+
+    function positionMarker(link: HTMLAnchorElement | undefined) {
+      if (!marker || !toc) return;
+      if (!link) {
+        marker.style.opacity = "0";
+        return;
+      }
+      const offset = link.getBoundingClientRect().top - toc.getBoundingClientRect().top;
+      marker.style.transform = `translateY(${Math.max(0, Math.round(offset))}px)`;
+      marker.style.height = `${link.offsetHeight}px`;
+      marker.style.opacity = "1";
+
+      if (!markerLive) {
+        markerLive = true;
+        requestAnimationFrame(() => marker.classList.add("is-live"));
+      }
+    }
+
+    function renderToc(next: TocItem[]) {
+      const sig = next.map((i) => `${i.level}:${i.text}`).join("|");
+      items = next;
+      if (list!.dataset.sig !== sig) {
+        list!.dataset.sig = sig;
+        list!.textContent = "";
+        links = [];
+        activeIndex = -1;
+        for (const it of items) {
+          const li = document.createElement("li");
+          li.className = "observable-embed__toc-item";
+          if (it.level >= 3) li.classList.add("is-sub");
+          const a = document.createElement("a");
+          a.href = `#${it.id}`;
+          a.textContent = it.text;
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const y = frameTop() + it.top - HEADER_OFFSET;
+            const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
+          });
+          li.appendChild(a);
+          list!.appendChild(li);
+          links.push(a);
+        }
+      }
+      root!.classList.toggle("has-toc", items.length >= 2);
+      spy();
+    }
+
+    function setActive(idx: number) {
+      if (idx === activeIndex) return;
+      links[activeIndex]?.removeAttribute("aria-current");
+      links[idx]?.setAttribute("aria-current", "true");
+      activeIndex = idx;
+      if (idx >= 0 && items[idx]) {
+        umami()?.track?.("article_section", { title: document.title, section: items[idx].text });
+      }
+    }
+
+    function spy() {
+      if (!items.length || !links.length) return;
+      const base = frameTop();
+      const pos = window.scrollY + HEADER_OFFSET + 4;
+
+      let idx = 0;
+      for (let i = 0; i < items.length; i++) {
+        if (base + items[i].top <= pos) idx = i;
+        else break;
+      }
+
+      setActive(idx);
+      positionMarker(links[idx]);
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        spy();
+      });
+    }
+
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (event.source !== frame.contentWindow) return;
+      const data = event.data as { type?: string; height?: number; items?: TocItem[]; name?: string; data?: unknown } | null;
+      if (!data || typeof data !== "object") return;
+      switch (data.type) {
+        case "cf-article-height":
+          if (typeof data.height === "number") {
+            frame.style.height = `${Math.max(400, Math.ceil(data.height))}px`;
+            spy();
+          }
+
+          break;
+        case "cf-article-toc":
+          if (Array.isArray(data.items)) renderToc(data.items);
+          break;
+        case "cf-article-event":
+          umami()?.track?.(String(data.name ?? "article_event"), data.data ?? {});
+          break;
+      }
+    });
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+  }
+
+  initEmbed();
+  document.addEventListener("astro:page-load", initEmbed);
+</script>
+
+<style>
+  .observable-embed {
+    width: 100%;
+  }
+  .observable-embed__main {
+    min-width: 0;
+  }
+  .observable-embed iframe {
+    width: 100%;
+    height: 1400px;
+    border: 0;
+    display: block;
+    background: transparent;
+    color-scheme: light;
+  }
+  .observable-embed__fallback {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.8rem;
+    color: var(--color-ink-400, #797263);
+  }
+
+  .observable-embed__aside {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .observable-embed.has-toc {
+      display: grid;
+      grid-template-columns: 14rem minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .observable-embed.has-toc .observable-embed__aside {
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
+      position: sticky;
+      top: 6rem;
+      max-height: calc(100vh - 7.5rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .observable-embed.has-toc .observable-embed__main {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+
+  .observable-embed__toc {
+    position: relative;
+    border-left: 1px solid var(--color-ink-line, #dcd7cb);
+    padding-left: 0.0625rem;
+  }
+  .observable-embed__toc-title {
+    margin: 0 0 0.85rem 1.15rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-ink-50, #201f1e);
+  }
+  .observable-embed__toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .observable-embed__toc-marker {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 2px;
+    height: 0;
+    border-radius: 1px;
+    background: var(--color-flux-blue, #2f6bff);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    will-change: transform, height;
+  }
+  .observable-embed__toc-marker.is-live {
+    transition:
+      transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.2s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .observable-embed__toc-marker.is-live {
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  :global(.observable-embed__toc-item a) {
+    display: block;
+    padding: 0.4rem 0.5rem 0.4rem 1.15rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--color-ink-400, #797263);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  :global(.observable-embed__toc-item.is-sub a) {
+    padding-left: 1.9rem;
+    font-size: 0.86rem;
+  }
+  :global(.observable-embed__toc-item a:hover) {
+    color: var(--color-ink-50, #201f1e);
+  }
+  :global(.observable-embed__toc-item a[aria-current="true"]) {
+    color: var(--color-flux-blue, #2f6bff);
+  }
+</style>

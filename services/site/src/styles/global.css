@@ -1,0 +1,470 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Computeflux — design system
+   Warm-light "sand" deep-tech aesthetic, heavily inspired by tenstorrent.com:
+   an off-white paper canvas, near-black ink, fine hairlines, dot-grid
+   backdrops, "notched" technical card frames and monospace uppercase labels.
+   Computeflux's own brand accent triad (blue / magenta / amber, from the logo
+   mark) replaces Tenstorrent's palette.
+
+   Implementation note: the neutral `--color-ink-*` scale runs DARK→LIGHT as the
+   number increases (ink-50 = near-black text, ink-950 = white surface), so
+   components read `text-ink-50` for strong text and `bg-ink-900` for raised
+   surfaces on the light canvas.
+   ========================================================================== */
+
+/* ------------------------------- Fonts ---------------------------------- */
+/* Display / headings — Space Grotesk (geometric, technical, deep-tech) */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Body / UI — Spline Sans (variable, Neue-Haas-adjacent grotesk) */
+@font-face {
+  font-family: "Spline Sans";
+  src: url("/fonts/SplineSans-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Mono — JetBrains Mono (labels, eyebrows, buttons — Berkeley-Mono-adjacent) */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------- Design tokens ------------------------------ */
+@theme {
+  /* Warm "sand" neutrals — dark→light as the number grows */
+  --color-ink-50: #201f1e; /* primary text (sand-900) */
+  --color-ink-100: #2e2d28;
+  --color-ink-200: #3f3c37;
+  --color-ink-300: #575247; /* strong-muted (sand-600) */
+  --color-ink-400: #797263; /* muted text (sand-500) */
+  --color-ink-500: #9c9686; /* faint (sand-400) */
+  --color-ink-600: #bdb7a8; /* sand-300 */
+  --color-ink-700: #dcd7cb; /* hairline / border (sand-200) */
+  --color-ink-800: #edeae3; /* subtle fill (sand-100) */
+  --color-ink-850: #f5f4ef; /* page canvas (sand-50) */
+  --color-ink-900: #fbfbf9; /* raised surface (sand-0) */
+  --color-ink-950: #ffffff; /* pure white */
+
+  /* Brand accents (from the logo mark) */
+  --color-flux-blue: #2f6bff;
+  --color-flux-blue-soft: #dbe4ff;
+  --color-flux-magenta: #e11fd0;
+  --color-flux-magenta-soft: #ffd9fb;
+  --color-flux-amber: #ffc40f;
+  --color-flux-amber-soft: #ffeeb0;
+
+  /* Semantic */
+  --color-bg: #f5f4ef;
+  --color-surface: #fbfbf9;
+  --color-surface-raised: #ffffff;
+  --color-ink-line: #dcd7cb;
+  --color-border: #201f1e1f; /* ~12% warm black hairline */
+  --color-border-strong: #201f1e; /* near-black outline (signature) */
+  --color-fg: #201f1e;
+  --color-fg-muted: #575247;
+  --color-accent: var(--color-flux-blue);
+
+  /* Inverted (dark) sections */
+  --color-invert-bg: #201f1e;
+  --color-invert-surface: #2a2925;
+
+  /* Typography */
+  --font-display: "Space Grotesk", "Spline Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Spline Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Radii — Tenstorrent uses soft 8px corners, not pills */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  /* Layout */
+  --spacing-gutter: clamp(1.25rem, 5vw, 4rem);
+  --breakpoint-3xl: 1920px;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Dot-grid backdrops (base64 SVG) — light + faint variants */
+  --svg-dot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23bdb7a8'/%3E%3C/svg%3E");
+  --svg-dot-lg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='1.5' cy='1.5' r='1.5' fill='%23cfc9bb'/%3E%3C/svg%3E");
+  /* Faint page-wide texture (always visible behind content) */
+  --svg-dot-page: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23d5cfc0'/%3E%3C/svg%3E");
+  /* Light dots for use on dark / accent surfaces */
+  --svg-dot-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------- Base ----------------------------------- */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+    background: var(--color-bg);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    /* Persistent dotted-grid texture across the whole page (Tenstorrent
+       motif). Solid section/card backgrounds sit on top and "mask" it, so the
+       dots read as the paper texture in the gutters and open areas. */
+    background-image: var(--svg-dot-page);
+    background-position: center -1px;
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-wrap: pretty;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    color: var(--color-fg);
+  }
+
+  ::selection {
+    background: var(--color-flux-blue);
+    color: #fff;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-flux-blue);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-850);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-600);
+    border-radius: 999px;
+    border: 3px solid var(--color-ink-850);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-500);
+  }
+}
+
+/* --------------------------- Utilities ---------------------------------- */
+@layer components {
+  .container-flux {
+    width: 100%;
+    max-width: 82rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  .container-prose {
+    width: 100%;
+    max-width: 44rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  /* Eyebrow / mono label — the Tenstorrent uppercase technical label */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+  }
+
+  /* Dot-grid backdrop (Tenstorrent motif) */
+  .grid-backdrop {
+    background-image: var(--svg-dot-lg);
+    background-position: center top;
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 100%);
+  }
+  .dot-grid {
+    background-image: var(--svg-dot);
+  }
+
+  /* Notched / chamfered technical card frame (Tenstorrent motif) */
+  .notched {
+    background: var(--color-surface);
+    filter:
+      drop-shadow(-0.5px -0.5px 0 var(--color-ink-line))
+      drop-shadow(0.5px -0.5px 0 var(--color-ink-line))
+      drop-shadow(-0.5px 0.5px 0 var(--color-ink-line))
+      drop-shadow(0.5px 0.5px 0 var(--color-ink-line))
+      drop-shadow(4px 5px 6px rgba(32, 31, 30, 0.06));
+  }
+
+  .flux-gradient-text {
+    background: linear-gradient(
+      100deg,
+      var(--color-flux-blue),
+      var(--color-flux-magenta) 55%,
+      #e0a800
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hairline {
+    height: 1px;
+    width: 100%;
+    background: var(--color-ink-line);
+  }
+
+  /* Inverted / dark section wrapper */
+  .section-invert {
+    background: var(--color-invert-bg);
+    color: var(--color-ink-900);
+  }
+  .section-invert h1,
+  .section-invert h2,
+  .section-invert h3 {
+    color: #fbfbf9;
+  }
+
+  /* -------------------- Long-form prose (markdown) -------------------- */
+  .prose-flux {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-ink-200);
+  }
+  .prose-flux > * + * {
+    margin-top: 1.4em;
+  }
+  .prose-flux h2 {
+    margin-top: 2.4em;
+    margin-bottom: 0.2em;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--color-ink-50);
+    scroll-margin-top: 6rem;
+  }
+  .prose-flux h3 {
+    margin-top: 1.8em;
+    margin-bottom: 0.2em;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-ink-50);
+    scroll-margin-top: 6rem;
+  }
+  .prose-flux p,
+  .prose-flux ul,
+  .prose-flux ol {
+    color: var(--color-ink-200);
+  }
+  .prose-flux a {
+    color: var(--color-flux-blue);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--color-flux-blue) 45%, transparent);
+    transition: text-decoration-color 0.2s;
+  }
+  .prose-flux a:hover {
+    text-decoration-color: var(--color-flux-blue);
+  }
+  .prose-flux strong {
+    color: var(--color-ink-50);
+    font-weight: 600;
+  }
+  .prose-flux ul,
+  .prose-flux ol {
+    padding-left: 1.3em;
+  }
+  .prose-flux ul {
+    list-style: none;
+  }
+  .prose-flux ul > li {
+    position: relative;
+    margin-top: 0.5em;
+  }
+  .prose-flux ul > li::before {
+    content: "";
+    position: absolute;
+    left: -1.2em;
+    top: 0.7em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-flux-blue);
+  }
+  .prose-flux ol {
+    list-style: decimal;
+  }
+  .prose-flux ol > li {
+    margin-top: 0.5em;
+    padding-left: 0.3em;
+  }
+  .prose-flux ol > li::marker {
+    color: var(--color-ink-400);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  .prose-flux blockquote {
+    border-left: 2px solid var(--color-flux-magenta);
+    padding-left: 1.25rem;
+    font-style: italic;
+    color: var(--color-ink-100);
+  }
+  .prose-flux code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--color-ink-800);
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-xs);
+    color: var(--color-ink-100);
+  }
+  .prose-flux pre {
+    background: var(--color-invert-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    color: #edeae3;
+  }
+  .prose-flux pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+  .prose-flux table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .prose-flux th,
+  .prose-flux td {
+    border: 1px solid var(--color-ink-line);
+    padding: 0.7rem 1rem;
+    text-align: left;
+  }
+  .prose-flux th {
+    background: var(--color-ink-800);
+    color: var(--color-ink-50);
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  .prose-flux img {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-ink-line);
+  }
+  .prose-flux hr {
+    border: none;
+    height: 1px;
+    background: var(--color-ink-line);
+    margin: 2.5em 0;
+  }
+}
+
+/* ----------------------------- Animations ------------------------------- */
+@keyframes flux-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes flux-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Reveal-on-scroll primitive (progressively enhanced by JS) */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out-expo),
+    transform 0.7s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}

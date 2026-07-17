@@ -1,0 +1,31 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+  env: dev
+
+database:
+  driver: postgres
+  user: agency
+  password: agency_secret       # override with CONFIG_DATABASE_PASSWORD
+  address: localhost            # override with CONFIG_DATABASE_ADDRESS (e.g. "db" in compose)
+  port: "5432"
+  dbName: agency_site_db
+  sslMode: disable
+  maxRetries: 30
+  maxIdleConns: 5
+  maxOpenConns: 25
+
+storage:
+  endpoint: http://localhost:9000          # MinIO locally; R2 endpoint in prod
+  region: auto
+  access_key_id: admin
+  secret_access_key: admin123              # override with CONFIG_STORAGE_SECRET_ACCESS_KEY
+  bucket: site-api
+  public_url: http://localhost:9000/site-api
+  use_path_style: true                     # true for MinIO; false for R2
+  key_prefix: ""
+
+ingest:
+  enabled: true
+  token: "local-dev-ingest-token"          # override with CONFIG_INGEST_TOKEN
+  presign_ttl_minutes: 30

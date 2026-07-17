@@ -1,0 +1,49 @@
+---
+import Button from "@atoms/Button.astro";
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  class?: string;
+}
+const {
+  eyebrow = "Work with us",
+  title = "Have a hard AI systems problem?",
+  lead = "Book a 30-minute call. We'll tell you honestly whether we can move the numbers that matter — cost, latency, reliability.",
+  class: className = "",
+} = Astro.props;
+---
+
+<section class:list={["container-flux py-20 md:py-28", className]}>
+  <NotchedPanel tone="dark" data-reveal>
+    <div class="relative px-6 py-14 md:px-16 md:py-20">
+      <div
+        class="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-flux-magenta/25 blur-[100px]"
+        aria-hidden="true"
+      >
+      </div>
+      <div
+        class="pointer-events-none absolute -bottom-24 -left-20 size-72 rounded-full bg-flux-blue/25 blur-[100px]"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="relative flex flex-col items-start gap-6 md:max-w-2xl">
+        <span class="flex items-center gap-2 font-mono text-[0.72rem] font-medium uppercase tracking-[0.14em] text-flux-amber">
+          <span class="size-1.5 rounded-full bg-flux-amber" aria-hidden="true"></span>
+          {eyebrow}
+        </span>
+        <h2 class="text-balance text-3xl font-semibold leading-[1.05] tracking-tight text-[#fbfbf9] sm:text-4xl md:text-5xl">
+          {title}
+        </h2>
+        <p class="text-pretty text-lg leading-relaxed text-ink-500">{lead}</p>
+        <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+          <Button href="/book" variant="primary" size="lg" arrow>Book a call</Button>
+          <Button href="/studies" variant="outline" size="lg" onDark>See case studies</Button>
+        </div>
+      </div>
+    </div>
+  </NotchedPanel>
+</section>

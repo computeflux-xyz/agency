@@ -1,0 +1,200 @@
+services:
+  bucket:
+    image: minio/minio:latest
+    container_name: site-api-bucket
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - minio-source-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - site-api-network
+
+  bucket-init:
+    image: minio/mc:latest
+    container_name: site-api-bucket-init
+    depends_on:
+      bucket:
+        condition: service_healthy
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+        sleep 2 &&
+        mc alias set source http://bucket:9000 admin admin123 &&
+        mc mb --ignore-existing source/site-api &&
+        mc anonymous set download source/site-api &&
+        echo 'Bucket initialized successfully'
+      "
+    networks:
+      - site-api-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: site-api-db
+    environment:
+      POSTGRES_DB: agency_site_db
+      POSTGRES_USER: agency
+      POSTGRES_PASSWORD: agency_secret
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c effective_cache_size=768MB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c max_worker_processes=4
+      -c max_parallel_workers_per_gather=2
+      -c max_parallel_workers=4
+      -c max_connections=200
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agency -d agency_site_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks:
+      - site-api-network
+
+  migration:
+    build:
+      context: ../..
+      dockerfile: tools/db-migration/local/Dockerfile
+    container_name: site-api-migration
+    volumes:
+      - ./db-migration/agency_site_db/schema:/migrations:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://agency:agency_secret@db:5432/agency_site_db?sslmode=disable
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: agency
+      PGDATABASE: agency_site_db
+      PGPASSWORD: agency_secret
+    tmpfs:
+      - /status
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+
+        echo "=== Waiting for database to be ready ==="
+
+        max_attempts=30
+        attempt=1
+
+        while [ $$attempt -le $$max_attempts ]; do
+          echo "Attempt $$attempt/$$max_attempts: Checking database connection..."
+
+          if pg_isready -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE" 2>/dev/null; then
+            echo "pg_isready: Database is accepting connections"
+
+            if psql -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE" -c "SELECT 1" >/dev/null 2>&1; then
+              echo "psql: Database connection verified!"
+              break
+            else
+              echo "psql: Cannot execute query yet..."
+            fi
+          fi
+
+          if [ $$attempt -eq $$max_attempts ]; then
+            echo "ERROR: Database not ready after $$max_attempts attempts"
+            exit 1
+          fi
+
+          attempt=$$((attempt + 1))
+          sleep 2
+        done
+
+        echo "=== Database is ready! ==="
+        sleep 2
+
+        echo "=== Migration files in /migrations ==="
+        ls -la /migrations/
+
+        if [ -z "$$(ls -A /migrations/*.sql 2>/dev/null)" ]; then
+          echo "ERROR: No migration files found in /migrations/"
+          exit 1
+        fi
+
+        echo "=== Running migrations ==="
+        migrate -path /migrations -database "$$DATABASE_URL" up
+
+        migration_status=$$?
+
+        if [ $$migration_status -eq 0 ]; then
+          echo "=== Migration completed successfully ==="
+          touch /status/migration_complete
+          echo "Migration marker created, keeping container alive..."
+          tail -f /dev/null
+        else
+          echo "=== Migration FAILED with status $$migration_status ==="
+          exit 1
+        fi
+    healthcheck:
+      test: ["CMD", "test", "-f", "/status/migration_complete"]
+      interval: 2s
+      timeout: 2s
+      retries: 60
+      start_period: 5s
+    networks:
+      - site-api-network
+
+  site-api:
+    build:
+      context: ../..
+      dockerfile: services/site-api/Dockerfile
+    container_name: site-api
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_healthy
+      bucket-init:
+        condition: service_completed_successfully
+    environment:
+      # Host overrides so the single config.yaml works inside the compose network.
+      CONFIG_DATABASE_ADDRESS: db
+      CONFIG_DATABASE_PASSWORD: agency_secret
+      CONFIG_STORAGE_ENDPOINT: http://bucket:9000
+      # Browser-facing read URL (reachable from the host).
+      CONFIG_STORAGE_PUBLIC_URL: http://localhost:9000/site-api
+      CONFIG_STORAGE_SECRET_ACCESS_KEY: admin123
+      CONFIG_INGEST_TOKEN: local-dev-ingest-token
+    volumes:
+      - ./config.yaml:/config.yaml:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - site-api-network
+
+volumes:
+  postgres-data:
+    driver: local
+  minio-source-data:
+    driver: local
+
+networks:
+  site-api-network:
+    driver: bridge

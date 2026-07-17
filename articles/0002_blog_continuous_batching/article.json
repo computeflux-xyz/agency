@@ -1,0 +1,19 @@
+{
+  "slug": "continuous-batching",
+  "type": "blog",
+  "title": "Continuous batching in practice",
+  "shortdesc": "Packing many in-flight requests into each forward pass is the single biggest, lowest-risk inference win.",
+  "longdesc": "Packing many in-flight requests into each forward pass is the single biggest, lowest-risk inference win.",
+  "topics": [
+    "inference-optimization",
+    "systems-programming"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": false,
+  "readingMinutes": 4,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

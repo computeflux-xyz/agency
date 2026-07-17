@@ -1,0 +1,36 @@
+---
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import type { Job } from "@data/jobs";
+
+interface Props {
+  job: Job;
+  class?: string;
+}
+const { job, class: className = "" } = Astro.props;
+---
+
+<a
+  href={`/careers/${job.slug}`}
+  class:list={[
+    "group flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface p-6 transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)] md:flex-row md:items-center md:justify-between md:gap-8",
+    className,
+  ]}
+  data-reveal
+>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-1.5">
+      <Tag size="xs">{job.team}</Tag>
+      <Tag size="xs">{job.location}</Tag>
+      <Tag size="xs">{job.type}</Tag>
+    </div>
+    <h3 class="text-xl font-semibold tracking-tight text-ink-50">{job.title}</h3>
+    <p class="max-w-2xl text-pretty text-[0.95rem] leading-relaxed text-ink-300">{job.summary}</p>
+  </div>
+  <span
+    class="flex items-center gap-2 whitespace-nowrap font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-400 transition-colors group-hover:text-ink-50"
+  >
+    View role
+    <Icon name="arrow" size={15} class="transition-transform duration-200 group-hover:translate-x-0.5" />
+  </span>
+</a>

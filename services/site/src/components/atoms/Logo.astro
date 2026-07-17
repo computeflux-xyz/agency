@@ -1,0 +1,50 @@
+---
+
+interface Props {
+  href?: string | null;
+  showWordmark?: boolean;
+  class?: string;
+  ariaLabel?: string;
+}
+const {
+  href = "/",
+  showWordmark = true,
+  class: className = "",
+  ariaLabel = "Computeflux — home",
+} = Astro.props;
+
+const Tag = href ? "a" : "div";
+---
+
+<Tag
+  {...href ? { href } : {}}
+  class:list={["group inline-flex items-center gap-2.5", className]}
+  aria-label={ariaLabel}
+>
+  <svg
+    width="26"
+    height="30"
+    viewBox="0 0 1138 1217"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    class="shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-[8deg]"
+  >
+    <rect x="43.8406" y="133.841" width="126" height="447" transform="rotate(-45 43.8406 133.841)" fill="#4380FF"></rect>
+    <ellipse cx="91.2168" cy="92.1213" rx="63" ry="66" transform="rotate(-45 91.2168 92.1213)" fill="#4380FF"></ellipse>
+    <ellipse cx="404.465" cy="405.37" rx="63" ry="66" transform="rotate(-45 404.465 405.37)" fill="#4380FF"></ellipse>
+    <rect x="1004.75" y="44.8406" width="126" height="447" transform="rotate(45 1004.75 44.8406)" fill="#FD3CF3"></rect>
+    <ellipse cx="1046.47" cy="92.2168" rx="63" ry="66" transform="rotate(45 1046.47 92.2168)" fill="#FD3CF3"></ellipse>
+    <ellipse cx="733.217" cy="405.465" rx="63" ry="66" transform="rotate(45 733.217 405.465)" fill="#FD3CF3"></ellipse>
+    <rect x="510" y="704" width="126" height="447" fill="#FFC40F"></rect>
+    <ellipse cx="573" cy="708" rx="63" ry="66" fill="#FFC40F"></ellipse>
+    <ellipse cx="573" cy="1151" rx="63" ry="66" fill="#FFC40F"></ellipse>
+  </svg>
+  {
+    showWordmark && (
+    <span class="font-display text-[1.05rem] font-bold tracking-tight text-current">
+      Computeflux
+    </span>
+    )
+  }
+</Tag>

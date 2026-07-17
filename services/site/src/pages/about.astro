@@ -1,0 +1,114 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import Divider from "@atoms/Divider.astro";
+import Icon from "@atoms/Icon.astro";
+import { site } from "@lib/site";
+
+const title = "About";
+const description =
+  "Computeflux is a deep tech R&D studio for high-performance AI systems. We combine cutting-edge AI research with systems-engineering rigor to ship reliable, efficient production systems.";
+
+const principles = [
+  {
+    icon: "gauge",
+    title: "Measure, then optimize",
+    body: "Every claim we make is backed by a benchmark. We instrument before we touch anything, so improvements are proven — not asserted.",
+  },
+  {
+    icon: "check",
+    title: "Reliability is an architecture",
+    body: "You don't bolt reliability on at the end. We design for observability, evaluation and graceful failure from the first commit.",
+  },
+  {
+    icon: "bolt",
+    title: "The right tool for the hot path",
+    body: "We reach for Rust, Zig or Go where it matters and stay pragmatic everywhere else. Performance is a scalpel, not a hammer.",
+  },
+  {
+    icon: "layers",
+    title: "No bullshit",
+    body: "We tell you when we're not the right fit, when a problem is easier than you think, and when it's harder. Honesty compounds.",
+  },
+];
+---
+
+<PageLayout title={title} description={description} dragon>
+  <PageHero
+    eyebrow="Who we are"
+    title="A deep tech R&D studio for AI in production"
+    lead="Computeflux specializes in high-complexity software and AI systems. We build reliable, interpretable and ruthlessly efficient AI — blending research with systems-engineering excellence."
+  />
+
+  <!-- Narrative -->
+  <section class="container-prose pb-8">
+    <Divider label="THE STUDIO" />
+    <div class="prose-flux py-12">
+      <p>
+        We started Computeflux because we kept seeing the same thing: capable
+        teams with promising models, blocked not by the model but by everything
+        <em>around</em> it. Inference that cost too much. Agents that worked in a
+        demo and fell over in production. Pipelines that couldn't keep up.
+      </p>
+      <p>
+        Those are engineering problems, and they're the ones we love. We come
+        from backgrounds in high-volume, low-latency systems and modern AI
+        engineering — the intersection where cost, latency and reliability are
+        non-negotiable.
+      </p>
+      <p>
+        We stay deliberately small and senior. When you work with Computeflux,
+        you work with the people doing the work, and you keep everything we
+        build. Case studies are always anonymized and only published with
+        explicit permission.
+      </p>
+    </div>
+  </section>
+
+  <!-- Principles -->
+  <section class="container-flux py-12 md:py-16">
+    <Divider label="HOW WE THINK" />
+    <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
+      {
+        principles.map((p) => (
+          <article
+            class="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-7"
+            data-reveal
+          >
+            <span class="flex size-10 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
+              <Icon name={p.icon} size={18} />
+            </span>
+            <h3 class="text-lg font-semibold tracking-tight text-ink-50">{p.title}</h3>
+            <p class="text-pretty leading-relaxed text-ink-300">{p.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Facts -->
+  <section class="container-flux py-12">
+    <div
+      class="grid gap-8 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-8 sm:grid-cols-3 md:p-12"
+      data-reveal
+    >
+      <div class="flex flex-col gap-1">
+        <span class="eyebrow">Based in</span>
+        <span class="text-lg font-medium text-ink-50">{site.location}</span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="eyebrow">Founded</span>
+        <span class="text-lg font-medium text-ink-50">{site.foundingYear}</span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="eyebrow">Contact</span>
+        <a href={`mailto:${site.email}`} class="text-lg font-medium text-flux-blue hover:underline">
+          {site.email}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <CtaSection />
+</PageLayout>

@@ -1,0 +1,99 @@
+---
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import { formatDate } from "@lib/utils";
+
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  kind: "study" | "article";
+  topics?: string[];
+  date?: string;
+  readingTime?: number;
+  cover?: string | null;
+  featured?: boolean;
+  class?: string;
+}
+const {
+  href,
+  title,
+  description,
+  kind,
+  topics = [],
+  date,
+  readingTime,
+  cover,
+  featured = false,
+  class: className = "",
+} = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={[
+    "group flex flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)]",
+    featured ? "md:flex-row" : "",
+    className,
+  ]}
+  data-reveal
+>
+  <div
+    class:list={[
+      "relative aspect-[16/10] overflow-hidden bg-ink-800",
+      featured ? "md:aspect-auto md:w-1/2" : "",
+    ]}
+  >
+    {
+      cover ? (
+        <img
+          src={cover}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          class="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+        />
+      ) : (
+        <div class="dot-grid absolute inset-0 opacity-70" aria-hidden="true" />
+      )
+    }
+    <span
+      class="absolute left-3 top-3 rounded-[var(--radius-sm)] border border-ink-50 bg-ink-950 px-2.5 py-1 font-mono text-[0.6rem] font-medium uppercase tracking-widest text-ink-50"
+    >
+      {kind === "study" ? "Case study" : "Article"}
+    </span>
+  </div>
+
+  <div class:list={["flex flex-1 flex-col gap-4 p-6", featured ? "md:justify-center md:p-8" : ""]}>
+    {
+      topics.length > 0 && (
+        <div class="flex flex-wrap gap-1.5">
+          {topics.slice(0, 3).map((t) => (
+            <Tag size="xs">{t}</Tag>
+          ))}
+        </div>
+      )
+    }
+    <h3
+      class:list={[
+        "font-semibold tracking-tight text-ink-50",
+        featured ? "text-2xl md:text-3xl" : "text-lg",
+      ]}
+    >
+      {title}
+    </h3>
+    <p class="line-clamp-3 text-pretty text-[0.95rem] leading-relaxed text-ink-300">
+      {description}
+    </p>
+    <div class="mt-auto flex items-center gap-3 pt-2 font-mono text-xs text-ink-400">
+      {date && <time datetime={date}>{formatDate(date)}</time>}
+      {date && readingTime && <span aria-hidden="true">·</span>}
+      {readingTime && <span>{readingTime} min read</span>}
+      <Icon
+        name="arrow"
+        size={14}
+        class="ml-auto text-ink-300 transition-transform duration-300 group-hover:translate-x-0.5"
+      />
+    </div>
+  </div>
+</a>

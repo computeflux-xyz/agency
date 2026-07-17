@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $APP-migrate-$MIGRATION_ACTION-$SHORT_SHA-$GITHUB_RUN_NUMBER
+  namespace: $NAMESPACE
+  labels:
+    app: $APP
+    component: migration
+    action: $MIGRATION_ACTION
+    managed-by: github-actions
+spec:
+  ttlSecondsAfterFinished: 86400  # 24 hours
+  backoffLimit: 0  # Don't retry failed migrations
+  activeDeadlineSeconds: 600  # 10 minute timeout
+  template:
+    metadata:
+      labels:
+        app: $APP
+        component: migration
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: registry-pull-secret
+      containers:
+        - name: migrate
+          image: registry.computeflux.xyz/$APP-migrations:$IMAGE_TAG
+          args:
+            - "-path=/migrations"
+            - "-database=postgres://$(DB_USER):$(DB_PASSWORD)@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=require"
+            - "$MIGRATION_COMMAND"
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: $DB_SECRET_NAME
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: $DB_SECRET_NAME
+                  key: password
+            - name: DB_HOST
+              value: "$DB_HOST"
+            - name: DB_PORT
+              value: "$DB_PORT"
+            - name: DB_NAME
+              value: "$DB_NAME"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

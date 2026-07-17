@@ -1,0 +1,104 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import Field from "@atoms/Field.astro";
+import Button from "@atoms/Button.astro";
+import Icon from "@atoms/Icon.astro";
+import Divider from "@atoms/Divider.astro";
+import ApiNotice from "@molecules/ApiNotice.astro";
+
+const title = "Book a call";
+const description =
+  "Book a 30-minute intro call with Computeflux. Tell us your AI systems problem — we'll tell you honestly whether we can help move the numbers that matter.";
+
+const expect = [
+  "A focused 30 minutes — no sales script.",
+  "An honest read on whether we're the right studio for your problem.",
+  "If it's a fit, a rough shape for an engagement and next steps.",
+];
+---
+
+<PageLayout title={title} description={description}>
+  <PageHero
+    eyebrow="Let's talk"
+    title="Book a 30-minute call"
+    lead={description}
+  />
+
+  <section class="container-flux pb-24">
+    <Divider label="SCHEDULE" />
+    <div class="grid gap-12 py-12 lg:grid-cols-[1fr_1.2fr]">
+      <!-- What to expect -->
+      <div class="flex flex-col gap-6">
+        <h2 class="text-xl font-semibold text-ink-50">What to expect</h2>
+        <ul class="flex flex-col gap-3">
+          {
+            expect.map((e) => (
+              <li class="flex items-start gap-3 text-ink-200">
+                <span class="mt-1 shrink-0 text-flux-blue"><Icon name="check" size={16} /></span>
+                <span class="text-pretty leading-relaxed">{e}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5">
+          <p class="text-sm text-ink-300">
+            Prefer email? Reach us directly at
+            <a href="mailto:hello@computeflux.xyz" class="text-flux-blue hover:underline">hello@computeflux.xyz</a>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Booking -->
+      <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
+        <div class="flex items-center gap-3">
+          <span class="flex size-10 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
+            <Icon name="calendar" size={18} />
+          </span>
+          <div class="flex flex-col">
+            <h2 class="text-lg font-semibold text-ink-50">Request a slot</h2>
+            <p class="text-sm text-ink-400">We'll confirm by email within one business day.</p>
+          </div>
+        </div>
+
+        <ApiNotice>
+          Live scheduling activates once our backend goes live — it'll embed
+          real availability here. For now, submit your details or email us and
+          we'll set up a time.
+        </ApiNotice>
+
+        <form class="flex flex-col gap-4" data-book-form aria-label="Request a call">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Full name" name="name" required disabled />
+            <Field label="Email" name="email" type="email" required disabled />
+          </div>
+          <Field label="Company" name="company" disabled />
+          <Field
+            label="Topic"
+            name="topic"
+            as="select"
+            disabled
+            options={[
+              { value: "inference", label: "Inference optimization" },
+              { value: "agentic", label: "Agentic systems" },
+              { value: "ai-engineering", label: "AI engineering" },
+              { value: "systems", label: "Systems programming" },
+              { value: "other", label: "Something else" },
+            ]}
+          />
+          <Field
+            label="What would you like to solve?"
+            name="message"
+            as="textarea"
+            rows={4}
+            required
+            disabled
+          />
+          <Button type="submit" variant="primary" fullWidth disabled arrow>
+            Request call
+          </Button>
+        </form>
+      </div>
+    </div>
+  </section>
+</PageLayout>

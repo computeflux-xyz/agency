@@ -1,0 +1,20 @@
+{
+  "slug": "ebpf-tracing",
+  "type": "blog",
+  "title": "eBPF: tracing without instrumentation",
+  "shortdesc": "Attach probes to a running binary and watch it work — no code changes, near-zero overhead.",
+  "longdesc": "Attach probes to a running binary and watch it work — no code changes, near-zero overhead.",
+  "topics": [
+    "systems-programming",
+    "low-level",
+    "system-engineering"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": false,
+  "readingMinutes": 5,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

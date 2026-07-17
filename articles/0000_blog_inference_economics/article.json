@@ -1,0 +1,14 @@
+{
+  "slug": "inference-economics",
+  "type": "blog",
+  "title": "The real cost of LLM inference",
+  "shortdesc": "An interactive model of what it actually costs to serve a large language model — and where the savings hide.",
+  "longdesc": "A hands-on, interactive breakdown of LLM inference economics: GPU throughput, cost per million tokens, monthly spend, GPU trade-offs and the optimization techniques that move the needle. Drag the sliders and watch the numbers.",
+  "topics": ["inference-optimization", "performance", "ai-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": true,
+  "readingMinutes": 8,
+  "seoTitle": "The real cost of LLM inference — an interactive model",
+  "seoDescription": "Interactive breakdown of LLM inference cost: throughput, cost per million tokens, GPU trade-offs and the optimizations that actually save money.",
+  "cover": ""
+}

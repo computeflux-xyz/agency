@@ -1,0 +1,26 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@atoms/Button.astro";
+import ScrambleText from "@atoms/ScrambleText.astro";
+
+const title = "Page not found";
+---
+
+<PageLayout title={title} noindex>
+  <section class="relative flex min-h-[80vh] items-center overflow-hidden pt-24">
+    <div class="container-flux flex flex-col items-center gap-6 text-center">
+      <span class="font-mono text-sm uppercase tracking-[0.3em] text-ink-400">Error 404</span>
+      <h1 class="font-display text-7xl font-bold tracking-tight md:text-9xl">
+        <ScrambleText text="404" on="load" />
+      </h1>
+      <p class="max-w-md text-pretty text-lg text-ink-300">
+        This route returned null. The page you're looking for doesn't exist, or
+        it moved.
+      </p>
+      <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+        <Button href="/" variant="primary" arrow>Back home</Button>
+        <Button href="/studies" variant="outline">Browse case studies</Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>

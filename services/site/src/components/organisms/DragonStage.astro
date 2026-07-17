@@ -1,0 +1,124 @@
+---
+/**
+ * DragonStage mounts the interactive dragon companion on a page.
+ *
+ * It ships no canvas markup (the two <canvas> layers are created by the client
+ * module and inserted as the first children of <body>, so nothing renders for
+ * readers who are gated out). This component only carries:
+ *   - the global CSS that lifts page content above the behind-canvas, styles
+ *     the protective "shield" glow, the pause control, and the print/reduced-
+ *     motion escape hatches;
+ *   - a guarded boot script that dynamic-imports the heavy module (WebGL +
+ *     pretext) only on capable, motion-OK, fine-pointer desktops.
+ *
+ * Purely decorative and aria-hidden. The real content is untouched, so SEO and
+ * accessibility are unaffected whether or not the dragon runs.
+ */
+---
+
+<style is:global>
+  /* Lift page content above the behind-plane dragon canvas (#flux-dragon is
+     fixed at z-index:0). Header (z-50) and the top canvas (z-40) already sit
+     above content. Only the in-flow <main> needs promoting. */
+  main {
+    position: relative;
+    z-index: 1;
+  }
+  body > footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Protective glow applied to an "important" element while the dragon breathes
+     near it. */
+  .dragon-shield {
+    animation: dragon-shield 1.2s var(--ease-out-expo, ease-out) infinite;
+  }
+  @keyframes dragon-shield {
+    0%,
+    100% {
+      text-shadow: 0 0 0 transparent;
+    }
+    50% {
+      text-shadow:
+        0 0 24px color-mix(in srgb, var(--color-flux-blue) 55%, transparent),
+        0 0 7px color-mix(in srgb, var(--color-flux-blue) 42%, transparent);
+    }
+  }
+
+  #flux-dragon-toggle {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 41;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+    border: 1px solid var(--color-ink-line);
+    color: var(--color-ink-400);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    pointer-events: auto;
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      transform 0.2s;
+  }
+  #flux-dragon-toggle:hover {
+    color: var(--color-ink-50);
+    border-color: var(--color-ink-400);
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #flux-dragon,
+    #flux-dragon-bg,
+    #flux-dragon-top,
+    #flux-dragon-toggle {
+      display: none !important;
+    }
+    .dragon-shield {
+      animation: none !important;
+    }
+  }
+  @media print {
+    #flux-dragon,
+    #flux-dragon-bg,
+    #flux-dragon-top,
+    #flux-dragon-toggle {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Cheap pre-guards so the WebGL + pretext chunk is never even downloaded for
+  // readers who won't see the dragon. initDragon() re-checks these plus
+  // save-data / device-memory / CPU before doing anything.
+  function boot() {
+    const mm = window.matchMedia;
+    if (mm("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.innerWidth < 768) return;
+    if (mm("(hover: none)").matches) return;
+    import("@lib/client/dragon")
+      .then((m) => m.initDragon())
+      .catch((e) => {
+        if (import.meta.env.DEV) console.error("[dragon] boot failed", e);
+      });
+  }
+
+  boot();
+
+  document.addEventListener("astro:before-swap", () => {
+    import("@lib/client/dragon")
+      .then((m) => m.destroyDragon())
+      .catch(() => {});
+  });
+  document.addEventListener("astro:after-swap", boot);
+</script>

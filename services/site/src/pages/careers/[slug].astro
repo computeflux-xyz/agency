@@ -1,0 +1,120 @@
+---
+import type { GetStaticPaths } from "astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import Divider from "@atoms/Divider.astro";
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import Button from "@atoms/Button.astro";
+import Field from "@atoms/Field.astro";
+import ApiNotice from "@molecules/ApiNotice.astro";
+import { jobs } from "@data/jobs";
+import { jobPostingSchema, breadcrumbSchema } from "@lib/seo";
+import { site } from "@lib/site";
+
+export const getStaticPaths = (() => {
+  return jobs.map((job) => ({ params: { slug: job.slug }, props: { job } }));
+}) satisfies GetStaticPaths;
+
+const { job } = Astro.props;
+const origin = Astro.site?.origin ?? site.url;
+
+const jsonLd = [
+  jobPostingSchema({
+    title: job.title,
+    description: job.summary,
+    datePosted: job.datePosted,
+    employmentType: "CONTRACTOR",
+    remote: job.remote,
+    location: job.location,
+  }),
+  breadcrumbSchema([
+    { name: "Home", url: origin },
+    { name: "Careers", url: `${origin}/careers` },
+    { name: job.title, url: `${origin}/careers/${job.slug}` },
+  ]),
+];
+---
+
+<PageLayout title={job.title} description={job.summary} jsonLd={jsonLd}>
+  <PageHero eyebrow="Open role" title={job.title} lead={job.summary}>
+    <div class="mt-2 flex flex-wrap gap-1.5" data-reveal>
+      <Tag size="xs">{job.team}</Tag>
+      <Tag size="xs">{job.location}</Tag>
+      <Tag size="xs">{job.type}</Tag>
+    </div>
+  </PageHero>
+
+  <section class="container-flux pb-24">
+    <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+      <div class="flex flex-col gap-10">
+        <div>
+          <h2 class="mb-5 text-xl font-semibold text-ink-50">What you'll do</h2>
+          <ul class="flex flex-col gap-3">
+            {
+              job.responsibilities.map((r) => (
+                <li class="flex items-start gap-3 text-ink-200">
+                  <span class="mt-1 shrink-0 text-flux-blue"><Icon name="check" size={16} /></span>
+                  <span class="text-pretty leading-relaxed">{r}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div>
+          <h2 class="mb-5 text-xl font-semibold text-ink-50">What we're looking for</h2>
+          <ul class="flex flex-col gap-3">
+            {
+              job.requirements.map((r) => (
+                <li class="flex items-start gap-3 text-ink-200">
+                  <span class="mt-1 shrink-0 text-flux-magenta"><Icon name="check" size={16} /></span>
+                  <span class="text-pretty leading-relaxed">{r}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div class="lg:sticky lg:top-24 lg:h-fit">
+        <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
+          <div class="flex flex-col gap-1">
+            <h2 class="text-lg font-semibold text-ink-50">Apply</h2>
+            <p class="text-sm text-ink-400">We read every application personally.</p>
+          </div>
+
+          <ApiNotice />
+
+          <form class="flex flex-col gap-4" data-apply-form aria-label={`Apply for ${job.title}`}>
+            <input type="hidden" name="role" value={job.title} />
+            <Field label="Full name" name="name" required disabled />
+            <Field label="Email" name="email" type="email" required disabled />
+            <Field
+              label="Links (GitHub, LinkedIn, site)"
+              name="links"
+              placeholder="github.com/you"
+              disabled
+            />
+            <Field
+              label="Why Computeflux?"
+              name="message"
+              as="textarea"
+              rows={4}
+              required
+              disabled
+              hint="The most important field. Tell us what you'd want to work on."
+            />
+            <Button type="submit" variant="primary" fullWidth disabled arrow>
+              Submit application
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <Divider class="mt-16" />
+    <div class="pt-8">
+      <Button href="/careers" variant="ghost">← All open roles</Button>
+    </div>
+  </section>
+</PageLayout>

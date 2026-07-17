@@ -1,0 +1,53 @@
+---
+import Icon from "@atoms/Icon.astro";
+import type { Expertise } from "@data/expertise";
+
+interface Props {
+  item: Expertise;
+  class?: string;
+}
+const { item, class: className = "" } = Astro.props;
+const icons = ["spark", "gauge", "layers", "cpu"];
+const icon = icons[(parseInt(item.index, 10) - 1) % icons.length];
+---
+
+<a
+  href={`/expertise/${item.slug}`}
+  class:list={[
+    "group relative flex flex-col justify-between overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface p-7 transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)] hover:-translate-y-0.5",
+    className,
+  ]}
+  data-reveal
+>
+  <div class="flex flex-col gap-5">
+    <div class="flex items-center justify-between">
+      <span class="font-mono text-xs tracking-widest text-ink-400">{item.index}</span>
+      <span
+        class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] text-ink-300 transition-colors group-hover:border-flux-blue group-hover:text-flux-blue"
+      >
+        <Icon name={icon} size={18} />
+      </span>
+    </div>
+    <div class="flex flex-col gap-2.5">
+      <h3 class="text-xl font-semibold tracking-tight text-ink-50">{item.title}</h3>
+      <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{item.summary}</p>
+    </div>
+  </div>
+
+  <div class="mt-7 flex items-center justify-between border-t border-[var(--color-ink-line)] pt-5">
+    <div class="flex flex-col">
+      <span class="font-display text-lg font-bold text-ink-50">{item.outcome.value}</span>
+      <span class="text-xs text-ink-400">{item.outcome.label}</span>
+    </div>
+    <span
+      class="flex items-center gap-1.5 font-mono text-[0.7rem] font-medium uppercase tracking-wider text-ink-400 transition-colors group-hover:text-ink-50"
+    >
+      Learn more
+      <Icon
+        name="arrow"
+        size={14}
+        class="transition-transform duration-200 group-hover:translate-x-0.5"
+      />
+    </span>
+  </div>
+</a>

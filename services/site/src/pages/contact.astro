@@ -1,0 +1,73 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import Field from "@atoms/Field.astro";
+import Button from "@atoms/Button.astro";
+import Icon from "@atoms/Icon.astro";
+import Divider from "@atoms/Divider.astro";
+import ApiNotice from "@molecules/ApiNotice.astro";
+import { site } from "@lib/site";
+
+const title = "Contact";
+const description =
+  "Get in touch with Computeflux. Tell us about your AI systems problem — we answer every message personally.";
+
+const channels = [
+  { icon: "mail", label: "Email", value: site.email, href: `mailto:${site.email}` },
+  { icon: "calendar", label: "Book a call", value: "30-minute intro", href: "/book" },
+  { icon: "spark", label: "Careers", value: "Join the studio", href: "/careers" },
+];
+---
+
+<PageLayout title={title} description={description}>
+  <PageHero
+    eyebrow="Get in touch"
+    title="Let's talk about your problem"
+    lead={description}
+  />
+
+  <section class="container-flux pb-24">
+    <Divider label="CONTACT" />
+    <div class="grid gap-12 py-12 lg:grid-cols-[1fr_1.2fr]">
+      <!-- Channels -->
+      <div class="flex flex-col gap-4">
+        {
+          channels.map((c) => (
+            <a
+              href={c.href}
+              class="group flex items-center gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5 transition-colors hover:border-[var(--color-border-strong)] hover:bg-ink-850"
+            >
+              <span class="flex size-11 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
+                <Icon name={c.icon} size={18} />
+              </span>
+              <span class="flex flex-col">
+                <span class="font-mono text-[0.65rem] uppercase tracking-widest text-ink-400">{c.label}</span>
+                <span class="font-medium text-ink-50">{c.value}</span>
+              </span>
+              <Icon name="arrow" size={16} class="ml-auto text-ink-400 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          ))
+        }
+        <p class="mt-2 text-sm leading-relaxed text-ink-400">
+          Based in {site.location}. We work remote-first and respond within one
+          business day.
+        </p>
+      </div>
+
+      <!-- Form -->
+      <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
+        <h2 class="text-lg font-semibold text-ink-50">Send a message</h2>
+        <ApiNotice />
+        <form class="flex flex-col gap-4" data-contact-form aria-label="Contact form">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Full name" name="name" required disabled />
+            <Field label="Email" name="email" type="email" required disabled />
+          </div>
+          <Field label="Company" name="company" disabled />
+          <Field label="Message" name="message" as="textarea" rows={5} required disabled />
+          <Button type="submit" variant="primary" fullWidth disabled arrow>Send message</Button>
+        </form>
+      </div>
+    </div>
+  </section>
+</PageLayout>

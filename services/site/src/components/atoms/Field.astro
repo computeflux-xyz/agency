@@ -1,0 +1,91 @@
+---
+
+interface Props {
+  label: string;
+  name: string;
+  type?: string;
+  as?: "input" | "textarea" | "select";
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  rows?: number;
+  options?: { value: string; label: string }[];
+  hint?: string;
+  class?: string;
+}
+const {
+  label,
+  name,
+  type = "text",
+  as = "input",
+  placeholder = "",
+  required = false,
+  disabled = false,
+  rows = 5,
+  options = [],
+  hint,
+  class: className = "",
+} = Astro.props;
+
+const controlCls =
+  "w-full rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 placeholder:text-ink-400 transition-colors focus:border-flux-blue disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-ink-800/60";
+---
+
+<div class:list={["flex flex-col gap-2", className]}>
+  <label for={name} class="flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-300">
+    {label}
+    {required && <span class="text-flux-magenta" aria-hidden="true">*</span>}
+  </label>
+
+  {
+    as === "textarea" && (
+      <textarea
+        id={name}
+        name={name}
+        rows={rows}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        class={controlCls}
+      />
+    )
+  }
+  {
+    as === "select" && (
+      <div class="relative">
+        <select
+          id={name}
+          name={name}
+          required={required}
+          disabled={disabled}
+          class:list={[controlCls, "appearance-none pr-10"]}
+        >
+          {options.map((o: { value: string; label: string }) => (
+            <option value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <svg
+          class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-400"
+          width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    )
+  }
+  {
+    as === "input" && (
+      <input
+        id={name}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        class={controlCls}
+      />
+    )
+  }
+
+  {hint && <p class="text-xs text-ink-400">{hint}</p>}
+</div>

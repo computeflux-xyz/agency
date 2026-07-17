@@ -1,0 +1,68 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import JobCard from "@molecules/JobCard.astro";
+import Divider from "@atoms/Divider.astro";
+import Icon from "@atoms/Icon.astro";
+import { jobs } from "@data/jobs";
+import { site } from "@lib/site";
+
+const title = "Careers";
+const description =
+  "Join Computeflux — a small, senior deep tech studio solving hard AI-in-production problems. No ATS. No ghosting. We review every application personally.";
+
+const perks = [
+  { icon: "spark", text: "Hard, meaningful problems — performance, systems, AI in production." },
+  { icon: "layers", text: "Remote-first across the EU with deep-work culture." },
+  { icon: "check", text: "Senior peers. You'll work with people doing the actual work." },
+  { icon: "bolt", text: "No ATS, no ghosting — every application read by a human." },
+];
+
+const origin = Astro.site?.origin ?? site.url;
+const jsonLd = jobs.map((job) => ({
+  "@type": "JobPosting",
+  title: job.title,
+  description: job.summary,
+  datePosted: job.datePosted,
+  employmentType: "CONTRACTOR",
+  hiringOrganization: { "@id": `${site.url}/#organization` },
+  jobLocationType: "TELECOMMUTE",
+  url: `${origin}/careers/${job.slug}`,
+  applicantLocationRequirements: { "@type": "Country", name: "European Union" },
+}));
+---
+
+<PageLayout title={title} description={description} jsonLd={jsonLd} dragon>
+  <PageHero
+    eyebrow="Join us"
+    title="Build the engineering that makes AI real"
+    lead={description}
+  />
+
+  <section class="container-flux pb-8">
+    <Divider label="WHY COMPUTEFLUX" />
+    <div class="grid gap-4 py-12 sm:grid-cols-2" data-reveal-stagger="80">
+      {
+        perks.map((p) => (
+          <div class="flex items-start gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-6" data-reveal>
+            <span class="mt-0.5 shrink-0 text-flux-blue"><Icon name={p.icon} size={20} /></span>
+            <p class="text-pretty leading-relaxed text-ink-200">{p.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container-flux py-12 md:py-16">
+    <Divider label={`${jobs.length} OPEN ROLES`} />
+    <div class="flex flex-col gap-4 py-12" data-reveal-stagger="80">
+      {jobs.map((job) => <JobCard job={job} />)}
+    </div>
+    <p class="text-center text-sm text-ink-400" data-reveal>
+      Don't see your role? We're always interested in exceptional engineers.
+      <a href={`mailto:${site.email}?subject=Open application`} class="text-flux-blue hover:underline">
+        Send an open application →
+      </a>
+    </p>
+  </section>
+</PageLayout>

@@ -1,0 +1,41 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import FaqAccordion from "@molecules/FaqAccordion.astro";
+import Divider from "@atoms/Divider.astro";
+import { faqs, faqCategories } from "@data/faq";
+import { faqSchema } from "@lib/seo";
+
+const title = "FAQ";
+const description =
+  "Answers to common questions about working with Computeflux — engagements, pricing, technology and careers.";
+
+// FAQPage structured data (rich results) from all Q&As.
+const jsonLd = faqSchema(faqs.map((f) => ({ question: f.question, answer: f.answer })));
+---
+
+<PageLayout title={title} description={description} jsonLd={jsonLd} dragon>
+  <PageHero eyebrow="Questions" title="Frequently asked questions" lead={description} />
+
+  <section class="container-prose pb-24">
+    {
+      faqCategories.map((category) => {
+        const items = faqs.filter((f) => f.category === category);
+        if (items.length === 0) return null;
+        return (
+          <div class="pt-10 first:pt-0">
+            <Divider label={category} class="mb-2" />
+            <FaqAccordion items={items.map((i) => ({ question: i.question, answer: i.answer }))} />
+          </div>
+        );
+      })
+    }
+  </section>
+
+  <CtaSection
+    eyebrow="Still curious?"
+    title="Didn't find your answer?"
+    lead="Ask us directly — we answer every message personally."
+  />
+</PageLayout>

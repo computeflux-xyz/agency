@@ -1,0 +1,68 @@
+---
+
+type Tone = "dark" | "surface" | "blue" | "magenta" | "amber" | "green";
+
+interface Props {
+  tone?: Tone;
+  notch?: number;
+  shadow?: boolean;
+  dotted?: boolean;
+  class?: string;
+}
+
+const {
+  tone = "dark",
+  notch = 34,
+  shadow = true,
+  dotted = true,
+  class: className = "",
+} = Astro.props;
+
+const tones: Record<Tone, string> = {
+  dark: "bg-[var(--color-invert-bg)] text-ink-900",
+  surface: "bg-surface text-ink-50",
+  blue: "bg-flux-blue text-white",
+  magenta: "bg-flux-magenta text-white",
+  amber: "bg-flux-amber text-ink-50",
+  green: "bg-[#1f7a5f] text-white",
+};
+
+const dotVar = tone === "surface" ? "var(--svg-dot)" : "var(--svg-dot-light)";
+const dotOpacity = tone === "surface" ? "0.6" : "0.14";
+---
+
+<div class:list={["notch-root relative", className]} style={`--n: clamp(16px, 3.2vw, ${notch}px)`}>
+  {shadow && (
+    <div class="notch-shape absolute inset-0 translate-x-[7px] translate-y-[9px] bg-ink-50" aria-hidden="true"></div>
+  )}
+  <div class:list={["notch-shape relative overflow-hidden", tones[tone]]}>
+    {dotted && (
+      <div
+        class="pointer-events-none absolute inset-0"
+        style={`background-image:${dotVar};opacity:${dotOpacity}`}
+        aria-hidden="true"
+      >
+      </div>
+    )}
+    <div class="relative"><slot /></div>
+  </div>
+</div>
+
+<style>
+  .notch-shape {
+    clip-path: polygon(
+      var(--n) 0,
+      calc(100% - var(--n)) 0,
+      calc(100% - var(--n)) var(--n),
+      100% var(--n),
+      100% calc(100% - var(--n)),
+      calc(100% - var(--n)) calc(100% - var(--n)),
+      calc(100% - var(--n)) 100%,
+      var(--n) 100%,
+      var(--n) calc(100% - var(--n)),
+      0 calc(100% - var(--n)),
+      0 var(--n),
+      var(--n) var(--n)
+    );
+  }
+</style>

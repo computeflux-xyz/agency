@@ -1,0 +1,457 @@
+basePath: /
+definitions:
+  dtos.ArticleDetailResp:
+    properties:
+      assets:
+        items:
+          $ref: '#/definitions/dtos.ManifestFileResp'
+        type: array
+      authors:
+        items:
+          $ref: '#/definitions/dtos.AuthorResp'
+        type: array
+      baseUrl:
+        type: string
+      canonicalUrl:
+        type: string
+      coverImage:
+        type: string
+      coverVideo:
+        type: string
+      datePublished:
+        type: string
+      dateUpdated:
+        type: string
+      entryUrl:
+        type: string
+      entrypoint:
+        type: string
+      featured:
+        type: boolean
+      id:
+        type: string
+      longdesc:
+        type: string
+      readingTime:
+        type: integer
+      seoDescription:
+        type: string
+      seoTitle:
+        type: string
+      shortdesc:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          $ref: '#/definitions/dtos.TopicResp'
+        type: array
+      type:
+        type: string
+      version:
+        type: integer
+    type: object
+  dtos.ArticleSummaryResp:
+    properties:
+      coverImage:
+        type: string
+      coverVideo:
+        type: string
+      datePublished:
+        type: string
+      dateUpdated:
+        type: string
+      featured:
+        type: boolean
+      id:
+        type: string
+      readingTime:
+        type: integer
+      shortdesc:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          $ref: '#/definitions/dtos.TopicResp'
+        type: array
+      type:
+        type: string
+    type: object
+  dtos.AuthorResp:
+    properties:
+      avatarUrl:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+    type: object
+  dtos.ErrorResp:
+    properties:
+      code:
+        type: string
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+    type: object
+  dtos.IngestBeginReq:
+    properties:
+      authors:
+        items:
+          type: string
+        type: array
+      canonicalUrl:
+        type: string
+      coverPath:
+        type: string
+      coverVideoPath:
+        type: string
+      featured:
+        type: boolean
+      files:
+        items:
+          $ref: '#/definitions/dtos.IngestFileReq'
+        type: array
+      longdesc:
+        type: string
+      readingMinutes:
+        type: integer
+      seoDescription:
+        type: string
+      seoTitle:
+        type: string
+      shortdesc:
+        type: string
+      slug:
+        type: string
+      sourceCommit:
+        type: string
+      sourceDir:
+        type: string
+      sourceRef:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    required:
+    - files
+    - slug
+    - title
+    - type
+    type: object
+  dtos.IngestBeginResp:
+    properties:
+      alreadyPublished:
+        type: boolean
+      baseUrl:
+        type: string
+      entrypoint:
+        type: string
+      jobId:
+        type: string
+      prefix:
+        type: string
+      skipped:
+        items:
+          type: string
+        type: array
+      uploads:
+        items:
+          $ref: '#/definitions/dtos.IngestUploadResp'
+        type: array
+      version:
+        type: integer
+      versionId:
+        type: string
+    type: object
+  dtos.IngestCommitReq:
+    properties:
+      jobId:
+        type: string
+      versionId:
+        type: string
+    required:
+    - versionId
+    type: object
+  dtos.IngestFileReq:
+    properties:
+      byteSize:
+        type: integer
+      contentType:
+        type: string
+      isEntrypoint:
+        type: boolean
+      path:
+        type: string
+      sha256:
+        type: string
+    required:
+    - path
+    - sha256
+    type: object
+  dtos.IngestUploadResp:
+    properties:
+      contentType:
+        type: string
+      key:
+        type: string
+      path:
+        type: string
+      putUrl:
+        type: string
+      url:
+        type: string
+    type: object
+  dtos.ManifestFileResp:
+    properties:
+      byteSize:
+        type: integer
+      contentType:
+        type: string
+      isEntrypoint:
+        type: boolean
+      kind:
+        type: string
+      path:
+        type: string
+      url:
+        type: string
+    type: object
+  dtos.PaginatedArticlesResp:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dtos.ArticleSummaryResp'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalBlogPosts:
+        type: integer
+      totalCaseStudies:
+        type: integer
+    type: object
+  dtos.TopicResp:
+    properties:
+      articleCount:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API for reading agency site resources and triggering contact workflow
+  termsOfService: http://swagger.io/terms/
+  title: Agency site API
+  version: "1.0"
+paths:
+  /api/admin/articles/{slug}:
+    delete:
+      description: Admin only. Removes the article and purges its R2 blobs.
+      parameters:
+      - description: Article slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Delete an article
+      tags:
+      - admin
+  /api/admin/articles/ingest/begin:
+    post:
+      consumes:
+      - application/json
+      description: Admin only. Registers a draft version and returns presigned R2
+        PUT URLs for the blobs that still need uploading.
+      parameters:
+      - description: Article metadata + built file list
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.IngestBeginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.IngestBeginResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Begin an article publish
+      tags:
+      - admin
+  /api/admin/articles/ingest/commit:
+    post:
+      consumes:
+      - application/json
+      description: Admin only. Verifies all blobs were uploaded, then atomically publishes
+        the version.
+      parameters:
+      - description: Version + job identifiers from begin
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.IngestCommitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ArticleDetailResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Commit an article publish
+      tags:
+      - admin
+  /api/articles:
+    get:
+      description: Paginated list of published articles/studies with topic, type and
+        full-text filters.
+      parameters:
+      - description: 'Comma-separated types: blog,study'
+        in: query
+        name: types
+        type: string
+      - description: Comma-separated topic slugs
+        in: query
+        name: topics
+        type: string
+      - description: Only featured articles
+        in: query
+        name: featured
+        type: boolean
+      - description: Full-text search over title/summary/body
+        in: query
+        name: q
+        type: string
+      - description: recent | title | featured (default)
+        in: query
+        name: sort
+        type: string
+      - description: 1-based page (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Items per page (default 12, max 100)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.PaginatedArticlesResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      summary: List published articles
+      tags:
+      - articles
+  /api/articles/{slug}:
+    get:
+      description: Returns article metadata plus the render manifest (entry URL +
+        R2 blob list).
+      parameters:
+      - description: Article slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.ArticleDetailResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      summary: Get a published article
+      tags:
+      - articles
+  /api/topics:
+    get:
+      description: Curated taxonomy with published-article counts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.TopicResp'
+            type: array
+      summary: List topics
+      tags:
+      - articles
+schemes:
+- https
+- http
+securityDefinitions:
+  BearerAuth:
+    description: 'Admin bearer token for the publish (ingest) endpoints. Format: "Bearer
+      <token>".'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

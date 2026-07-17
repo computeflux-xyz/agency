@@ -1,0 +1,112 @@
+---
+import type { GetStaticPaths } from "astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import Divider from "@atoms/Divider.astro";
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import Button from "@atoms/Button.astro";
+import { expertise } from "@data/expertise";
+import { breadcrumbSchema } from "@lib/seo";
+import { site } from "@lib/site";
+
+export const getStaticPaths = (() => {
+  return expertise.map((item) => ({
+    params: { slug: item.slug },
+    props: { item },
+  }));
+}) satisfies GetStaticPaths;
+
+const { item } = Astro.props;
+const origin = Astro.site?.origin ?? site.url;
+const others = expertise.filter((e) => e.slug !== item.slug);
+
+const jsonLd = [
+  {
+    "@type": "Service",
+    name: item.title,
+    description: item.summary,
+    provider: { "@id": `${site.url}/#organization` },
+    serviceType: item.title,
+    areaServed: "Worldwide",
+  },
+  breadcrumbSchema([
+    { name: "Home", url: origin },
+    { name: "Expertise", url: `${origin}/expertise` },
+    { name: item.title, url: `${origin}/expertise/${item.slug}` },
+  ]),
+];
+---
+
+<PageLayout title={item.title} description={item.summary} jsonLd={jsonLd}>
+  <PageHero eyebrow={`Practice ${item.index}`} title={item.title} lead={item.tagline}>
+    <div class="mt-2 flex flex-wrap gap-1.5" data-reveal>
+      {item.stack.map((s) => <Tag size="xs">{s}</Tag>)}
+    </div>
+  </PageHero>
+
+  <section class="container-flux pb-8">
+    <Divider label="OVERVIEW" />
+    <div class="grid gap-10 py-12 lg:grid-cols-[1.6fr_1fr]">
+      <p class="text-pretty text-xl leading-relaxed text-ink-200" data-reveal>{item.intro}</p>
+      <div
+        class="flex h-fit flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7"
+        data-reveal
+      >
+        <span class="eyebrow">Representative outcome</span>
+        <span class="flux-gradient-text font-display text-5xl font-bold">{item.outcome.value}</span>
+        <span class="text-sm text-ink-400">{item.outcome.label}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-flux py-12 md:py-16">
+    <Divider label="CAPABILITIES" />
+    <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
+      {
+        item.capabilities.map((cap) => (
+          <article
+            class="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-6"
+            data-reveal
+          >
+            <span class="flex size-9 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
+              <Icon name="check" size={16} />
+            </span>
+            <h3 class="text-lg font-semibold tracking-tight text-ink-50">{cap.title}</h3>
+            <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{cap.description}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container-flux py-12 md:py-16">
+    <Divider label="RELATED PRACTICES" />
+    <div class="grid gap-4 py-12 sm:grid-cols-3" data-reveal-stagger="80">
+      {
+        others.map((o) => (
+          <a
+            href={`/expertise/${o.slug}`}
+            class="group flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5 transition-colors hover:border-[var(--color-border-strong)] hover:bg-ink-850"
+            data-reveal
+          >
+            <span class="flex flex-col">
+              <span class="font-mono text-xs text-ink-400">{o.index}</span>
+              <span class="font-medium text-ink-50">{o.shortTitle}</span>
+            </span>
+            <Icon name="arrow" size={16} class="text-ink-400 transition-transform group-hover:translate-x-0.5" />
+          </a>
+        ))
+      }
+    </div>
+    <div class="flex justify-center">
+      <Button href="/expertise" variant="ghost" arrow>All expertise</Button>
+    </div>
+  </section>
+
+  <CtaSection
+    title={`Have a ${item.shortTitle.toLowerCase()} problem?`}
+    lead={item.summary}
+  />
+</PageLayout>

@@ -1,0 +1,19 @@
+{
+  "slug": "rust-hot-path",
+  "type": "blog",
+  "title": "Rust in the inference hot path",
+  "shortdesc": "Where a systems language earns its keep: tokenizers, samplers, KV-caches and rate limiters.",
+  "longdesc": "Where a systems language earns its keep: tokenizers, samplers, KV-caches and rate limiters.",
+  "topics": [
+    "systems-programming",
+    "performance"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": false,
+  "readingMinutes": 4,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

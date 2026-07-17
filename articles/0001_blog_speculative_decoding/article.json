@@ -1,0 +1,19 @@
+{
+  "slug": "speculative-decoding",
+  "type": "blog",
+  "title": "Speculative decoding, visually",
+  "shortdesc": "A small draft model proposes tokens; the big model verifies them in parallel. Slide the acceptance rate and watch the speed-up.",
+  "longdesc": "A small draft model proposes tokens; the big model verifies them in parallel. Slide the acceptance rate and watch the speed-up.",
+  "topics": [
+    "inference-optimization",
+    "performance"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": false,
+  "readingMinutes": 5,
+  "seoTitle": "",
+  "seoDescription": "",
+  "cover": "cover.svg"
+}

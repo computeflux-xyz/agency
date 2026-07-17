@@ -1,0 +1,53 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import NewsletterForm from "@molecules/NewsletterForm.astro";
+import Divider from "@atoms/Divider.astro";
+import Icon from "@atoms/Icon.astro";
+
+const title = "Newsletter";
+const description =
+  "Subscribe to the Computeflux newsletter — occasional, technical, no fluff. Field notes on inference, agents and high-performance AI engineering.";
+
+const topics = [
+  "Inference optimization techniques that actually move numbers",
+  "Reliable agentic system patterns",
+  "Systems-programming deep dives (Rust, Zig, Go)",
+  "Anonymized lessons from real engagements",
+];
+---
+
+<PageLayout title={title} description={description}>
+  <PageHero eyebrow="Stay in the loop" title="The Computeflux newsletter" lead={description} />
+
+  <section class="container-prose pb-24">
+    <Divider label="SUBSCRIBE" />
+    <div class="flex flex-col gap-8 py-12">
+      <div
+        class="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-8 md:p-10"
+        data-reveal
+      >
+        <div class="grid-backdrop pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+        <div class="relative flex flex-col gap-5">
+          <h2 class="text-2xl font-semibold text-ink-50">No fluff. Just engineering.</h2>
+          <p class="text-pretty leading-relaxed text-ink-300">
+            One email when we have something genuinely useful to say — typically
+            once or twice a month. Unsubscribe in one click.
+          </p>
+          <NewsletterForm class="max-w-xl" />
+        </div>
+      </div>
+
+      <ul class="flex flex-col gap-3" data-reveal-stagger="70">
+        {
+          topics.map((t) => (
+            <li class="flex items-start gap-3 text-ink-200" data-reveal>
+              <span class="mt-1 shrink-0 text-flux-blue"><Icon name="check" size={16} /></span>
+              <span class="text-pretty leading-relaxed">{t}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</PageLayout>

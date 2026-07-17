@@ -1,0 +1,36 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHero from "@organisms/PageHero.astro";
+import ApproachSection from "@organisms/ApproachSection.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import ExpertiseCard from "@molecules/ExpertiseCard.astro";
+import Divider from "@atoms/Divider.astro";
+import { expertise } from "@data/expertise";
+
+const title = "Expertise";
+const description =
+  "Computeflux's four practices: AI Engineering, Inference Optimization, Agentic Systems and Systems Programming — the engineering that makes AI viable in production.";
+---
+
+<PageLayout title={title} description={description} dragon>
+  <PageHero
+    eyebrow="What we do"
+    title="High-performance AI systems, engineered end to end"
+    lead="We don't sell buzzwords. We solve the specific, measurable problems that decide whether an AI system survives production — and we prove the results."
+  />
+
+  <section class="container-flux pb-8">
+    <Divider label="PRACTICES" />
+    <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="90">
+      {expertise.map((item) => <ExpertiseCard item={item} />)}
+    </div>
+  </section>
+
+  <ApproachSection />
+
+  <CtaSection
+    eyebrow="Not sure where to start?"
+    title="Book a scoping call"
+    lead="Tell us the problem. We'll tell you honestly which practice fits, what an engagement would look like, and whether we're the right studio for it."
+  />
+</PageLayout>

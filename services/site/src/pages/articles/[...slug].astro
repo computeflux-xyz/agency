@@ -1,0 +1,85 @@
+---
+// Server-rendered article detail. Loads the article + render manifest from
+// site-api and embeds the built article artifact output (in R2) via a sandboxed
+// iframe. Falls back to the bundled markdown content collection when the API is
+// unreachable or the slug is not published there.
+export const prerender = false;
+
+import { getCollection, render } from "astro:content";
+import ArticleLayout from "@layouts/ArticleLayout.astro";
+import ObservableEmbed from "@organisms/ObservableEmbed.astro";
+import { createApiClient, ApiError, type ArticleDocument } from "@lib/api";
+
+const slug = Astro.params.slug ?? "";
+
+const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+const apiBaseUrl = runtimeEnv?.API_BASE_URL ?? import.meta.env.API_BASE_URL;
+
+let doc: ArticleDocument | null = null;
+if (apiBaseUrl) {
+  try {
+    doc = await createApiClient({ baseUrl: apiBaseUrl }).getArticle(slug);
+  } catch (err) {
+    // 404 -> fall through to the content collection. Other errors also degrade
+    // gracefully to the bundled copy if one exists.
+    if (!(err instanceof ApiError)) console.error("article API error:", err);
+    doc = null;
+  }
+}
+
+// Content-collection fallback (only consulted when the API had nothing).
+const entry = doc
+  ? undefined
+  : (await getCollection("articles", ({ data }) => !data.draft)).find((e) => e.id === slug);
+
+if (!doc && !entry) {
+  return Astro.rewrite("/404");
+}
+
+const Fallback = entry ? (await render(entry)).Content : null;
+---
+
+{
+  doc && (
+    <ArticleLayout
+      kind="article"
+      title={doc.title}
+      description={doc.shortdesc}
+      publishDate={new Date(doc.datePublished)}
+      updatedDate={doc.dateUpdated ? new Date(doc.dateUpdated) : undefined}
+      topics={doc.topics.map((t) => t.name)}
+      author={doc.authors.map((a) => a.name).join(", ") || undefined}
+      cover={doc.coverImage ?? undefined}
+      readingTime={doc.readingTime}
+      wide
+      embed={Boolean(doc.entryUrl)}
+      longdesc={doc.longdesc || undefined}
+      seoTitle={doc.seoTitle}
+      seoDescription={doc.seoDescription}
+      canonicalUrl={doc.canonicalUrl}
+    >
+      {doc.entryUrl ? (
+        <ObservableEmbed src={doc.entryUrl} title={doc.title} />
+      ) : (
+        <p>This article is being prepared and will be available shortly.</p>
+      )}
+    </ArticleLayout>
+  )
+}
+
+{
+  !doc && entry && Fallback && (
+    <ArticleLayout
+      kind="article"
+      title={entry.data.title}
+      description={entry.data.description}
+      publishDate={entry.data.publishDate}
+      updatedDate={entry.data.updatedDate}
+      topics={entry.data.topics}
+      author={entry.data.author}
+      cover={entry.data.cover}
+    >
+      <Fallback />
+    </ArticleLayout>
+  )
+}

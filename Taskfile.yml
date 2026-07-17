@@ -1,0 +1,149 @@
+version: '3'
+
+vars:
+  MIGRATIONS: services/site-api/db-migration/agency_site_db/schema
+  MIGRATE_IMAGE: migrate/migrate:v4.18.2
+  DB_URL: "postgres://agency:agency_secret@host.docker.internal:5432/agency_site_db?sslmode=disable"
+
+tasks:
+  dev:
+    desc: Launch everything — deps (Postgres+MinIO+migrations), site-api and the site UI
+    deps: [site-api:dev:up]
+    env:
+      GOPRIVATE: github.com/computeflux-xyz/*
+    cmds:
+      - cp -n services/site/.dev.vars.example services/site/.dev.vars 2>/dev/null || true
+      - |
+        echo "Waiting for migrations to finish…"
+        for i in $(seq 1 60); do
+          [ "$(docker inspect -f '{{"{{"}}.State.Health.Status{{"}}"}}' site-api-migration 2>/dev/null)" = "healthy" ] && break
+          sleep 1
+        done
+      - |
+        echo ""
+        echo "  ▶ site-api : http://localhost:8080  (swagger: /swagger/index.html)"
+        echo "  ▶ site UI  : http://localhost:4321"
+        echo "  Ctrl+C stops both apps. Docker deps stay up — run 'task dev:down' to stop them."
+        echo ""
+        ( cd services/site-api && go run . ) &
+        ( cd services/site && pnpm install --prefer-offline --silent && pnpm run dev ) &
+        wait
+
+  dev:down:
+    desc: Stop the local dependencies (and free the ports)
+    cmds:
+      - task: site-api:dev:down
+
+  site-api:swagger:gen:
+    desc: Regenerate the OpenAPI spec (docs/) from Go swag annotations
+    dir: services/site-api
+    cmds:
+      - swag init -g main.go -o docs --parseDependency --parseInternal
+
+  site:api:tsgen:
+    desc: Generate the typescript-fetch API client for services/site from site-api's OpenAPI spec
+    dir: .
+    cmds:
+      - mkdir -p services/site/src/lib/api/generated
+      - |
+        docker run --rm \
+          -v "${PWD}:/local" \
+          -u $(id -u):$(id -g) \
+          openapitools/openapi-generator-cli:v7.19.0 generate \
+          -i /local/services/site-api/docs/swagger.json \
+          -g typescript-fetch \
+          -o /local/services/site/src/lib/api/generated \
+          -t /local/services/site/templates/openapi-generator \
+          --additional-properties=supportsES6=true,modelPropertyNaming=original,withoutRuntimeChecks=true,useSingleRequestParameter=true,prefixParameterInterfaces=true,withInterfaces=true,useObjectParameters=true,operationIdNaming=method,npmName=@computeflux/site-api-client,npmVersion=1.0.0
+      - echo "TypeScript client generated in services/site/src/lib/api/generated"
+
+  site:api:tsgen:check:
+    desc: Check the generated TS client is up to date with the committed OpenAPI spec
+    dir: .
+    cmds:
+      - task: site:api:tsgen
+      - |
+        if ! git diff --quiet services/site/src/lib/api/generated/; then
+          echo "ERROR: Generated TypeScript client is out of date. Run 'task site:api:tsgen' and commit the changes."
+          git diff --stat services/site/src/lib/api/generated/
+          exit 1
+        else
+          echo "Generated TypeScript client is up to date"
+        fi
+
+  site-api:dev:up:
+    desc: Start the local site-api dependencies (Postgres + MinIO + migrations)
+    dir: services/site-api
+    cmds:
+      - docker compose up -d db bucket bucket-init migration
+
+  site-api:dev:down:
+    desc: Stop the local site-api stack
+    dir: services/site-api
+    cmds:
+      - docker compose down
+
+  site-api:dev:clean:
+    desc: Stop the local stack and remove volumes
+    dir: services/site-api
+    cmds:
+      - docker compose down -v
+
+  site-api:run:
+    desc: Run site-api on the host against the local stack (needs dev:up first)
+    dir: services/site-api
+    env:
+      GOPRIVATE: github.com/computeflux-xyz/*
+    cmds:
+      - go run .
+
+  site:install:
+    desc: Install the site UI dependencies
+    dir: services/site
+    cmds:
+      - pnpm install
+
+  site:dev:
+    desc: Run the site UI (Astro dev) pointed at the local site-api (needs site-api running)
+    dir: services/site
+    cmds:
+      - cp -n .dev.vars.example .dev.vars 2>/dev/null || true
+      - pnpm install --prefer-offline --silent
+      - pnpm run dev
+
+  site:build:
+    desc: Build the site UI (Astro → Cloudflare Worker bundle)
+    dir: services/site
+    cmds:
+      - pnpm install --prefer-offline --silent
+      - pnpm run build
+
+  site-api:db:up:
+    desc: Apply all up migrations
+    cmds:
+      - docker run --rm --add-host=host.docker.internal:host-gateway -v {{.PWD}}/{{.MIGRATIONS}}:/migrations {{.MIGRATE_IMAGE}} -path /migrations -database "{{.DB_URL}}" up
+
+  site-api:db:down:
+    desc: Roll back all migrations
+    cmds:
+      - docker run --rm --add-host=host.docker.internal:host-gateway -v {{.PWD}}/{{.MIGRATIONS}}:/migrations {{.MIGRATE_IMAGE}} -path /migrations -database "{{.DB_URL}}" down -all
+
+  site-api:db:version:
+    desc: Show the current migration version
+    cmds:
+      - docker run --rm --add-host=host.docker.internal:host-gateway -v {{.PWD}}/{{.MIGRATIONS}}:/migrations {{.MIGRATE_IMAGE}} -path /migrations -database "{{.DB_URL}}" version
+
+  site-api:db:create:
+    desc: 'Create a new migration (usage: task site-api:db:create -- add_series)'
+    cmds:
+      - docker run --rm -v {{.PWD}}/{{.MIGRATIONS}}:/migrations {{.MIGRATE_IMAGE}} create -ext sql -dir /migrations -seq {{.CLI_ARGS}}
+
+  articles:publish:
+    desc: 'Build + publish one article locally (usage: task articles:publish -- 0000_blog_slug)'
+    dir: .
+    env:
+      API_BASE_URL: http://localhost:8080
+      INGEST_TOKEN: local-dev-ingest-token
+    cmds:
+      - (cd articles/{{.CLI_ARGS}} && pnpm install && pnpm run build)
+      - go run ./tools/article-publisher -dir articles/{{.CLI_ARGS}} -api "$API_BASE_URL" -token "$INGEST_TOKEN"

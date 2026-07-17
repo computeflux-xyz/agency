@@ -1,0 +1,144 @@
+---
+import "@styles/global.css";
+import { site, twitterHandle } from "@lib/site";
+import {
+  jsonLdGraph,
+  organizationSchema,
+  websiteSchema,
+  webPageSchema,
+} from "@lib/seo";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  ogType?: "website" | "article" | "profile";
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  publishedTime?: string;
+  modifiedTime?: string;
+  canonical?: string;
+  minimalSchema?: boolean;
+}
+
+const {
+  title,
+  description = site.description,
+  image = site.defaultOgImage,
+  ogType = "website",
+  noindex = false,
+  jsonLd,
+  publishedTime,
+  modifiedTime,
+  canonical: canonicalOverride,
+  minimalSchema = false,
+} = Astro.props;
+
+const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+
+const fullTitle = title
+  ? `${title} — ${site.name}`
+  : `${site.name} — ${site.tagline}`;
+
+const origin = Astro.site?.origin ?? site.url;
+const canonical = (canonicalOverride ?? new URL(Astro.url.pathname, origin).href).replace(/\/$/, "") || origin;
+const ogImage = new URL(image, origin).href;
+
+// Cookieless analytics (Umami). Loaded only when both the
+// script src and website id are configured, so it's a no-op until you set them
+// (PUBLIC_ prefixed -> safe to expose). Runtime env (Cloudflare vars) wins in
+// SSR. import.meta.env covers prerendered pages at build time. The article
+// embed forwards in-iframe interactions to window.umami.track (see
+// ObservableEmbed.astro), so engagement inside the sandboxed article is
+// measurable too.
+const umamiSrc = runtimeEnv?.PUBLIC_UMAMI_SRC ?? import.meta.env.PUBLIC_UMAMI_SRC;
+const umamiWebsiteId = runtimeEnv?.PUBLIC_UMAMI_WEBSITE_ID ?? import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+
+const graphNodes: (Record<string, unknown> | Record<string, unknown>[])[] = [
+  organizationSchema(),
+  websiteSchema(),
+];
+if (!minimalSchema) {
+  graphNodes.push(
+    webPageSchema({ url: canonical, title: fullTitle, description }),
+  );
+}
+if (jsonLd) graphNodes.push(jsonLd);
+const structuredData = jsonLdGraph(...graphNodes);
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+      )
+    }
+
+    <meta name="theme-color" content={site.themeColor} />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={site.locale} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={twitterHandle} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} — Articles`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <script type="application/ld+json" set:html={structuredData} is:inline />
+
+    {
+      umamiSrc && umamiWebsiteId && (
+        <script defer src={umamiSrc} data-website-id={umamiWebsiteId} is:inline />
+      )
+    }
+  </head>
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink-50 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink-950"
+    >
+      Skip to content
+    </a>
+
+    <slot />
+
+    <script>
+      import { initReveal } from "@lib/client/reveal";
+      import { initScramble } from "@lib/client/scramble";
+
+      function boot() {
+        initReveal();
+        initScramble();
+      }
+      boot();
+      document.addEventListener("astro:after-swap", boot);
+    </script>
+  </body>
+</html>

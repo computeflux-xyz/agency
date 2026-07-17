@@ -1,0 +1,7 @@
+technique,dimension,low_pct,high_pct,note
+Continuous batching,throughput,120,300,"Pack many requests per forward pass; the single biggest lever."
+Quantization (INT8/FP8),cost,20,45,"Smaller weights → more tokens/sec/GPU with careful eval."
+Speculative decoding,latency,25,55,"Draft model proposes tokens; target verifies in parallel."
+Paged KV-cache,throughput,15,35,"Stop over-reserving memory per sequence; fit more concurrency."
+Prompt/KV caching,cost,10,60,"Reuse shared prefixes across requests; huge for RAG."
+Distillation,cost,40,70,"Serve a smaller student model where quality allows."

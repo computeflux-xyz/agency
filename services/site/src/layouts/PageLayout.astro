@@ -1,0 +1,30 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "@organisms/Header.astro";
+import Footer from "@organisms/Footer.astro";
+import DragonStage from "@organisms/DragonStage.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  ogType?: "website" | "article" | "profile";
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  publishedTime?: string;
+  modifiedTime?: string;
+  canonical?: string;
+  /** Enable the decorative dragon animation (static marketing pages only). */
+  dragon?: boolean;
+}
+const { dragon = false, ...rest } = Astro.props;
+---
+
+<BaseLayout {...rest}>
+  <Header />
+  <main id="main" class="min-h-screen">
+    <slot />
+  </main>
+  <Footer />
+  {dragon && <DragonStage />}
+</BaseLayout>

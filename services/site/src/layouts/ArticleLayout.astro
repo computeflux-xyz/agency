@@ -1,0 +1,210 @@
+---
+import PageLayout from "./PageLayout.astro";
+import Tag from "@atoms/Tag.astro";
+import Divider from "@atoms/Divider.astro";
+import CtaSection from "@organisms/CtaSection.astro";
+import { formatDate, isoDate, slugify } from "@lib/utils";
+import { articleSchema, breadcrumbSchema } from "@lib/seo";
+import { site } from "@lib/site";
+
+interface Props {
+  kind: "study" | "article";
+  title: string;
+  description: string;
+  publishDate: Date;
+  updatedDate?: Date;
+  topics?: string[];
+  author?: string;
+  cover?: string;
+  readingTime?: number;
+  outcomes?: { value: string; label: string }[];
+  client?: string;
+  industry?: string;
+  wide?: boolean;
+  embed?: boolean;
+  longdesc?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+}
+
+const {
+  kind,
+  title,
+  description,
+  publishDate,
+  updatedDate,
+  topics = [],
+  author = site.name,
+  cover,
+  readingTime,
+  outcomes = [],
+  client,
+  industry,
+  wide = false,
+  embed = false,
+  longdesc,
+  seoTitle,
+  seoDescription,
+  canonicalUrl,
+} = Astro.props;
+
+const origin = Astro.site?.origin ?? site.url;
+const url = new URL(Astro.url.pathname, origin).href;
+const canonical = canonicalUrl || url;
+const image = cover ? new URL(cover, origin).href : new URL(site.defaultOgImage, origin).href;
+const sectionRoot = kind === "study" ? "/studies" : "/articles";
+const sectionLabel = kind === "study" ? "Case studies" : "Articles";
+
+const metaTitle = seoTitle || title;
+const metaDescription = seoDescription || description;
+
+const jsonLd = [
+  articleSchema({
+    url: canonical,
+    title,
+    description: metaDescription,
+    image,
+    datePublished: isoDate(publishDate),
+    dateModified: updatedDate ? isoDate(updatedDate) : isoDate(publishDate),
+    authorName: author,
+    section: sectionLabel,
+    tags: topics,
+  }),
+  breadcrumbSchema([
+    { name: "Home", url: origin },
+    { name: sectionLabel, url: new URL(sectionRoot, origin).href },
+    { name: title, url: canonical },
+  ]),
+];
+---
+
+<PageLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonical={canonicalUrl}
+  image={cover}
+  ogType="article"
+  publishedTime={isoDate(publishDate)}
+  modifiedTime={updatedDate ? isoDate(updatedDate) : isoDate(publishDate)}
+  jsonLd={jsonLd}
+>
+  <article class="pt-28 md:pt-36">
+    {
+      cover && (
+        <div class="container-flux mb-10 md:mb-14">
+          <div
+            class="article-cover"
+            role="img"
+            aria-label={`${title} cover`}
+            style={`background-image:url(${cover})`}
+          />
+        </div>
+      )
+    }
+
+    <header class="container-prose flex flex-col gap-6">
+      <nav class="flex items-center gap-2 font-mono text-xs text-ink-400" aria-label="Breadcrumb">
+        <a href={sectionRoot} class="transition-colors hover:text-ink-50">{sectionLabel}</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-ink-300">{kind === "study" ? "Case study" : "Article"}</span>
+      </nav>
+
+      {
+        embed ? (
+          <>
+            <h1 class="sr-only">{title}</h1>
+            <p class="sr-only">{description}</p>
+            {longdesc && <p class="sr-only">{longdesc}</p>}
+          </>
+        ) : (
+          <>
+            <h1 class="text-balance text-4xl font-bold leading-[1.04] tracking-tight md:text-5xl">
+              {title}
+            </h1>
+            <p class="text-pretty text-lg leading-relaxed text-ink-300">{description}</p>
+          </>
+        )
+      }
+
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-ink-400">
+        <time datetime={isoDate(publishDate)}>{formatDate(publishDate)}</time>
+        {readingTime && <><span aria-hidden="true">·</span><span>{readingTime} min read</span></>}
+        {client && <><span aria-hidden="true">·</span><span>{client}</span></>}
+        {industry && <><span aria-hidden="true">·</span><span>{industry}</span></>}
+      </div>
+
+      {
+        topics.length > 0 && (
+          <div class="flex flex-wrap gap-1.5">
+            {topics.map((t) => (
+              <Tag size="xs" href={`${sectionRoot}?topic=${slugify(t)}`}>
+                {t}
+              </Tag>
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      outcomes.length > 0 && (
+        <div class="container-prose mt-12">
+          <div class="grid gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-6 sm:grid-cols-3">
+            {outcomes.map((o) => (
+              <div class="flex flex-col gap-1">
+                <span class="flux-gradient-text font-display text-3xl font-bold">{o.value}</span>
+                <span class="text-sm text-ink-400">{o.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <div class:list={[wide ? "container-flux" : "container-prose prose-flux", "mt-12 pb-8"]}>
+      <slot />
+    </div>
+
+    <div class="container-prose">
+      <Divider class="my-10" label="END" />
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <a href={sectionRoot} class="flex items-center gap-2 text-sm text-ink-200 transition-colors hover:text-ink-50">
+          ← Back to {sectionLabel.toLowerCase()}
+        </a>
+        <div class="flex items-center gap-3 font-mono text-xs text-ink-400">
+          <span>Share</span>
+          <a
+            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`}
+            target="_blank" rel="noopener"
+            class="transition-colors hover:text-ink-50"
+          >LinkedIn</a>
+          <a
+            href={`https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
+            target="_blank" rel="noopener"
+            class="transition-colors hover:text-ink-50"
+          >X</a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <CtaSection />
+</PageLayout>
+
+<style>
+  .article-cover {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--radius-lg, 14px);
+    border: 1px solid var(--color-border);
+    box-shadow: 4px 6px 0 0 var(--color-ink-line);
+  }
+  @media (max-width: 640px) {
+    .article-cover {
+      aspect-ratio: 16 / 9;
+    }
+  }
+</style>
