@@ -88,3 +88,19 @@ jobs:
               -ref "${GITHUB_REF_NAME}"
             echo "::endgroup::"
           done <<< "${{ steps.targets.outputs.dirs }}"
+
+      # Full-sync: delete articles that no longer exist in the repo. Only in "all"
+      # mode, where the local set is complete (never in "changed"/single, whose
+      # keep-set would be partial and could delete live articles).
+      - name: Prune removed articles
+        if: inputs.article == 'all'
+        run: |
+          set -euo pipefail
+          slugs=$(for d in articles/*/; do
+            b=$(basename "$d"); case "$b" in _*) continue;; esac
+            [ -f "$d/article.json" ] && jq -r '.slug' "$d/article.json"
+          done | paste -sd, -)
+          if [ -z "$slugs" ]; then echo "no local slugs; skipping prune"; exit 0; fi
+          echo "keep: $slugs"
+          go run ./tools/article-publisher -prune -keep "$slugs" \
+            -api "$API_BASE_URL" -token "$INGEST_TOKEN" -actor "${GITHUB_ACTOR}"
