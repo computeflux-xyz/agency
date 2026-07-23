@@ -5,12 +5,9 @@ compatibility_flags = ["nodejs_compat"]
 
 main = "./dist/_worker.js/index.js"
 
-# Production custom domains. wrangler provisions the DNS records + TLS certs.
-# (Top-level key: must stay above every [table] section below.)
-routes = [
-  { pattern = "computeflux.xyz", custom_domain = true },
-  { pattern = "www.computeflux.xyz", custom_domain = true },
-]
+# Custom domains (computeflux.xyz, www) are provisioned by Terraform
+# (deploy/terraform, cloudflare_workers_custom_domain), not wrangler — this keeps
+# the CI deploy token Workers-only. wrangler just ships the worker + assets.
 
 [observability]
 enabled = true

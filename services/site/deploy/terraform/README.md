@@ -7,15 +7,20 @@ Provisions the durable Cloudflare edge resources for the `computeflux.xyz` site:
   (`cloudflare_r2_custom_domain`), so artifacts are served at
   `https://assets.computeflux.xyz/<key>`.
 - **Cache ruleset** : aggressive edge/browser caching for that domain.
+- **Worker custom domains** `computeflux.xyz` + `www` : attach the `computeflux-site`
+  Worker to its domains (`cloudflare_workers_custom_domain`, provisions DNS + TLS).
 
 ## What is NOT here (and why)
 
-The site worker (`computeflux-site`) is an Astro static-assets worker deployed by
-**wrangler** (`wrangler deploy`), which owns its code, static assets and custom
-domain routing (`routes = [{ custom_domain = true }]` in `../../wrangler.toml`).
-Terraform does not manage the worker, to avoid two tools fighting over the same
-script. Terraform owns only what wrangler cannot: the R2 bucket and its public
-domain.
+The site worker (`computeflux-site`) is an Astro static-assets worker whose **code
+and assets** are deployed by **wrangler** (`wrangler deploy`). Terraform does not
+touch the worker script, to avoid two tools fighting over it — but it does own the
+**custom-domain attachment** (`cloudflare_workers_custom_domain`), so the CI deploy
+token can stay Workers-only and all DNS lives in Terraform. `wrangler.toml` has no
+`routes` block for this reason.
+
+Apply order: the Worker must exist first (`wrangler deploy`), then
+`terraform apply` attaches the domains.
 
 Bind the bucket into the worker by adding this to `../../wrangler.toml`:
 
