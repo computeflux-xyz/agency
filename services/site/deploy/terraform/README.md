@@ -7,20 +7,25 @@ Provisions the durable Cloudflare edge resources for the `computeflux.xyz` site:
   (`cloudflare_r2_custom_domain`), so artifacts are served at
   `https://assets.computeflux.xyz/<key>`.
 - **Cache ruleset** : aggressive edge/browser caching for that domain.
-- **Worker custom domains** `computeflux.xyz` + `www` : attach the `computeflux-site`
-  Worker to its domains (`cloudflare_workers_custom_domain`, provisions DNS + TLS).
+- **Worker routes** `computeflux.xyz/*` + `www/*` : run the `computeflux-site`
+  Worker on the apex + www via `cloudflare_workers_route`, on top of the existing
+  proxied DNS records (nothing deleted).
 
 ## What is NOT here (and why)
 
 The site worker (`computeflux-site`) is an Astro static-assets worker whose **code
 and assets** are deployed by **wrangler** (`wrangler deploy`). Terraform does not
-touch the worker script, to avoid two tools fighting over it — but it does own the
-**custom-domain attachment** (`cloudflare_workers_custom_domain`), so the CI deploy
-token can stay Workers-only and all DNS lives in Terraform. `wrangler.toml` has no
-`routes` block for this reason.
+touch the worker script — but it owns the **routing** (`cloudflare_workers_route`),
+so the CI deploy token stays Workers-only and `wrangler.toml` needs no `routes`.
+
+Routes (not a custom domain) are used deliberately: the apex + www already have
+externally managed, proxied DNS records (`A computeflux.xyz`, `CNAME www`). A
+Workers custom domain would refuse to attach over them (Cloudflare error 100117).
+A route runs the Worker for matching requests over the existing record instead —
+the record is preserved; the origin is bypassed for matched paths.
 
 Apply order: the Worker must exist first (`wrangler deploy`), then
-`terraform apply` attaches the domains.
+`terraform apply` creates the routes.
 
 Bind the bucket into the worker by adding this to `../../wrangler.toml`:
 

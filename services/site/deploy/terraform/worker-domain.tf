@@ -1,6 +1,10 @@
-# The computeflux-site Worker (deployed by wrangler) is served on these custom
-# domains. Terraform owns the attachment + DNS + TLS so the CI deploy token can
-# stay Workers-only. The Worker must already exist (wrangler deploy) before apply.
+# Serve the computeflux-site Worker on the apex + www via Workers Routes (not a
+# custom domain). Routes run the Worker on top of the EXISTING proxied DNS records
+# (A computeflux.xyz, CNAME www) — nothing is deleted, so the current records are
+# preserved. Requests matching a pattern run the Worker; the origin is bypassed.
+#
+# Requirements: the hostnames must have a *proxied* DNS record in the zone (they
+# do), and the Worker must already exist (wrangler deploy) before apply.
 
 variable "worker_name" {
   description = "Name of the site Worker (matches wrangler.toml `name`)"
@@ -8,22 +12,21 @@ variable "worker_name" {
   default     = "computeflux-site"
 }
 
-variable "site_hostnames" {
-  description = "Hostnames routed to the site Worker"
+variable "site_route_patterns" {
+  description = "Route patterns that run the site Worker"
   type        = list(string)
-  default     = ["computeflux.xyz", "www.computeflux.xyz"]
+  default     = ["computeflux.xyz/*", "www.computeflux.xyz/*"]
 }
 
-resource "cloudflare_workers_custom_domain" "site" {
-  for_each = toset(var.site_hostnames)
+resource "cloudflare_workers_route" "site" {
+  for_each = toset(var.site_route_patterns)
 
-  account_id = var.cloudflare_account_id
-  zone_id    = var.cloudflare_zone_id
-  hostname   = each.value
-  service    = var.worker_name
+  zone_id = var.cloudflare_zone_id
+  pattern = each.value
+  script  = var.worker_name
 }
 
-output "site_urls" {
-  description = "Public URLs served by the site Worker"
-  value       = [for h in var.site_hostnames : "https://${h}"]
+output "site_routes" {
+  description = "Worker route patterns serving the site"
+  value       = sort(var.site_route_patterns)
 }
