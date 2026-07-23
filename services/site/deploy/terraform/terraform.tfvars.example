@@ -1,0 +1,8 @@
+cloudflare_api_token  = "REPLACE_ME"
+cloudflare_account_id = "REPLACE_ME"
+cloudflare_zone_id    = "REPLACE_ME"
+
+# Defaults are usually fine:
+# assets_bucket_name = "computeflux-site-assets"
+# assets_domain      = "assets.computeflux.xyz"
+# r2_location        = "WEUR"

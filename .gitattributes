@@ -1,0 +1,2 @@
+services/site/deploy/terraform/terraform.tfvars  filter=git-crypt diff=git-crypt
+services/site/deploy/terraform/terraform.tfstate filter=git-crypt diff=git-crypt
