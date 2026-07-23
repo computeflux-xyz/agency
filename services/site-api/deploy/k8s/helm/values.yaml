@@ -1,0 +1,65 @@
+replicas: 1
+
+image:
+  repository: registry.computeflux.xyz/site-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: registry-pull-secret
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+# Secret references (see deploy/k8s/README.md).
+secrets:
+  # CloudNativePG auto-generates this basic-auth secret (keys: username, password).
+  database: site-api-pg-cluster-app
+  # R2 access key for the assets bucket (keys: access-key, secret-key).
+  storage: site-api-storage
+  # Ingest bearer token (key: token).
+  ingest: site-api-ingest
+
+config:
+  logLevel: "INFO"
+
+  server:
+    port: 8080
+    host: "0.0.0.0"
+    env: "prod"
+
+  database:
+    driver: "postgres"
+    address: "site-api-pg-cluster-rw.site-api.svc.cluster.computeflux.local"
+    port: "5432"
+    dbName: "agency_site_db"
+    sslMode: "require"
+    maxRetries: 30
+    maxIdleConns: 5
+    maxOpenConns: 25
+
+  # Cloudflare R2 (the computeflux-site-assets bucket provisioned in
+  # services/site/deploy/terraform), served publicly at assets.computeflux.xyz.
+  storage:
+    endpoint: "https://aaf8bc4e43c986e5b89eca8430259012.r2.cloudflarestorage.com"
+    region: "auto"
+    bucket: "computeflux-site-assets"
+    public_url: "https://assets.computeflux.xyz"
+    use_path_style: false
+    key_prefix: ""
+
+  ingest:
+    enabled: true
+    presign_ttl_minutes: 30
+
+# Public route on the shared API gateway. Serves this API at
+# https://<host><pathPrefix>/... , stripping the prefix before the backend.
+gateway:
+  enabled: true
+  host: apigateway.computeflux.xyz
+  pathPrefix: /agency-api

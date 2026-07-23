@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o site-api ./services/site-api
+RUN CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -o site-api ./services/site-api
 
 FROM gcr.io/distroless/static:nonroot
 

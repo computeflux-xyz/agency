@@ -5,6 +5,13 @@ compatibility_flags = ["nodejs_compat"]
 
 main = "./dist/_worker.js/index.js"
 
+# Production custom domains. wrangler provisions the DNS records + TLS certs.
+# (Top-level key: must stay above every [table] section below.)
+routes = [
+  { pattern = "computeflux.xyz", custom_domain = true },
+  { pattern = "www.computeflux.xyz", custom_domain = true },
+]
+
 [observability]
 enabled = true
 head_sampling_rate = 1.0
@@ -13,13 +20,6 @@ head_sampling_rate = 1.0
 directory = "./dist"
 binding = "ASSETS"
 
-# Production custom domain. Uncomment once the zone is added to your Cloudflare
-# account — wrangler then provisions the DNS records + TLS certs automatically.
-# routes = [
-#   { pattern = "computeflux.xyz", custom_domain = true },
-#   { pattern = "www.computeflux.xyz", custom_domain = true },
-# ]
-
 # ---------------------------------------------------------------------------
 # Non-secret runtime configuration. Injected into the worker and readable in
 # SSR via `Astro.locals.runtime.env`. Secrets (API tokens) must be set with
@@ -27,10 +27,19 @@ binding = "ASSETS"
 # ---------------------------------------------------------------------------
 [vars]
 PUBLIC_SITE_URL = "https://computeflux.xyz"
-# API_BASE_URL is a placeholder for the future backend that will serve
-# study cases, white papers, bookings, job applications and the newsletter.
-API_BASE_URL = "https://api.computeflux.xyz"
-# Cookieless analytics (Umami). Uncomment + set both to enable the tracker; the
-# article embed also forwards in-iframe engagement to it. Public by design.
-# PUBLIC_UMAMI_SRC = "https://cloud.umami.is/script.js"
+# Backend (agency-api) behind the shared API gateway.
+API_BASE_URL = "https://apigateway.computeflux.xyz/agency-api"
+# Cookieless analytics (self-hosted Umami on the shared cluster). Uncomment and
+# set the website id (create the site in the Umami dashboard). Umami runs under a
+# subpath, so the embed must also pin where events go with
+# data-host-url="https://apigateway.computeflux.xyz/push-analytics".
+# PUBLIC_UMAMI_SRC = "https://apigateway.computeflux.xyz/push-analytics/script.js"
 # PUBLIC_UMAMI_WEBSITE_ID = "00000000-0000-0000-0000-000000000000"
+
+# Server-side access to the article-artifacts bucket (Terraform-managed, see
+# deploy/terraform). Needed only if the worker reads/writes R2 in code via
+# env.ARTICLES. Pages that just link to https://assets.computeflux.xyz/<key> do
+# not need this binding.
+[[r2_buckets]]
+binding     = "ARTICLES"
+bucket_name = "computeflux-site-assets"

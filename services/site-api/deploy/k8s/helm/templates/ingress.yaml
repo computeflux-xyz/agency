@@ -1,0 +1,27 @@
+{{- if .Values.gateway.enabled }}
+# Routes {{ .Values.gateway.host }}{{ .Values.gateway.pathPrefix }}/... to this
+# service, stripping the prefix (rewrite-target). Merges under the shared
+# api-gateway TLS cert for the host (no tls block here).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.gateway.host | quote }}
+      http:
+        paths:
+          - path: {{ printf "%s(/|$)(.*)" .Values.gateway.pathPrefix | quote }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}
+                port:
+                  number: 8080
+{{- end }}
