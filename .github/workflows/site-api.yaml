@@ -1,0 +1,94 @@
+name: site-api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/site-api/**"
+      - "tools/db-migration/**"
+      - ".github/workflows/site-api.yaml"
+  pull_request:
+    paths:
+      - "services/site-api/**"
+      - "tools/db-migration/**"
+      - ".github/workflows/site-api.yaml"
+  workflow_dispatch:
+    inputs:
+      force-deploy:
+        description: "Force deployment"
+        type: boolean
+        default: false
+
+jobs:
+  check-flags:
+    name: Check Flags
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.check-pipeline-flags.yaml@main
+    with:
+      service-name: site-api
+      service-path: services/site-api
+
+  go-ci:
+    name: Go CI
+    needs: check-flags
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.go-ci.yaml@main
+    with:
+      working-directory: services/site-api
+
+  app-packaging:
+    name: App packaging (Docker)
+    needs: [check-flags, go-ci]
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.docker-build-push.yaml@main
+    with:
+      working-directory: services/site-api
+      image-name: site-api
+      should-push: ${{ needs.check-flags.outputs.should-push-app-image == 'true' }}
+      image-tag: ${{ needs.check-flags.outputs.image-tag }}
+    secrets: inherit
+
+  migration-packaging:
+    name: Migration packaging (Docker)
+    needs: [check-flags, go-ci]
+    if: |
+      needs.check-flags.outputs.migration-files-changed == 'true' ||
+      needs.check-flags.outputs.should-push-migration-image == 'true'
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.migration-docker-build-push.yaml@main
+    with:
+      service-name: site-api
+      service-path: services/site-api
+      db-folder: agency_site_db
+      dockerfile-path: tools/db-migration/k8s/Dockerfile
+      should-push: ${{ needs.check-flags.outputs.should-push-migration-image == 'true' }}
+    secrets: inherit
+
+  migration-run:
+    name: Migration Run
+    needs: [check-flags, migration-packaging]
+    if: |
+      !failure() && !cancelled() &&
+      needs.check-flags.outputs.should-run-migrations == 'true'
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.migration-run.yaml@main
+    with:
+      service-name: site-api
+      namespace: site-api
+      db-host: site-api-pg-cluster-rw.site-api.svc.cluster.computeflux.local
+      db-port: "5432"
+      db-name: agency_site_db
+      db-secret-name: site-api-pg-cluster-app
+      job-template-path: tools/db-migration/k8s/ci-migration-job.yaml
+      migration-action: ${{ needs.check-flags.outputs.migration-action }}
+      migration-command: ${{ needs.check-flags.outputs.migration-command }}
+      dry-run: ${{ needs.check-flags.outputs.dry-run }}
+    secrets: inherit
+
+  helm-deploy:
+    name: Helm Deploy
+    needs: [check-flags, app-packaging, migration-run]
+    if: |
+      !failure() && !cancelled() &&
+      needs.check-flags.outputs.should-deploy == 'true'
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.deploy-k8s.yaml@main
+    with:
+      working-directory: services/site-api/deploy/k8s
+      dry-run: ${{ needs.check-flags.outputs.dry-run }}
+      image-tag: ${{ needs.check-flags.outputs.image-tag }}
+    secrets: inherit

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    server:
+      port: {{ .Values.config.server.port }}
+      host: {{ .Values.config.server.host | quote }}
+      env: {{ .Values.config.server.env | quote }}
+
+    database:
+      driver: {{ .Values.config.database.driver | quote }}
+      user: ""      # Placeholder. Real value from secret via CONFIG_DATABASE_USER
+      password: ""  # Placeholder. Real value from secret via CONFIG_DATABASE_PASSWORD
+      address: {{ .Values.config.database.address | quote }}
+      port: {{ .Values.config.database.port | quote }}
+      dbName: {{ .Values.config.database.dbName | quote }}
+      sslMode: {{ .Values.config.database.sslMode | quote }}
+      maxRetries: {{ .Values.config.database.maxRetries }}
+      maxIdleConns: {{ .Values.config.database.maxIdleConns }}
+      maxOpenConns: {{ .Values.config.database.maxOpenConns }}
+
+    storage:
+      endpoint: {{ .Values.config.storage.endpoint | quote }}
+      region: {{ .Values.config.storage.region | quote }}
+      access_key_id: ""      # Placeholder. Real value via CONFIG_STORAGE_ACCESS_KEY_ID
+      secret_access_key: ""  # Placeholder. Real value via CONFIG_STORAGE_SECRET_ACCESS_KEY
+      bucket: {{ .Values.config.storage.bucket | quote }}
+      public_url: {{ .Values.config.storage.public_url | quote }}
+      use_path_style: {{ .Values.config.storage.use_path_style }}
+      key_prefix: {{ .Values.config.storage.key_prefix | default "" | quote }}
+
+    ingest:
+      enabled: {{ .Values.config.ingest.enabled }}
+      token: ""  # Placeholder. Real value from secret via CONFIG_INGEST_TOKEN
+      presign_ttl_minutes: {{ .Values.config.ingest.presign_ttl_minutes }}

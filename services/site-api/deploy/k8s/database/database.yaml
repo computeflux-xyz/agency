@@ -1,0 +1,92 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: site-api-pg-cluster
+  namespace: site-api
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: site-api
+    app.kubernetes.io/component: database
+spec:
+  description: "agency site-api PostgreSQL cluster"
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+  instances: 2
+  startDelay: 300
+  stopDelay: 300
+  primaryUpdateStrategy: unsupervised
+
+  postgresql:
+    parameters:
+      shared_buffers: "256MB"
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+    pg_hba:
+      - host all all 10.0.0.0/8 scram-sha-256
+
+  # No initdb.secret -> CloudNativePG generates the site-api-pg-cluster-app secret
+  # (owner creds: username, password, uri) consumed by the rollout.
+  bootstrap:
+    initdb:
+      database: agency_site_db
+      owner: agency
+
+  enableSuperuserAccess: false
+
+  storage:
+    storageClass: hcloud-volumes-encrypted
+    size: 10Gi
+
+  walStorage:
+    storageClass: hcloud-volumes-encrypted
+    size: 2Gi
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+
+  # WAL + base backups to Hetzner object storage. Needs a site-api-db-backup
+  # secret (Hetzner S3 access-key/secret-key) in this namespace (see README).
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://computeflux-db-backups/site-api/
+      endpointURL: https://fsn1.your-objectstorage.com
+      s3Credentials:
+        accessKeyId:
+          name: site-api-db-backup
+          key: access-key
+        secretAccessKey:
+          name: site-api-db-backup
+          key: secret-key
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
+
+  monitoring:
+    enablePodMonitor: false
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: site-api-pg-backup
+  namespace: site-api
+  labels:
+    app.kubernetes.io/instance: site-api
+    app.kubernetes.io/component: backup
+spec:
+  # Daily at 04:00 UTC (six-field cron: sec min hour dom mon dow).
+  schedule: "0 0 4 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: site-api-pg-cluster
+  immediate: true

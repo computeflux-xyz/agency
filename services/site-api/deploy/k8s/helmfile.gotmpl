@@ -1,0 +1,8 @@
+releases:
+  - name: site-api
+    namespace: site-api
+    createNamespace: false
+    chart: ./helm
+    values:
+      - image:
+          tag: "{{ env "IMAGE_TAG" | default "latest" }}"
