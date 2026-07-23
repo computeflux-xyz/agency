@@ -1,0 +1,63 @@
+name: site (computeflux.xyz on Cloudflare Workers)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/site/**"
+      - ".github/workflows/site.yaml"
+  pull_request:
+    paths:
+      - "services/site/**"
+      - ".github/workflows/site.yaml"
+  workflow_dispatch:
+    inputs:
+      force-deploy:
+        description: "Force deployment"
+        type: boolean
+        default: false
+      dry-run:
+        description: "Dry-run mode"
+        type: boolean
+        default: false
+
+jobs:
+  check-flags:
+    name: Check Deployment Flags
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.flags.outputs.should-deploy }}
+      environment: ${{ steps.flags.outputs.environment }}
+      dry-run: ${{ steps.flags.outputs.dry-run }}
+    steps:
+      - id: flags
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "should-deploy=true"  >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.force-deploy }}" = "true" ]; then
+            echo "should-deploy=true"  >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "environment=preview" >> $GITHUB_OUTPUT
+          fi
+          echo "dry-run=${{ github.event.inputs.dry-run || 'false' }}" >> $GITHUB_OUTPUT
+
+  build-and-deploy:
+    name: Build & Deploy
+    needs: check-flags
+    uses: computeflux-xyz/shared-infrastructure/.github/workflows/.wrangler-build-deploy.yaml@main
+    with:
+      working-directory: services/site
+      worker-name: computeflux-site
+      node-version: "20"
+      package-manager: pnpm
+      build-command: build
+      deployment-url: https://computeflux.xyz
+      environment: ${{ needs.check-flags.outputs.environment }}
+      dry-run: ${{ needs.check-flags.outputs.dry-run == 'true' }}
+      should-deploy: ${{ needs.check-flags.outputs.should-deploy == 'true' }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

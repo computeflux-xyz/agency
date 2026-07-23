@@ -20,6 +20,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -92,17 +93,43 @@ type beginResponse struct {
 
 func main() {
 	var (
-		dir     = flag.String("dir", "", "article source directory (contains article.json and dist/)")
-		distDir = flag.String("dist", "", "override path to the built dist/ dir (default <dir>/dist)")
-		apiBase = flag.String("api", envOr("API_BASE_URL", "http://localhost:8080"), "site-api base URL")
-		token   = flag.String("token", os.Getenv("INGEST_TOKEN"), "admin ingest bearer token")
-		actor   = flag.String("actor", envOr("GITHUB_ACTOR", "local"), "who requested the publish")
-		commit  = flag.String("commit", os.Getenv("GITHUB_SHA"), "source git commit")
-		ref     = flag.String("ref", os.Getenv("GITHUB_REF_NAME"), "source git ref")
+		dir        = flag.String("dir", "", "article source directory (contains article.json and dist/)")
+		distDir    = flag.String("dist", "", "override path to the built dist/ dir (default <dir>/dist)")
+		apiBase    = flag.String("api", envOr("API_BASE_URL", "http://localhost:8080"), "site-api base URL")
+		token      = flag.String("token", os.Getenv("INGEST_TOKEN"), "admin ingest bearer token")
+		actor      = flag.String("actor", envOr("GITHUB_ACTOR", "local"), "who requested the publish")
+		commit     = flag.String("commit", os.Getenv("GITHUB_SHA"), "source git commit")
+		ref        = flag.String("ref", os.Getenv("GITHUB_REF_NAME"), "source git ref")
+		deleteSlug = flag.String("delete", "", "delete a single article by slug, then exit")
+		prune      = flag.Bool("prune", false, "delete every remote article whose slug is not in -keep, then exit")
+		keep       = flag.String("keep", "", "comma-separated slugs to keep (the full local set); required with -prune")
 	)
 	flag.Parse()
 
-	if *dir == "" || *token == "" {
+	if *token == "" {
+		fmt.Fprintln(os.Stderr, "usage: article-publisher -token <ingest-token> [ -dir <dir> | -delete <slug> | -prune -keep <csv> ] [-api URL]")
+		os.Exit(2)
+	}
+
+	client := &http.Client{Timeout: 60 * time.Second}
+
+	// Deletion modes exit early; the default mode publishes one article dir.
+	switch {
+	case *deleteSlug != "":
+		if err := doDelete(client, *apiBase, *token, *actor, *deleteSlug); err != nil {
+			fmt.Fprintf(os.Stderr, "delete failed: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	case *prune:
+		if err := doPrune(client, *apiBase, *token, *actor, *keep); err != nil {
+			fmt.Fprintf(os.Stderr, "prune failed: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	if *dir == "" {
 		fmt.Fprintln(os.Stderr, "usage: article-publisher -dir <article-dir> -token <ingest-token> [-api URL]")
 		os.Exit(2)
 	}
@@ -375,6 +402,110 @@ func doCommit(client *http.Client, apiBase, token, actor, versionID, jobID strin
 func apiError(step string, resp *http.Response) error {
 	b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 	return fmt.Errorf("%s returned %d: %s", step, resp.StatusCode, strings.TrimSpace(string(b)))
+}
+
+// doDelete removes a single article by slug. A 404 is treated as success so the
+// operation is idempotent.
+func doDelete(client *http.Client, apiBase, token, actor, slug string) error {
+	req, err := http.NewRequest(http.MethodDelete, strings.TrimRight(apiBase, "/")+"/api/admin/articles/"+url.PathEscape(slug), nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("X-Ingest-Actor", actor)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		fmt.Printf("· %s already absent\n", slug)
+		return nil
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return apiError("delete "+slug, resp)
+	}
+
+	fmt.Printf("✗ deleted %s\n", slug)
+	return nil
+}
+
+// listRemoteSlugs pages through GET /api/articles (all types) and returns every
+// published slug.
+func listRemoteSlugs(client *http.Client, apiBase string) ([]string, error) {
+	var slugs []string
+	for page := 1; ; page++ {
+		u := fmt.Sprintf("%s/api/articles?pageSize=100&page=%d", strings.TrimRight(apiBase, "/"), page)
+		resp, err := client.Get(u)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			defer resp.Body.Close()
+			return nil, apiError("list", resp)
+		}
+
+		var out struct {
+			Items []struct {
+				Slug string `json:"slug"`
+			} `json:"items"`
+			Total int64 `json:"total"`
+		}
+		err = json.NewDecoder(resp.Body).Decode(&out)
+		resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, it := range out.Items {
+			slugs = append(slugs, it.Slug)
+		}
+
+		if len(out.Items) == 0 || int64(len(slugs)) >= out.Total {
+			return slugs, nil
+		}
+	}
+}
+
+// doPrune deletes remote articles whose slug is not in keepCSV (the full local
+// set). It refuses to run on an empty keep list to avoid wiping every article.
+func doPrune(client *http.Client, apiBase, token, actor, keepCSV string) error {
+	keep := map[string]bool{}
+	for _, s := range strings.Split(keepCSV, ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			keep[s] = true
+		}
+	}
+
+	if len(keep) == 0 {
+		return fmt.Errorf("-keep is empty; refusing to prune (would delete every article)")
+	}
+
+	remote, err := listRemoteSlugs(client, apiBase)
+	if err != nil {
+		return err
+	}
+
+	var orphans []string
+	for _, s := range remote {
+		if !keep[s] {
+			orphans = append(orphans, s)
+		}
+	}
+
+	fmt.Printf("prune: %d remote, %d kept, %d to delete\n", len(remote), len(keep), len(orphans))
+	for _, s := range orphans {
+		if err := doDelete(client, apiBase, token, actor, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // contentType returns a deterministic MIME type for a built asset by extension,
