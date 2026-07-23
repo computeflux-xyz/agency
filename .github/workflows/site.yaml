@@ -51,7 +51,7 @@ jobs:
     with:
       working-directory: services/site
       worker-name: computeflux-site
-      node-version: "20"
+      node-version: "22" # wrangler v4 requires Node >= 22
       package-manager: pnpm
       build-command: build
       deployment-url: https://computeflux.xyz
