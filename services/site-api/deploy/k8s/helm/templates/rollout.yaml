@@ -65,6 +65,22 @@ spec:
                   name: {{ .Values.secrets.ingest }}
                   key: token
             {{- end }}
+
+            {{- if .Values.secrets.contact }}
+            - name: CONFIG_CONTACT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.contact }}
+                  key: token
+            {{- end }}
+
+            {{- if .Values.secrets.resend }}
+            - name: CONFIG_RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.resend }}
+                  key: api-key
+            {{- end }}
           volumeMounts:
             - name: config-volume
               mountPath: /config.yaml

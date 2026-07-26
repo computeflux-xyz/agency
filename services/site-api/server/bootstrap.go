@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"time"
 
+	appcontracts "github.com/computeflux-xyz/agency/services/site-api/application/contracts"
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/articles"
+	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/contact"
 	"github.com/computeflux-xyz/agency/services/site-api/config"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/handlers"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/middlewares"
 	blobadapter "github.com/computeflux-xyz/agency/services/site-api/repository/external/blob_storage"
+	emailadapter "github.com/computeflux-xyz/agency/services/site-api/repository/external/email"
 	"github.com/computeflux-xyz/agency/services/site-api/repository/storage"
 	"github.com/computeflux-xyz/base-go/app"
 	"github.com/computeflux-xyz/base-go/blob_storage"
 	config_helper "github.com/computeflux-xyz/base-go/config"
 	"github.com/computeflux-xyz/base-go/database"
 	"github.com/computeflux-xyz/base-go/logger"
+	"github.com/computeflux-xyz/base-go/mailer"
 	"github.com/computeflux-xyz/base-go/server/http_server"
 	"github.com/gin-gonic/gin"
 
@@ -40,6 +44,8 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 				"storage.endpoint":          {"CONFIG_STORAGE_ENDPOINT"},
 				"storage.public_url":        {"CONFIG_STORAGE_PUBLIC_URL"},
 				"ingest.token":              {"CONFIG_INGEST_TOKEN"},
+				"contact.token":             {"CONFIG_CONTACT_TOKEN"},
+				"resend.api_key":            {"CONFIG_RESEND_API_KEY"},
 			}),
 	)
 	if err != nil {
@@ -89,6 +95,31 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 	})
 	ingestHandler := handlers.NewIngestHandler(ingestUseCase)
 
+	var contactMailer appcontracts.ContactMailer
+	if cfg.Resend.Enabled {
+		resendClient, err := mailer.NewResendClient(ctx, mailer.ResendConfig{
+			APIKey:    cfg.Resend.APIKey,
+			FromEmail: cfg.Resend.FromEmail,
+		})
+		if err != nil {
+			log.Fatalf("Error creating the Resend client: %v", err)
+		}
+
+		contactMailer = emailadapter.NewResendContactMailer(resendClient, emailadapter.Config{
+			AdminEmail:                  cfg.Resend.AdminEmail,
+			FirstContactTemplateID:      cfg.Resend.FirstContactTemplateID,
+			FirstContactAdminTemplateID: cfg.Resend.FirstContactAdminTemplateID,
+		})
+		log.Info("Resend contact mailer enabled")
+	} else {
+		contactMailer = emailadapter.NewNoOpContactMailer(log)
+		log.Info("Resend disabled: using no-op contact mailer")
+	}
+
+	contactStorage := storage.NewContactStorage(gormDB)
+	submitUseCase := contact.NewSubmitUseCase(contactStorage, contactMailer, log)
+	contactHandler := handlers.NewContactHandler(submitUseCase)
+
 	routes := func(r *gin.Engine) {
 		r.Use(middlewares.ErrorHandler(log))
 
@@ -101,6 +132,8 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 			api.GET("/articles", articleHandler.HandleListArticles)
 			api.GET("/articles/:slug", articleHandler.HandleGetArticle)
 			api.GET("/topics", articleHandler.HandleListTopics)
+
+			api.POST("/contact", middlewares.ContactAuth(cfg.Contact.Token), contactHandler.HandleSubmit)
 
 			if cfg.Ingest.Enabled {
 				admin := api.Group("/admin", middlewares.AdminAuth(cfg.Ingest.Token))

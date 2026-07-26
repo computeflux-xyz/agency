@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: site-api-resend
+  namespace: site-api
+spec:
+  encryptedData:
+    api-key: AgAZYCW4HrTiAW6gdh8RIKm7UJb4oWN2k0NQrkO+hE1ThAv4M4hLA/RerhT18+TARsxfE6Mlc0b+rUF3Gq9ms9EbF7zejV51m7ThZs4x9Fx8hIDjyiDQBG2RfmyQtFFVBvmPinkdAB+GvpbDmAmwTalBJti2Y4jSMxxksbWuklei+yjK2f2ID0VxTI9laNLshAL/eZFsFOG95jZrdilLE1vmzSugZoZCdcjDfWTniPKd2kYgsQ4l8rbMH5/0+1BSuO4208IHYlG2RRIRefyLNIA7r3EK1ScrvkBQCirnB3fuYa/g7XeFgDmmBDzo/YzaY9nyMG/4jYvlc2jX82dmnyKBs/Kid4uuA1lQwKLfAzqvlRAgjbE5SB3lFzWck3tzxdtze76Sm+7sHeKnHu7R9i6wC7jfrVI5/SM5m1bnGMPGlqstidJXBWcjLatOInWEzVpq3NP4JEABNJUdBwSycLbCcK982plwQrSnOs+hONJlXGpRSPa0tgihm5CnnkL1FY/ntM88AXJy1RHVWuCRQEpTRfgBeaXKPkMzUj+J70Z/l7moICf/i1MoYMR5DltFASbQZ/rtSKmfs8iPKWz/IHiWGrmJdLzVmnPQK2T4MTG2l2pUNchAljsMJFVj+yMMgYKtpksA/JNmXyRWUNszCvRnrZyjTvtRm5Y72NjviTMVLo+hRNUpprIZ7rBO7Vb4EM4cp/tWmkSgfogExYzQmQ8siQT3avUI8lkzk7GdWbf1PDbHN7U=
+  template:
+    metadata:
+      name: site-api-resend
+      namespace: site-api

@@ -182,6 +182,7 @@ services:
       CONFIG_STORAGE_PUBLIC_URL: http://localhost:9000/site-api
       CONFIG_STORAGE_SECRET_ACCESS_KEY: admin123
       CONFIG_INGEST_TOKEN: local-dev-ingest-token
+      CONFIG_CONTACT_TOKEN: local-dev-contact-token
     volumes:
       - ./config.yaml:/config.yaml:ro
     ports:

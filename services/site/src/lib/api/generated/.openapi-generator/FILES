@@ -3,9 +3,12 @@
 README.md
 docs/AdminApi.md
 docs/ArticlesApi.md
+docs/ContactApi.md
 docs/DtosArticleDetailResp.md
 docs/DtosArticleSummaryResp.md
 docs/DtosAuthorResp.md
+docs/DtosContactSubmitReq.md
+docs/DtosContactSubmitResp.md
 docs/DtosErrorResp.md
 docs/DtosIngestBeginReq.md
 docs/DtosIngestBeginResp.md
@@ -18,6 +21,7 @@ docs/DtosTopicResp.md
 package.json
 src/apis/AdminApi.ts
 src/apis/ArticlesApi.ts
+src/apis/ContactApi.ts
 src/apis/index.ts
 src/index.ts
 src/models/index.ts

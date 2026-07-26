@@ -263,6 +263,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/contact": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Registers a \"Contact us\" submission and triggers the acknowledgement email to the contact plus a notification email to the team.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contact"
+                ],
+                "summary": "Submit a contact request",
+                "parameters": [
+                    {
+                        "description": "Contact submission",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ContactSubmitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ContactSubmitResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/topics": {
             "get": {
                 "description": "Curated taxonomy with published-article counts.",
@@ -426,6 +477,58 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "dtos.ContactSubmitReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "message",
+                "name",
+                "phoneNumber",
+                "preferredContact",
+                "surname"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "linkedinProfile": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "preferredContact": {
+                    "type": "string",
+                    "enum": [
+                        "phone",
+                        "email"
+                    ]
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.ContactSubmitResp": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
                 }
             }
         },

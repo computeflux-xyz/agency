@@ -60,6 +60,17 @@ kubectl create secret generic site-api-db-backup -n site-api \
   --from-literal=access-key='<HETZNER_S3_ACCESS_KEY>' \
   --from-literal=secret-key='<HETZNER_S3_SECRET_KEY>' \
   --dry-run=client -o yaml | $KS > site-api-db-backup.sealed.yaml
+
+# 5. Contact endpoint bearer token MUST be the same value the site worker
+#    sends (its API_TOKEN secret. See services/site). Guards POST /api/contact.
+kubectl create secret generic site-api-contact -n site-api \
+  --from-literal=token='<SAME_AS_SITE_API_TOKEN>' \
+  --dry-run=client -o yaml | $KS > site-api-contact.sealed.yaml
+
+# 6. Resend API key (transactional contact emails). Create a key in Resend.
+kubectl create secret generic site-api-resend -n site-api \
+  --from-literal=api-key='<RESEND_API_KEY>' \
+  --dry-run=client -o yaml | $KS > site-api-resend.sealed.yaml
 ```
 
 ## Deploy

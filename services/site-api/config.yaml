@@ -29,3 +29,14 @@ ingest:
   enabled: true
   token: "local-dev-ingest-token"          # override with CONFIG_INGEST_TOKEN
   presign_ttl_minutes: 30
+
+contact:
+  token: "local-dev-contact-token"         # override with CONFIG_CONTACT_TOKEN (the site worker sends this as a bearer)
+
+resend:
+  enabled: false                           # set true (+ api_key) to actually send emails; false = log-only no-op mailer
+  api_key: ""                              # override with CONFIG_RESEND_API_KEY
+  from_email: "noreply@computeflux.xyz"
+  admin_email: "contact@computeflux.xyz"   # recipient of the admin notification
+  first_contact_template_id: "computeflux-first-contact"
+  first_contact_admin_template_id: "computeflux-first-contact-admin"

@@ -252,6 +252,91 @@ export interface DtosAuthorResp {
 /**
  * 
  * @export
+ * @interface DtosContactSubmitReq
+ */
+export interface DtosContactSubmitReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    company?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    email: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    linkedinProfile?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    message: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    phoneNumber: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    preferredContact: DtosContactSubmitReqPreferredContactEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitReq
+     */
+    surname: string;
+}
+
+
+/**
+ * @export
+ */
+export const DtosContactSubmitReqPreferredContactEnum = {
+    Phone: 'phone',
+    Email: 'email'
+} as const;
+export type DtosContactSubmitReqPreferredContactEnum = typeof DtosContactSubmitReqPreferredContactEnum[keyof typeof DtosContactSubmitReqPreferredContactEnum];
+
+/**
+ * 
+ * @export
+ * @interface DtosContactSubmitResp
+ */
+export interface DtosContactSubmitResp {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosContactSubmitResp
+     */
+    id?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosContactSubmitResp
+     */
+    ok?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface DtosErrorResp
  */
 export interface DtosErrorResp {

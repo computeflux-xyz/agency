@@ -24,6 +24,11 @@ secrets:
   storage: site-api-storage
   # Ingest bearer token (key: token).
   ingest: site-api-ingest
+  # Contact endpoint bearer token (key: token). The site worker sends this as a
+  # bearer on POST /api/contact. Create via kubeseal (see deploy/k8s/README.md).
+  contact: site-api-contact
+  # Resend API key for transactional contact emails (key: api-key).
+  resend: site-api-resend
 
 config:
   logLevel: "INFO"
@@ -56,6 +61,13 @@ config:
   ingest:
     enabled: true
     presign_ttl_minutes: 30
+
+  resend:
+    enabled: true
+    from_email: "noreply@computeflux.xyz"
+    admin_email: "contact@computeflux.xyz"
+    first_contact_template_id: "computeflux-first-contact"
+    first_contact_admin_template_id: "computeflux-first-contact-admin"
 
 # Public route on the shared API gateway. Serves this API at
 # https://<host><pathPrefix>/... , stripping the prefix before the backend.

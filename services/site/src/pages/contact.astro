@@ -5,7 +5,6 @@ import Field from "@atoms/Field.astro";
 import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
 import Divider from "@atoms/Divider.astro";
-import ApiNotice from "@molecules/ApiNotice.astro";
 import { site } from "@lib/site";
 
 const title = "Contact";
@@ -57,17 +56,120 @@ const channels = [
       <!-- Form -->
       <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
         <h2 class="text-lg font-semibold text-ink-50">Send a message</h2>
-        <ApiNotice />
         <form class="flex flex-col gap-4" data-contact-form aria-label="Contact form">
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" name="name" required disabled />
-            <Field label="Email" name="email" type="email" required disabled />
+            <Field label="First name" name="name" required />
+            <Field label="Last name" name="surname" required />
           </div>
-          <Field label="Company" name="company" disabled />
-          <Field label="Message" name="message" as="textarea" rows={5} required disabled />
-          <Button type="submit" variant="primary" fullWidth disabled arrow>Send message</Button>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Email" name="email" type="email" required />
+            <Field label="Phone number" name="phoneNumber" type="tel" required />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Company" name="company" hint="Optional" />
+            <Field
+              label="LinkedIn profile"
+              name="linkedinProfile"
+              type="url"
+              placeholder="https://www.linkedin.com/in/…"
+              hint="Optional"
+            />
+          </div>
+
+          <fieldset class="flex flex-col gap-2">
+            <legend class="flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-300">
+              How should we reach you?
+              <span class="text-flux-magenta" aria-hidden="true">*</span>
+            </legend>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
+                <input type="radio" name="preferredContact" value="phone" required style="accent-color: var(--color-flux-blue)" />
+                <span class="text-sm">By phone</span>
+              </label>
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
+                <input type="radio" name="preferredContact" value="email" required style="accent-color: var(--color-flux-blue)" />
+                <span class="text-sm">By email</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <Field label="Message" name="message" as="textarea" rows={5} required />
+
+          <Button type="submit" variant="primary" fullWidth arrow>Send message</Button>
+
+          <p
+            data-contact-status
+            role="status"
+            aria-live="polite"
+            hidden
+            class="text-sm text-ink-400"
+          >
+          </p>
         </form>
       </div>
     </div>
   </section>
 </PageLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("[data-contact-form]");
+
+  if (form) {
+    const statusEl = form.querySelector<HTMLElement>("[data-contact-status]");
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    const setStatus = (message: string, tone: "idle" | "error" | "success") => {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.hidden = message === "";
+      statusEl.className =
+        "text-sm " +
+        (tone === "error"
+          ? "text-flux-magenta"
+          : tone === "success"
+            ? "text-flux-blue"
+            : "text-ink-400");
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus("Sending your message…", "idle");
+
+      const data = new FormData(form);
+      const payload = {
+        name: String(data.get("name") ?? ""),
+        surname: String(data.get("surname") ?? ""),
+        email: String(data.get("email") ?? ""),
+        phoneNumber: String(data.get("phoneNumber") ?? ""),
+        preferredContact: String(data.get("preferredContact") ?? ""),
+        company: String(data.get("company") ?? ""),
+        linkedinProfile: String(data.get("linkedinProfile") ?? ""),
+        message: String(data.get("message") ?? ""),
+      };
+
+      try {
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string };
+
+        if (res.ok && body.ok) {
+          form.reset();
+          setStatus(
+            "Thanks — your message is on its way. We'll get back to you within one business day.",
+            "success",
+          );
+        } else {
+          setStatus(body.message ?? "Something went wrong. Please try again.", "error");
+        }
+      } catch {
+        setStatus("Network error. Please try again, or email us directly.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

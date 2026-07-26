@@ -60,6 +60,7 @@ All URIs are relative to *http://localhost*
 *ArticlesApi* | [**apiArticlesGet**](docs/ArticlesApi.md#apiarticlesget) | **GET** /api/articles | List published articles
 *ArticlesApi* | [**apiArticlesSlugGet**](docs/ArticlesApi.md#apiarticlesslugget) | **GET** /api/articles/{slug} | Get a published article
 *ArticlesApi* | [**apiTopicsGet**](docs/ArticlesApi.md#apitopicsget) | **GET** /api/topics | List topics
+*ContactApi* | [**apiContactPost**](docs/ContactApi.md#apicontactpost) | **POST** /api/contact | Submit a contact request
 
 
 ### Models
@@ -67,6 +68,8 @@ All URIs are relative to *http://localhost*
 - [DtosArticleDetailResp](docs/DtosArticleDetailResp.md)
 - [DtosArticleSummaryResp](docs/DtosArticleSummaryResp.md)
 - [DtosAuthorResp](docs/DtosAuthorResp.md)
+- [DtosContactSubmitReq](docs/DtosContactSubmitReq.md)
+- [DtosContactSubmitResp](docs/DtosContactSubmitResp.md)
 - [DtosErrorResp](docs/DtosErrorResp.md)
 - [DtosIngestBeginReq](docs/DtosIngestBeginReq.md)
 - [DtosIngestBeginResp](docs/DtosIngestBeginResp.md)

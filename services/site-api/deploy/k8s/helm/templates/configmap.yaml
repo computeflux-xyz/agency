@@ -36,3 +36,14 @@ data:
       enabled: {{ .Values.config.ingest.enabled }}
       token: ""  # Placeholder. Real value from secret via CONFIG_INGEST_TOKEN
       presign_ttl_minutes: {{ .Values.config.ingest.presign_ttl_minutes }}
+
+    contact:
+      token: ""  # Placeholder. Real value from secret via CONFIG_CONTACT_TOKEN
+
+    resend:
+      enabled: {{ .Values.config.resend.enabled }}
+      api_key: ""  # Placeholder. Real value from secret via CONFIG_RESEND_API_KEY
+      from_email: {{ .Values.config.resend.from_email | quote }}
+      admin_email: {{ .Values.config.resend.admin_email | quote }}
+      first_contact_template_id: {{ .Values.config.resend.first_contact_template_id | quote }}
+      first_contact_admin_template_id: {{ .Values.config.resend.first_contact_admin_template_id | quote }}

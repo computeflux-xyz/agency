@@ -2,3 +2,4 @@
 /* eslint-disable */
 export * from './AdminApi';
 export * from './ArticlesApi';
+export * from './ContactApi';

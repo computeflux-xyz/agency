@@ -1,6 +1,7 @@
 import {
   Configuration,
   ArticlesApi,
+  ContactApi,
   ResponseError,
   type Middleware,
   type DtosArticleDetailResp,
@@ -89,7 +90,17 @@ export type WhitePaper = {
   gated: boolean;
 };
 export type BookingSlot = { id: string; startsAt: string; endsAt: string; available: boolean };
-export type ContactPayload = { name: string; email: string; company?: string; message: string };
+export type ContactPreference = "phone" | "email";
+export type ContactPayload = {
+  name: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  preferredContact: ContactPreference;
+  company?: string;
+  linkedinProfile?: string;
+  message: string;
+};
 export type JobApplicationPayload = {
   name: string;
   email: string;
@@ -209,6 +220,7 @@ async function asError(e: unknown): Promise<Error> {
 
 class HttpApi implements ComputefluxApi {
   private readonly articles: ArticlesApi;
+  private readonly contact: ContactApi;
 
   constructor(options: ApiClientOptions) {
     const middleware: Middleware[] = [];
@@ -229,6 +241,7 @@ class HttpApi implements ComputefluxApi {
       middleware,
     });
     this.articles = new ArticlesApi(config);
+    this.contact = new ContactApi(config);
   }
 
   async listArticles(params: ListArticlesParams = {}): Promise<Paginated<ArticleSummary>> {
@@ -276,8 +289,24 @@ class HttpApi implements ComputefluxApi {
   book(): Promise<{ confirmationId: string }> {
     throw new NotImplementedError("book");
   }
-  submitContact(): Promise<{ ok: true }> {
-    throw new NotImplementedError("submitContact");
+  async submitContact(payload: ContactPayload): Promise<{ ok: true }> {
+    try {
+      await this.contact.apiContactPost({
+        body: {
+          name: payload.name,
+          surname: payload.surname,
+          email: payload.email,
+          phoneNumber: payload.phoneNumber,
+          preferredContact: payload.preferredContact,
+          company: payload.company,
+          linkedinProfile: payload.linkedinProfile,
+          message: payload.message,
+        },
+      });
+      return { ok: true };
+    } catch (e) {
+      throw await asError(e);
+    }
   }
   applyForJob(): Promise<{ ok: true }> {
     throw new NotImplementedError("applyForJob");
