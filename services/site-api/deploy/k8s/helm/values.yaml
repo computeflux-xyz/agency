@@ -65,7 +65,7 @@ config:
   resend:
     enabled: true
     from_email: "noreply@computeflux.xyz"
-    admin_email: "contact@computeflux.xyz"
+    admin_email: "gabriel.mougard@gmail.com"
     first_contact_template_id: "computeflux-first-contact"
     first_contact_admin_template_id: "computeflux-first-contact-admin"
 
