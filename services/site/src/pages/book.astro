@@ -6,31 +6,27 @@ import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
 import Divider from "@atoms/Divider.astro";
 import { site } from "@lib/site";
+import { getLocale, useTranslations } from "@i18n";
 
-const title = "Book a call";
-const description =
-  "Book a 30-minute intro call with Computeflux. Tell us your AI systems problem — we'll tell you honestly whether we can help move the numbers that matter.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
-const expect = [
-  "A focused 30 minutes — no sales script.",
-  "An honest read on whether we're the right studio for your problem.",
-  "If it's a fit, a rough shape for an engagement and next steps.",
-];
+const expect = [t("book.expect1"), t("book.expect2"), t("book.expect3")];
 ---
 
-<PageLayout title={title} description={description}>
+<PageLayout title={t("book.title")} description={t("book.metaDescription")}>
   <PageHero
-    eyebrow="Let's talk"
-    title="Book a 30-minute call"
-    lead={description}
+    eyebrow={t("book.hero.eyebrow")}
+    title={t("book.hero.title")}
+    lead={t("book.hero.lead")}
   />
 
   <section class="container-flux pb-24">
-    <Divider label="SCHEDULE" />
+    <Divider label={t("book.expectTitle")} />
     <div class="grid gap-12 py-12 lg:grid-cols-[1fr_1.2fr]">
       <!-- What to expect -->
       <div class="flex flex-col gap-6">
-        <h2 class="text-xl font-semibold text-ink-50">What to expect</h2>
+        <h2 class="text-xl font-semibold text-ink-50">{t("book.expectTitle")}</h2>
         <ul class="flex flex-col gap-3">
           {
             expect.map((e) => (
@@ -43,7 +39,7 @@ const expect = [
         </ul>
         <div class="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5">
           <p class="text-sm text-ink-300">
-            Prefer email? Reach us directly at
+            {t("book.preferEmail")}
             <a href={`mailto:${site.email}`} class="text-flux-blue hover:underline">{site.email}</a>.
           </p>
         </div>
@@ -56,42 +52,51 @@ const expect = [
             <Icon name="calendar" size={18} />
           </span>
           <div class="flex flex-col">
-            <h2 class="text-lg font-semibold text-ink-50">Request a slot</h2>
-            <p class="text-sm text-ink-400">Tell us when suits you — we'll confirm by email within one business day.</p>
+            <h2 class="text-lg font-semibold text-ink-50">{t("book.formTitle")}</h2>
+            <p class="text-sm text-ink-400">{t("book.slotSubtitle")}</p>
           </div>
         </div>
 
-        <form class="flex flex-col gap-4" data-book-form aria-label="Request a 30-minute call">
+        <form
+          class="flex flex-col gap-4"
+          data-book-form
+          aria-label={t("book.formTitle")}
+          data-msg-sending={t("book.sending")}
+          data-msg-success={t("book.sent")}
+          data-msg-error={t("book.error")}
+          data-msg-network={t("book.networkError")}
+          data-msg-window={t("book.windowError")}
+        >
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="First name" name="name" required />
-            <Field label="Last name" name="surname" required />
+            <Field label={t("book.firstName")} name="name" required />
+            <Field label={t("book.lastName")} name="surname" required />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Email" name="email" type="email" required />
-            <Field label="Phone number" name="phoneNumber" type="tel" required />
+            <Field label={t("book.email")} name="email" type="email" required />
+            <Field label={t("book.phoneNumber")} name="phoneNumber" type="tel" required />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Company" name="company" hint="Optional" />
+            <Field label={t("book.company")} name="company" hint={t("book.optional")} />
             <Field
-              label="LinkedIn profile"
+              label={t("book.linkedin")}
               name="linkedinProfile"
               type="url"
               placeholder="https://www.linkedin.com/in/…"
-              hint="Optional"
+              hint={t("book.optional")}
             />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Preferred window — from" name="startDate" type="datetime-local" required />
-            <Field label="…until" name="endDate" type="datetime-local" required />
+            <Field label={t("book.windowFromLabel")} name="startDate" type="datetime-local" required />
+            <Field label={t("book.windowToLabel")} name="endDate" type="datetime-local" required />
           </div>
           <Field
-            label="What would you like to solve?"
+            label={t("book.aboutLabel")}
             name="message"
             as="textarea"
             rows={4}
             required
           />
-          <Button type="submit" variant="primary" fullWidth arrow>Request call</Button>
+          <Button type="submit" variant="primary" fullWidth arrow>{t("book.request")}</Button>
 
           <p
             data-book-status
@@ -117,6 +122,14 @@ const expect = [
     const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
     const phoneInput = form.querySelector<HTMLInputElement>('input[name="phoneNumber"]');
     if (phoneInput) enhancePhoneInput(phoneInput);
+
+    const msg = {
+      sending: form.dataset.msgSending ?? "",
+      success: form.dataset.msgSuccess ?? "",
+      error: form.dataset.msgError ?? "",
+      network: form.dataset.msgNetwork ?? "",
+      window: form.dataset.msgWindow ?? "",
+    };
 
     const setStatus = (message: string, tone: "idle" | "error" | "success") => {
       if (!statusEl) return;
@@ -145,12 +158,12 @@ const expect = [
       const end = toISO(String(data.get("endDate") ?? ""));
 
       if (start && end && new Date(end) <= new Date(start)) {
-        setStatus("The end of your window must be after the start.", "error");
+        setStatus(msg.window, "error");
         return;
       }
 
       if (submitBtn) submitBtn.disabled = true;
-      setStatus("Sending your request…", "idle");
+      setStatus(msg.sending, "idle");
 
       const payload = {
         name: String(data.get("name") ?? ""),
@@ -174,15 +187,12 @@ const expect = [
 
         if (res.ok && body.ok) {
           form.reset();
-          setStatus(
-            "Thanks — your request is in. We'll confirm a time by email within one business day.",
-            "success",
-          );
+          setStatus(msg.success, "success");
         } else {
-          setStatus(body.message ?? "Something went wrong. Please try again.", "error");
+          setStatus(body.message ?? msg.error, "error");
         }
       } catch {
-        setStatus("Network error. Please try again, or email us directly.", "error");
+        setStatus(msg.network, "error");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

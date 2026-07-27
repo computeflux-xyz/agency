@@ -4,6 +4,9 @@ type Tone = "dark" | "surface" | "blue" | "magenta" | "amber" | "green";
 
 interface Props {
   tone?: Tone;
+  /** Solid background color (e.g. "#157493"). Overrides `tone`; renders white
+   *  text and a light-white dotted grid so it reads on a dark fill. */
+  bg?: string;
   notch?: number;
   shadow?: boolean;
   dotted?: boolean;
@@ -12,6 +15,7 @@ interface Props {
 
 const {
   tone = "dark",
+  bg,
   notch = 34,
   shadow = true,
   dotted = true,
@@ -27,15 +31,22 @@ const tones: Record<Tone, string> = {
   green: "bg-[#1f7a5f] text-white",
 };
 
-const dotVar = tone === "surface" ? "var(--svg-dot)" : "var(--svg-dot-light)";
-const dotOpacity = tone === "surface" ? "0.6" : "0.14";
+const custom = typeof bg === "string" && bg.length > 0;
+
+// Light-white dots for a custom (dark) fill or any non-surface tone; dark dots
+// only on the light `surface` tone.
+const dotVar = !custom && tone === "surface" ? "var(--svg-dot)" : "var(--svg-dot-light)";
+const dotOpacity = custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
 ---
 
 <div class:list={["notch-root relative", className]} style={`--n: clamp(16px, 3.2vw, ${notch}px)`}>
   {shadow && (
     <div class="notch-shape absolute inset-0 translate-x-[7px] translate-y-[9px] bg-ink-50" aria-hidden="true"></div>
   )}
-  <div class:list={["notch-shape relative overflow-hidden", tones[tone]]}>
+  <div
+    class:list={["notch-shape relative overflow-hidden", custom ? "text-white" : tones[tone]]}
+    style={custom ? `background-color:${bg}` : undefined}
+  >
     {dotted && (
       <div
         class="pointer-events-none absolute inset-0"

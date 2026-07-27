@@ -38,29 +38,28 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
       href: p("/expertise"),
       mega: {
         feature: {
-          eyebrow: "What we do",
-          title: "High-performance AI systems, engineered end to end",
-          description:
-            "We design, optimize and ship production AI infrastructure — from custom inference runtimes to reliable agentic systems.",
+          eyebrow: t("expertise.hero.eyebrow"),
+          title: t("expertise.hero.title"),
+          description: t("expertise.metaDescription"),
           href: p("/expertise"),
-          cta: "Explore our expertise",
+          cta: t("hero.ctaExplore"),
         },
         columns: [
           {
-            heading: "Practices",
+            heading: t("expertise.practices"),
             links: [
-              { label: "AI Engineering", href: p("/expertise/ai-engineering"), description: "LLM & agent systems, production-grade." },
-              { label: "Inference Optimization", href: p("/expertise/inference-optimization"), description: "Cut latency and cost by 40–70%." },
-              { label: "Agentic Systems", href: p("/expertise/agentic-systems"), description: "Autonomous agents that survive production." },
-              { label: "Systems Programming", href: p("/expertise/systems-programming"), description: "Rust, Zig & Go for the hot path." },
+              { label: t("nav.expertise.ai"), href: p("/expertise/ai-engineering"), description: t("nav.expertise.aiDesc") },
+              { label: t("nav.expertise.inference"), href: p("/expertise/inference-optimization"), description: t("nav.expertise.inferenceDesc") },
+              { label: t("nav.expertise.agents"), href: p("/expertise/agentic-systems"), description: t("nav.expertise.agentsDesc") },
+              { label: t("nav.expertise.data"), href: p("/expertise/data-engineering"), description: t("nav.expertise.dataDesc") },
             ],
           },
           {
-            heading: "How we work",
+            heading: t("approach.eyebrow"),
             links: [
-              { label: "Engagements", href: p("/expertise#engagements"), description: "Audits, builds and staff-level embeds." },
-              { label: t("nav.caseStudies"), href: p("/studies"), description: "Selected work and measured outcomes." },
-              { label: t("nav.whitePapers"), href: p("/white-papers"), description: "Free technical deep dives." },
+              { label: t("nav.engagements"), href: p("/expertise#engagements"), description: t("nav.engagementsDesc") },
+              { label: t("nav.caseStudies"), href: p("/studies"), description: t("nav.caseStudiesDesc") },
+              { label: t("nav.whitePapers"), href: p("/white-papers"), description: t("nav.whitePapersDesc") },
             ],
           },
         ],
@@ -71,28 +70,27 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
       href: p("/studies"),
       mega: {
         feature: {
-          eyebrow: "Selected work",
-          title: "Deep dives with measured outcomes",
-          description:
-            "Anonymized case studies on inference cost reduction, agent reliability and systems-level performance.",
+          eyebrow: t("home.work.eyebrow"),
+          title: t("home.work.title"),
+          description: t("studies.metaDescription"),
           href: p("/studies"),
-          cta: "Browse all studies",
+          cta: t("home.work.all"),
         },
         columns: [
           {
-            heading: "By topic",
+            heading: t("nav.byTopic"),
             links: [
-              { label: "Inference & Cost", href: p("/studies?topic=inference") },
-              { label: "Agentic AI", href: p("/studies?topic=agentic") },
-              { label: "Data Pipelines", href: p("/studies?topic=data") },
-              { label: "Performance", href: p("/studies?topic=performance") },
+              { label: t("nav.topic.inference"), href: p("/studies?topic=inference") },
+              { label: t("nav.topic.agentic"), href: p("/studies?topic=agentic") },
+              { label: t("nav.topic.data"), href: p("/studies?topic=data") },
+              { label: t("nav.topic.performance"), href: p("/studies?topic=performance") },
             ],
           },
           {
-            heading: "Read",
+            heading: t("nav.read"),
             links: [
-              { label: t("nav.articles"), href: p("/articles"), description: "Field notes & engineering essays." },
-              { label: t("nav.whitePapers"), href: p("/white-papers"), description: "Long-form technical reports." },
+              { label: t("nav.articles"), href: p("/articles"), description: t("nav.articlesDesc") },
+              { label: t("nav.whitePapers"), href: p("/white-papers"), description: t("nav.whitePapersDesc2") },
             ],
           },
         ],
@@ -106,14 +104,14 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
           {
             heading: t("nav.company"),
             links: [
-              { label: t("nav.about"), href: p("/about"), description: "Who we are." },
-              { label: t("nav.careers"), href: p("/careers"), description: "Join the studio." },
-              { label: t("nav.faq"), href: p("/faq"), description: "Common questions." },
-              { label: t("nav.contact"), href: p("/contact"), description: "Talk to us." },
+              { label: t("nav.about"), href: p("/about"), description: t("nav.aboutDesc") },
+              { label: t("nav.careers"), href: p("/careers"), description: t("nav.careersDesc") },
+              { label: t("nav.faq"), href: p("/faq"), description: t("nav.faqDesc") },
+              { label: t("nav.contact"), href: p("/contact"), description: t("nav.contactDesc") },
             ],
           },
           {
-            heading: "Resources",
+            heading: t("nav.resources"),
             links: [
               { label: t("nav.whitePapers"), href: p("/white-papers") },
               { label: t("nav.newsletter"), href: p("/newsletter") },
@@ -142,10 +140,10 @@ export function getFooterNav(t: T, locale: Locale): MegaColumn[] {
     {
       heading: t("footer.expertise"),
       links: [
-        { label: "AI Engineering", href: p("/expertise/ai-engineering") },
-        { label: "Inference Optimization", href: p("/expertise/inference-optimization") },
-        { label: "Agentic Systems", href: p("/expertise/agentic-systems") },
-        { label: "Systems Programming", href: p("/expertise/systems-programming") },
+        { label: t("nav.expertise.ai"), href: p("/expertise/ai-engineering") },
+        { label: t("nav.expertise.inference"), href: p("/expertise/inference-optimization") },
+        { label: t("nav.expertise.agents"), href: p("/expertise/agentic-systems") },
+        { label: t("nav.expertise.data"), href: p("/expertise/data-engineering") },
       ],
     },
     {

@@ -1,11 +1,14 @@
 ---
 import Icon from "@atoms/Icon.astro";
+import { getLocale, useTranslations } from "@i18n";
 
 interface Props {
   variant?: "inline" | "block";
   class?: string;
 }
 const { variant = "block", class: className = "" } = Astro.props;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 ---
 
 {
@@ -17,7 +20,7 @@ const { variant = "block", class: className = "" } = Astro.props;
       ]}
     >
       <span class="size-1.5 rounded-full bg-[#c79a1e]" style="animation: flux-pulse 2s ease-in-out infinite" />
-      Coming soon
+      {t("apiNotice.badge")}
     </span>
   ) : (
     <div
@@ -30,10 +33,9 @@ const { variant = "block", class: className = "" } = Astro.props;
         <Icon name="bolt" size={18} />
       </span>
       <p>
-        <span class="font-medium text-ink-50">Preview.</span>
+        <span class="font-medium text-ink-50">{t("apiNotice.preview")}</span>
         <slot>
-          This form is fully designed but not yet wired up — it activates once our
-          backend goes live. In the meantime, reach us at
+          {t("apiNotice.body")}
           <a href="mailto:hello@computeflux.xyz" class="font-medium text-[#8a6a00] underline underline-offset-2">
             hello@computeflux.xyz</a
           >.

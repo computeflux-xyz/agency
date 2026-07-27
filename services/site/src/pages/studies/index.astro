@@ -6,10 +6,10 @@ import CtaSection from "@organisms/CtaSection.astro";
 import ArticleCard from "@molecules/ArticleCard.astro";
 import Divider from "@atoms/Divider.astro";
 import { site } from "@lib/site";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
-const title = "Case studies";
-const description =
-  "Deep dives with measured outcomes — anonymized case studies on inference cost reduction, agent reliability and systems-level performance.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const studies = (await getCollection("studies", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
@@ -22,22 +22,24 @@ const topics = Array.from(
 const origin = Astro.site?.origin ?? site.url;
 const jsonLd = {
   "@type": "CollectionPage",
-  name: `${title} — ${site.name}`,
-  description,
+  name: `${t("studies.title")} — ${site.name}`,
+  description: t("studies.metaDescription"),
   url: `${origin}/studies`,
   isPartOf: { "@id": `${site.url}/#website` },
 };
+
+const countLabel = studies.length === 1 ? t("studies.countOne") : t("studies.countMany");
 ---
 
-<PageLayout title={title} description={description} jsonLd={jsonLd} dragon>
+<PageLayout title={t("studies.title")} description={t("studies.metaDescription")} jsonLd={jsonLd} dragon>
   <PageHero
-    eyebrow="Selected work"
-    title="Case studies"
-    lead={description}
+    eyebrow={t("studies.hero.eyebrow")}
+    title={t("studies.hero.title")}
+    lead={t("studies.hero.lead")}
   />
 
   <section class="container-flux pb-24">
-    <Divider label={`${studies.length} STUDIES`} />
+    <Divider label={`${studies.length} ${countLabel}`} />
 
     <div class="flex flex-wrap gap-2 py-8" data-study-filters>
       <button
@@ -47,18 +49,18 @@ const jsonLd = {
         class="rounded-[var(--radius-sm)] border px-3.5 py-1.5 font-mono text-[0.7rem] font-medium uppercase tracking-wider transition-colors data-[active=true]:border-ink-50 data-[active=true]:bg-ink-50 data-[active=true]:text-ink-950 data-[active=false]:border-[var(--color-ink-line)] data-[active=false]:bg-transparent data-[active=false]:text-ink-400"
         data-active="true"
       >
-        All
+        {t("studies.filterAll")}
       </button>
       {
-        topics.map((t) => (
+        topics.map((topic) => (
           <button
             type="button"
-            data-topic={t.toLowerCase()}
+            data-topic={topic.toLowerCase()}
             aria-pressed="false"
             data-active="false"
             class="rounded-[var(--radius-sm)] border px-3.5 py-1.5 font-mono text-[0.7rem] font-medium uppercase tracking-wider transition-colors hover:text-ink-50 hover:border-ink-50 data-[active=true]:border-ink-50 data-[active=true]:bg-ink-50 data-[active=true]:text-ink-950 data-[active=false]:border-[var(--color-ink-line)] data-[active=false]:bg-transparent data-[active=false]:text-ink-400"
           >
-            {t}
+            {topic}
           </button>
         ))
       }
@@ -67,9 +69,9 @@ const jsonLd = {
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80" data-study-grid>
       {
         studies.map((study) => (
-          <div data-topics={study.data.topics.map((t) => t.toLowerCase()).join(",")}>
+          <div data-topics={study.data.topics.map((topic) => topic.toLowerCase()).join(",")}>
             <ArticleCard
-              href={`/studies/${study.id}`}
+              href={localizedPath(`/studies/${study.id}`, locale)}
               title={study.data.title}
               description={study.data.description}
               kind="study"

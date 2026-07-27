@@ -24,14 +24,14 @@ export const site: SiteConfig = {
   url: "https://computeflux.xyz",
   name: "Computeflux",
   legalName: "Computeflux",
-  tagline: "Deep tech R&D for high-performance AI systems",
+  tagline: "AI and data engineering that reaches production",
   description:
-    "Computeflux is a deep tech research & development studio specializing in high-performance AI systems — inference optimization, agentic architectures and low-level systems programming (Rust, Zig, Go).",
+    "Computeflux is a French engineering studio. We help companies put AI and data systems into production: inference, agents and reliable data pipelines. We provide the AI engineers, data engineers and data architects your project needs.",
   defaultOgImage: "/og/default.png",
   locale: "en_US",
   lang: "en",
   email: "hello@computeflux.xyz",
-  location: "Bordeaux, France — remote worldwide",
+  location: "Bordeaux, France · remote worldwide",
   foundingYear: 2026,
   social: {
     linkedin: "https://www.linkedin.com/company/computeflux",

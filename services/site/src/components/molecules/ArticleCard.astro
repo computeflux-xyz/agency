@@ -2,6 +2,7 @@
 import Tag from "@atoms/Tag.astro";
 import Icon from "@atoms/Icon.astro";
 import { formatDate } from "@lib/utils";
+import { getLocale, useTranslations } from "@i18n";
 
 interface Props {
   href: string;
@@ -27,6 +28,8 @@ const {
   featured = false,
   class: className = "",
 } = Astro.props;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 ---
 
 <a
@@ -60,7 +63,7 @@ const {
     <span
       class="absolute left-3 top-3 rounded-[var(--radius-sm)] border border-ink-50 bg-ink-950 px-2.5 py-1 font-mono text-[0.6rem] font-medium uppercase tracking-widest text-ink-50"
     >
-      {kind === "study" ? "Case study" : "Article"}
+      {kind === "study" ? t("articleCard.study") : t("articleCard.article")}
     </span>
   </div>
 
@@ -88,7 +91,7 @@ const {
     <div class="mt-auto flex items-center gap-3 pt-2 font-mono text-xs text-ink-400">
       {date && <time datetime={date}>{formatDate(date)}</time>}
       {date && readingTime && <span aria-hidden="true">·</span>}
-      {readingTime && <span>{readingTime} min read</span>}
+      {readingTime && <span>{readingTime} {t("articleCard.readTime")}</span>}
       <Icon
         name="arrow"
         size={14}

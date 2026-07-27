@@ -2,24 +2,25 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import Button from "@atoms/Button.astro";
 import ScrambleText from "@atoms/ScrambleText.astro";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
-const title = "Page not found";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 ---
 
-<PageLayout title={title} noindex>
+<PageLayout title={t("notFound.title")} noindex>
   <section class="relative flex min-h-[80vh] items-center overflow-hidden pt-24">
     <div class="container-flux flex flex-col items-center gap-6 text-center">
-      <span class="font-mono text-sm uppercase tracking-[0.3em] text-ink-400">Error 404</span>
+      <span class="font-mono text-sm uppercase tracking-[0.3em] text-ink-400">{t("notFound.code")}</span>
       <h1 class="font-display text-7xl font-bold tracking-tight md:text-9xl">
         <ScrambleText text="404" on="load" />
       </h1>
       <p class="max-w-md text-pretty text-lg text-ink-300">
-        This route returned null. The page you're looking for doesn't exist, or
-        it moved.
+        {t("notFound.lead")}
       </p>
       <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-        <Button href="/" variant="primary" arrow>Back home</Button>
-        <Button href="/studies" variant="outline">Browse case studies</Button>
+        <Button href={localizedPath("/", locale)} variant="primary" arrow>{t("notFound.home")}</Button>
+        <Button href={localizedPath("/studies", locale)} variant="outline">{t("notFound.studies")}</Button>
       </div>
     </div>
   </section>

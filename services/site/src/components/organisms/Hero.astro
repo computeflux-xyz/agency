@@ -3,12 +3,16 @@ import Button from "@atoms/Button.astro";
 import Eyebrow from "@atoms/Eyebrow.astro";
 import ScrambleText from "@atoms/ScrambleText.astro";
 import Icon from "@atoms/Icon.astro";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const rotating = [
-  "inference cost.",
-  "agent reliability.",
-  "systems performance.",
-  "production latency.",
+  t("hero.rot.1"),
+  t("hero.rot.2"),
+  t("hero.rot.3"),
+  t("hero.rot.4"),
 ];
 ---
 
@@ -21,47 +25,52 @@ const rotating = [
 
   <div class="container-flux flex flex-col items-center gap-8 pb-20 text-center md:pb-28">
     <div data-reveal>
-      <Eyebrow accent="blue">Deep tech R&amp;D studio · est. 2026</Eyebrow>
+      <Eyebrow accent="blue">{t("hero.eyebrow")}</Eyebrow>
     </div>
 
     <h1
       class="max-w-4xl text-balance text-[2.6rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl md:text-[4.5rem]"
       data-reveal
     >
-      We engineer <span class="flux-gradient-text">high-performance</span>
+      {t("hero.titleA")} <span class="flux-gradient-text">{t("hero.titleHighlight")}</span>
       <br class="hidden sm:block" />
-      AI systems that ship.
+      {t("hero.titleB")}
     </h1>
 
     <p class="max-w-2xl text-pretty text-lg leading-relaxed text-ink-300 md:text-xl" data-reveal>
-      Computeflux is a research &amp; development studio for teams putting AI into
-      production. We cut
-      <span
-        data-rotator
-        data-words={JSON.stringify(rotating)}
-        class="font-mono text-ink-100"
-        >inference cost.</span
-      >
+      {t("hero.lead")}{" "}
+      <span class="relative inline-grid align-bottom font-mono text-ink-100">
+        {/* Longest word reserves the width so the lead text never reflows. */}
+        {rotating.map((word) => (
+          <span class="invisible col-start-1 row-start-1 whitespace-nowrap" aria-hidden="true">{word}</span>
+        ))}
+        <span
+          data-rotator
+          data-words={JSON.stringify(rotating)}
+          class="col-start-1 row-start-1 whitespace-nowrap"
+          >{rotating[0]}</span
+        >
+      </span>
     </p>
 
     <div class="flex flex-col items-center gap-3 sm:flex-row" data-reveal>
-      <Button href="/book" variant="primary" size="lg" arrow>Book a call</Button>
-      <Button href="/expertise" variant="outline" size="lg">Explore our expertise</Button>
+      <Button href={localizedPath("/book", locale)} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>
+      <Button href={localizedPath("/expertise", locale)} variant="outline" size="lg">{t("hero.ctaExplore")}</Button>
     </div>
 
     <div
       class="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-xs uppercase tracking-[0.18em] text-ink-400"
       data-reveal
     >
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-blue"></span><ScrambleText text="Inference optimization" /></span>
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-magenta"></span><ScrambleText text="Agentic systems" delay={120} /></span>
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-amber"></span><ScrambleText text="Rust · Zig · Go" delay={240} /></span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-blue"></span><ScrambleText text={t("hero.pill.inference")} /></span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-magenta"></span><ScrambleText text={t("hero.pill.agentic")} delay={120} /></span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-amber"></span><ScrambleText text={t("hero.pill.langs")} delay={240} /></span>
     </div>
   </div>
 
   <div class="flex justify-center pb-8" aria-hidden="true">
     <span class="flex flex-col items-center gap-2 text-ink-500">
-      <span class="font-mono text-[0.6rem] uppercase tracking-[0.2em]">Scroll</span>
+      <span class="font-mono text-[0.6rem] uppercase tracking-[0.2em]">{t("hero.scroll")}</span>
       <Icon name="chevron" size={16} class="animate-bounce" />
     </span>
   </div>

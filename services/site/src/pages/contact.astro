@@ -6,27 +6,27 @@ import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
 import Divider from "@atoms/Divider.astro";
 import { site } from "@lib/site";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
-const title = "Contact";
-const description =
-  "Get in touch with Computeflux. Tell us about your AI systems problem — we answer every message personally.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const channels = [
-  { icon: "mail", label: "Email", value: site.email, href: `mailto:${site.email}` },
-  { icon: "calendar", label: "Book a call", value: "30-minute intro", href: "/book" },
-  { icon: "spark", label: "Careers", value: "Join the studio", href: "/careers" },
+  { icon: "mail", label: t("contact.channelEmail"), value: site.email, href: `mailto:${site.email}` },
+  { icon: "calendar", label: t("contact.channelBook"), value: t("contact.channelBookValue"), href: localizedPath("/book", locale) },
+  { icon: "spark", label: t("contact.channelCareers"), value: t("contact.channelCareersValue"), href: localizedPath("/careers", locale) },
 ];
 ---
 
-<PageLayout title={title} description={description}>
+<PageLayout title={t("contact.title")} description={t("contact.metaDescription")}>
   <PageHero
-    eyebrow="Get in touch"
-    title="Let's talk about your problem"
-    lead={description}
+    eyebrow={t("contact.hero.eyebrow")}
+    title={t("contact.hero.title")}
+    lead={t("contact.hero.lead")}
   />
 
   <section class="container-flux pb-24">
-    <Divider label="CONTACT" />
+    <Divider label={t("nav.contact")} />
     <div class="grid gap-12 py-12 lg:grid-cols-[1fr_1.2fr]">
       <!-- Channels -->
       <div class="flex flex-col gap-4">
@@ -48,54 +48,61 @@ const channels = [
           ))
         }
         <p class="mt-2 text-sm leading-relaxed text-ink-400">
-          Based in {site.location}. We work remote-first and respond within one
-          business day.
+          {t("contact.basedNote").replace("{location}", site.location)}
         </p>
       </div>
 
       <!-- Form -->
       <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
-        <h2 class="text-lg font-semibold text-ink-50">Send a message</h2>
-        <form class="flex flex-col gap-4" data-contact-form aria-label="Contact form">
+        <h2 class="text-lg font-semibold text-ink-50">{t("contact.formTitle")}</h2>
+        <form
+          class="flex flex-col gap-4"
+          data-contact-form
+          aria-label={t("contact.formTitle")}
+          data-msg-sending={t("contact.sending")}
+          data-msg-success={t("contact.sent")}
+          data-msg-error={t("contact.error")}
+          data-msg-network={t("contact.networkError")}
+        >
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="First name" name="name" required />
-            <Field label="Last name" name="surname" required />
+            <Field label={t("contact.firstName")} name="name" required />
+            <Field label={t("contact.lastName")} name="surname" required />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Email" name="email" type="email" required />
-            <Field label="Phone number" name="phoneNumber" type="tel" required />
+            <Field label={t("contact.email")} name="email" type="email" required />
+            <Field label={t("contact.phoneNumber")} name="phoneNumber" type="tel" required />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Company" name="company" hint="Optional" />
+            <Field label={t("contact.company")} name="company" hint={t("contact.optional")} />
             <Field
-              label="LinkedIn profile"
+              label={t("contact.linkedin")}
               name="linkedinProfile"
               type="url"
               placeholder="https://www.linkedin.com/in/…"
-              hint="Optional"
+              hint={t("contact.optional")}
             />
           </div>
 
           <fieldset class="flex flex-col gap-2">
             <legend class="flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-300">
-              How should we reach you?
+              {t("contact.reach")}
               <span class="text-flux-magenta" aria-hidden="true">*</span>
             </legend>
             <div class="grid grid-cols-2 gap-3">
               <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
                 <input type="radio" name="preferredContact" value="phone" required style="accent-color: var(--color-flux-blue)" />
-                <span class="text-sm">By phone</span>
+                <span class="text-sm">{t("contact.byPhone")}</span>
               </label>
               <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
                 <input type="radio" name="preferredContact" value="email" required style="accent-color: var(--color-flux-blue)" />
-                <span class="text-sm">By email</span>
+                <span class="text-sm">{t("contact.byEmail")}</span>
               </label>
             </div>
           </fieldset>
 
-          <Field label="Message" name="message" as="textarea" rows={5} required />
+          <Field label={t("contact.message")} name="message" as="textarea" rows={5} required />
 
-          <Button type="submit" variant="primary" fullWidth arrow>Send message</Button>
+          <Button type="submit" variant="primary" fullWidth arrow>{t("contact.send")}</Button>
 
           <p
             data-contact-status
@@ -122,6 +129,13 @@ const channels = [
     const phoneInput = form.querySelector<HTMLInputElement>('input[name="phoneNumber"]');
     if (phoneInput) enhancePhoneInput(phoneInput);
 
+    const msg = {
+      sending: form.dataset.msgSending ?? "",
+      success: form.dataset.msgSuccess ?? "",
+      error: form.dataset.msgError ?? "",
+      network: form.dataset.msgNetwork ?? "",
+    };
+
     const setStatus = (message: string, tone: "idle" | "error" | "success") => {
       if (!statusEl) return;
       statusEl.textContent = message;
@@ -138,7 +152,7 @@ const channels = [
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (submitBtn) submitBtn.disabled = true;
-      setStatus("Sending your message…", "idle");
+      setStatus(msg.sending, "idle");
 
       const data = new FormData(form);
       const payload = {
@@ -162,15 +176,12 @@ const channels = [
 
         if (res.ok && body.ok) {
           form.reset();
-          setStatus(
-            "Thanks — your message is on its way. We'll get back to you within one business day.",
-            "success",
-          );
+          setStatus(msg.success, "success");
         } else {
-          setStatus(body.message ?? "Something went wrong. Please try again.", "error");
+          setStatus(body.message ?? msg.error, "error");
         }
       } catch {
-        setStatus("Network error. Please try again, or email us directly.", "error");
+        setStatus(msg.network, "error");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

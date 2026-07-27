@@ -8,15 +8,22 @@ import Icon from "@atoms/Icon.astro";
 import Button from "@atoms/Button.astro";
 import Field from "@atoms/Field.astro";
 import ApiNotice from "@molecules/ApiNotice.astro";
-import { jobs } from "@data/jobs";
+import { jobSlugs, getJob } from "@data/jobs";
 import { jobPostingSchema, breadcrumbSchema } from "@lib/seo";
 import { site } from "@lib/site";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
 export const getStaticPaths = (() => {
-  return jobs.map((job) => ({ params: { slug: job.slug }, props: { job } }));
+  return jobSlugs.map((slug) => ({ params: { slug } }));
 }) satisfies GetStaticPaths;
 
-const { job } = Astro.props;
+const { slug } = Astro.params;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+
+const job = getJob(locale, slug!);
+if (!job) return Astro.redirect(localizedPath("/careers", locale));
+
 const origin = Astro.site?.origin ?? site.url;
 
 const jsonLd = [
@@ -30,14 +37,14 @@ const jsonLd = [
   }),
   breadcrumbSchema([
     { name: "Home", url: origin },
-    { name: "Careers", url: `${origin}/careers` },
+    { name: t("careers.title"), url: `${origin}/careers` },
     { name: job.title, url: `${origin}/careers/${job.slug}` },
   ]),
 ];
 ---
 
 <PageLayout title={job.title} description={job.summary} jsonLd={jsonLd}>
-  <PageHero eyebrow="Open role" title={job.title} lead={job.summary}>
+  <PageHero eyebrow={t("careers.openRole")} title={job.title} lead={job.summary}>
     <div class="mt-2 flex flex-wrap gap-1.5" data-reveal>
       <Tag size="xs">{job.team}</Tag>
       <Tag size="xs">{job.location}</Tag>
@@ -49,7 +56,7 @@ const jsonLd = [
     <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
       <div class="flex flex-col gap-10">
         <div>
-          <h2 class="mb-5 text-xl font-semibold text-ink-50">What you'll do</h2>
+          <h2 class="mb-5 text-xl font-semibold text-ink-50">{t("careers.doTitle")}</h2>
           <ul class="flex flex-col gap-3">
             {
               job.responsibilities.map((r) => (
@@ -62,7 +69,7 @@ const jsonLd = [
           </ul>
         </div>
         <div>
-          <h2 class="mb-5 text-xl font-semibold text-ink-50">What we're looking for</h2>
+          <h2 class="mb-5 text-xl font-semibold text-ink-50">{t("careers.lookingTitle")}</h2>
           <ul class="flex flex-col gap-3">
             {
               job.requirements.map((r) => (
@@ -79,33 +86,33 @@ const jsonLd = [
       <div class="lg:sticky lg:top-24 lg:h-fit">
         <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
           <div class="flex flex-col gap-1">
-            <h2 class="text-lg font-semibold text-ink-50">Apply</h2>
-            <p class="text-sm text-ink-400">We read every application personally.</p>
+            <h2 class="text-lg font-semibold text-ink-50">{t("careers.applyTitle")}</h2>
+            <p class="text-sm text-ink-400">{t("careers.applyLead")}</p>
           </div>
 
           <ApiNotice />
 
-          <form class="flex flex-col gap-4" data-apply-form aria-label={`Apply for ${job.title}`}>
+          <form class="flex flex-col gap-4" data-apply-form aria-label={`${t("careers.applyTitle")} — ${job.title}`}>
             <input type="hidden" name="role" value={job.title} />
-            <Field label="Full name" name="name" required disabled />
-            <Field label="Email" name="email" type="email" required disabled />
+            <Field label={t("careers.applyName")} name="name" required disabled />
+            <Field label={t("careers.applyEmail")} name="email" type="email" required disabled />
             <Field
-              label="Links (GitHub, LinkedIn, site)"
+              label={t("careers.applyLinks")}
               name="links"
               placeholder="github.com/you"
               disabled
             />
             <Field
-              label="Why Computeflux?"
+              label={t("careers.applyWhy")}
               name="message"
               as="textarea"
               rows={4}
               required
               disabled
-              hint="The most important field. Tell us what you'd want to work on."
+              hint={t("careers.applyWhyHint")}
             />
             <Button type="submit" variant="primary" fullWidth disabled arrow>
-              Submit application
+              {t("careers.submit")}
             </Button>
           </form>
         </div>
@@ -114,7 +121,7 @@ const jsonLd = [
 
     <Divider class="mt-16" />
     <div class="pt-8">
-      <Button href="/careers" variant="ghost">← All open roles</Button>
+      <Button href={localizedPath("/careers", locale)} variant="ghost">{t("careers.allRoles")}</Button>
     </div>
   </section>
 </PageLayout>

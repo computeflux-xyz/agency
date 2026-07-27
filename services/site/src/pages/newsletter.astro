@@ -4,24 +4,19 @@ import PageHero from "@organisms/PageHero.astro";
 import NewsletterForm from "@molecules/NewsletterForm.astro";
 import Divider from "@atoms/Divider.astro";
 import Icon from "@atoms/Icon.astro";
+import { getLocale, useTranslations } from "@i18n";
 
-const title = "Newsletter";
-const description =
-  "Subscribe to the Computeflux newsletter — occasional, technical, no fluff. Field notes on inference, agents and high-performance AI engineering.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
-const topics = [
-  "Inference optimization techniques that actually move numbers",
-  "Reliable agentic system patterns",
-  "Systems-programming deep dives (Rust, Zig, Go)",
-  "Anonymized lessons from real engagements",
-];
+const topics = [t("newsletter.topic1"), t("newsletter.topic2"), t("newsletter.topic3")];
 ---
 
-<PageLayout title={title} description={description}>
-  <PageHero eyebrow="Stay in the loop" title="The Computeflux newsletter" lead={description} />
+<PageLayout title={t("newsletter.title")} description={t("newsletter.metaDescription")}>
+  <PageHero eyebrow={t("newsletter.hero.eyebrow")} title={t("newsletter.hero.title")} lead={t("newsletter.hero.lead")} />
 
   <section class="container-prose pb-24">
-    <Divider label="SUBSCRIBE" />
+    <Divider label={t("newsletter.hero.eyebrow")} />
     <div class="flex flex-col gap-8 py-12">
       <div
         class="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-8 md:p-10"
@@ -29,10 +24,9 @@ const topics = [
       >
         <div class="grid-backdrop pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
         <div class="relative flex flex-col gap-5">
-          <h2 class="text-2xl font-semibold text-ink-50">No fluff. Just engineering.</h2>
+          <h2 class="text-2xl font-semibold text-ink-50">{t("newsletter.hero.title")}</h2>
           <p class="text-pretty leading-relaxed text-ink-300">
-            One email when we have something genuinely useful to say — typically
-            once or twice a month. Unsubscribe in one click.
+            {t("newsletter.hero.lead")}
           </p>
           <NewsletterForm class="max-w-xl" />
         </div>
@@ -40,10 +34,10 @@ const topics = [
 
       <ul class="flex flex-col gap-3" data-reveal-stagger="70">
         {
-          topics.map((t) => (
+          topics.map((topic) => (
             <li class="flex items-start gap-3 text-ink-200" data-reveal>
               <span class="mt-1 shrink-0 text-flux-blue"><Icon name="check" size={16} /></span>
-              <span class="text-pretty leading-relaxed">{t}</span>
+              <span class="text-pretty leading-relaxed">{topic}</span>
             </li>
           ))
         }

@@ -541,7 +541,7 @@ export const ui = {
 
     // Home — thesis panel
     "home.thesis.eyebrow": "Notre point de vue",
-    "home.thesis.p1a": "Un modèle prometteur ne suffit pas. Ce qui décide en production, c'est",
+    "home.thesis.p1a": " Ce qui décide en production, c'est",
     "home.thesis.p1span": "l'ingénierie autour du modèle",
     "home.thesis.p1b": ": l'évaluation, la mise en service, les données, la fiabilité.",
     "home.thesis.p2": "Nous construisons cette ingénierie. Des systèmes fiables, observables et sobres, qui transforment un modèle prometteur en produit sur lequel vous pouvez compter.",

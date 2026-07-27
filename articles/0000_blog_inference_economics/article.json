@@ -1,14 +1,28 @@
 {
   "slug": "inference-economics",
   "type": "blog",
-  "title": "The real cost of LLM inference",
-  "shortdesc": "An interactive model of what it actually costs to serve a large language model — and where the savings hide.",
-  "longdesc": "A hands-on, interactive breakdown of LLM inference economics: GPU throughput, cost per million tokens, monthly spend, GPU trade-offs and the optimization techniques that move the needle. Drag the sliders and watch the numbers.",
   "topics": ["inference-optimization", "performance", "ai-engineering"],
   "authors": ["gabriel-mougard"],
   "featured": true,
-  "readingMinutes": 8,
-  "seoTitle": "The real cost of LLM inference — an interactive model",
-  "seoDescription": "Interactive breakdown of LLM inference cost: throughput, cost per million tokens, GPU trade-offs and the optimizations that actually save money.",
-  "cover": ""
+  "cover": "",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "The real cost of LLM inference",
+      "shortdesc": "An interactive model of what it actually costs to serve a large language model, and where the savings hide.",
+      "longdesc": "A hands-on, interactive breakdown of LLM inference economics: GPU throughput, cost per million tokens, monthly spend, GPU trade-offs and the optimization techniques that move the needle. Drag the sliders and watch the numbers.",
+      "readingMinutes": 8,
+      "seoTitle": "The real cost of LLM inference, an interactive model",
+      "seoDescription": "Interactive breakdown of LLM inference cost: throughput, cost per million tokens, GPU trade-offs and the optimizations that actually save money."
+    },
+    "fr": {
+      "entry": "fr/index.html",
+      "title": "Le vrai coût de l'inférence LLM",
+      "shortdesc": "Un modèle interactif de ce que coûte vraiment le service d'un grand modèle de langage, et l'endroit où se cachent les économies.",
+      "longdesc": "Une décomposition interactive et concrète de l'économie de l'inférence LLM : débit GPU, coût par million de tokens, dépense mensuelle, arbitrages entre GPU et les techniques d'optimisation qui changent la donne. Déplacez les curseurs et regardez les chiffres bouger.",
+      "readingMinutes": 8,
+      "seoTitle": "Le vrai coût de l'inférence LLM, un modèle interactif",
+      "seoDescription": "Décomposition interactive du coût de l'inférence LLM : débit, coût par million de tokens, arbitrages GPU et les optimisations qui font vraiment baisser la facture."
+    }
+  }
 }

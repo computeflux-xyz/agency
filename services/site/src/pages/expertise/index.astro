@@ -5,32 +5,41 @@ import ApproachSection from "@organisms/ApproachSection.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import ExpertiseCard from "@molecules/ExpertiseCard.astro";
 import Divider from "@atoms/Divider.astro";
-import { expertise } from "@data/expertise";
+import { getExpertise } from "@data/expertise";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
-const title = "Expertise";
-const description =
-  "Computeflux's four practices: AI Engineering, Inference Optimization, Agentic Systems and Systems Programming — the engineering that makes AI viable in production.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const expertise = getExpertise(locale);
 ---
 
-<PageLayout title={title} description={description} dragon>
+<PageLayout title={t("expertise.title")} description={t("expertise.metaDescription")} dragon>
   <PageHero
-    eyebrow="What we do"
-    title="High-performance AI systems, engineered end to end"
-    lead="We don't sell buzzwords. We solve the specific, measurable problems that decide whether an AI system survives production — and we prove the results."
+    eyebrow={t("expertise.hero.eyebrow")}
+    title={t("expertise.hero.title")}
+    lead={t("expertise.hero.lead")}
   />
 
   <section class="container-flux pb-8">
-    <Divider label="PRACTICES" />
+    <Divider label={t("expertise.practices")} />
     <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="90">
-      {expertise.map((item) => <ExpertiseCard item={item} />)}
+      {
+        expertise.map((item) => (
+          <ExpertiseCard
+            item={item}
+            href={localizedPath(`/expertise/${item.slug}`, locale)}
+            cta={t("expertise.learnMore")}
+          />
+        ))
+      }
     </div>
   </section>
 
   <ApproachSection />
 
   <CtaSection
-    eyebrow="Not sure where to start?"
-    title="Book a scoping call"
-    lead="Tell us the problem. We'll tell you honestly which practice fits, what an engagement would look like, and whether we're the right studio for it."
+    eyebrow={t("expertise.cta.eyebrow")}
+    title={t("expertise.cta.title")}
+    lead={t("expertise.cta.lead")}
   />
 </PageLayout>

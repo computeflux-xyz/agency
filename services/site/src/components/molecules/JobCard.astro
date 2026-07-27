@@ -5,13 +5,15 @@ import type { Job } from "@data/jobs";
 
 interface Props {
   job: Job;
+  href: string;
+  cta: string;
   class?: string;
 }
-const { job, class: className = "" } = Astro.props;
+const { job, href, cta, class: className = "" } = Astro.props;
 ---
 
 <a
-  href={`/careers/${job.slug}`}
+  href={href}
   class:list={[
     "group flex flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface p-6 transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)] md:flex-row md:items-center md:justify-between md:gap-8",
     className,
@@ -30,7 +32,7 @@ const { job, class: className = "" } = Astro.props;
   <span
     class="flex items-center gap-2 whitespace-nowrap font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-400 transition-colors group-hover:text-ink-50"
   >
-    View role
+    {cta}
     <Icon name="arrow" size={15} class="transition-transform duration-200 group-hover:translate-x-0.5" />
   </span>
 </a>

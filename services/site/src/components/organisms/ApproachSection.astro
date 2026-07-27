@@ -1,63 +1,41 @@
 ---
 import SectionHeader from "@molecules/SectionHeader.astro";
-import Icon from "@atoms/Icon.astro";
+import { getLocale, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const steps = [
-  {
-    n: "01",
-    icon: "gauge",
-    title: "Audit & roadmap",
-    description:
-      "A fixed-scope deep dive into your stack. We benchmark, find the bottlenecks, and hand you a concrete, prioritized plan — with estimated cost and latency wins.",
-    meta: "1–3 weeks · fixed price",
-  },
-  {
-    n: "02",
-    icon: "layers",
-    title: "Build",
-    description:
-      "We design and ship the system or component: inference runtime, agent architecture, high-throughput pipeline. Milestone-based, benchmarked, production-ready.",
-    meta: "4–12 weeks · milestones",
-  },
-  {
-    n: "03",
-    icon: "cpu",
-    title: "Staff-level embed",
-    description:
-      "Senior / principal engineering capacity plugged into your team. We work in your codebase, level up your engineers, and leave you self-sufficient.",
-    meta: "ongoing · per day",
-  },
+  { n: "01", title: t("approach.s1.title"), description: t("approach.s1.desc"), meta: t("approach.s1.meta") },
+  { n: "02", title: t("approach.s2.title"), description: t("approach.s2.desc"), meta: t("approach.s2.meta") },
+  { n: "03", title: t("approach.s3.title"), description: t("approach.s3.desc"), meta: t("approach.s3.meta") },
 ];
 ---
 
 <section id="engagements" class="container-flux scroll-mt-24 py-20 md:py-28">
   <SectionHeader
-    eyebrow="How we work"
-    title="Three ways to engage"
-    lead="No bloated retainers. Each engagement is scoped to a clear outcome, and every scope change is agreed before we start."
+    eyebrow={t("approach.eyebrow")}
+    title={t("approach.title")}
+    lead={t("approach.lead")}
     class="mb-14"
   />
 
-  <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
+  <ol class="flex flex-col border-t border-[var(--color-ink-line)]" data-reveal-stagger="90">
     {
       steps.map((step) => (
-        <article
-          class="group relative flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-surface p-7 transition-all duration-300 hover:border-ink-50 hover:shadow-[4px_6px_0_0_var(--color-ink-50)]"
+        <li
+          class="grid grid-cols-1 gap-2 border-b border-[var(--color-ink-line)] py-8 md:grid-cols-[auto_1fr_auto] md:items-baseline md:gap-8"
           data-reveal
         >
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-xs tracking-widest text-ink-400">{step.n}</span>
-            <span class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] text-ink-300 transition-colors group-hover:border-flux-blue group-hover:text-flux-blue">
-              <Icon name={step.icon} size={18} />
-            </span>
+          <div class="flex items-baseline gap-4 md:w-64">
+            <span class="font-mono text-sm text-ink-400">{step.n}</span>
+            <h3 class="text-xl font-semibold tracking-tight text-ink-50 md:text-2xl">{step.title}</h3>
           </div>
-          <h3 class="text-xl font-semibold tracking-tight text-ink-50">{step.title}</h3>
-          <p class="flex-1 text-pretty text-[0.95rem] leading-relaxed text-ink-300">
-            {step.description}
-          </p>
-          <span class="font-mono text-xs uppercase tracking-wider text-ink-400">{step.meta}</span>
-        </article>
+          <p class="text-pretty leading-relaxed text-ink-300">{step.description}</p>
+          <span class="font-mono text-xs uppercase tracking-wider text-ink-400 md:text-right">{step.meta}</span>
+        </li>
       ))
     }
-  </div>
+  </ol>
 </section>
+

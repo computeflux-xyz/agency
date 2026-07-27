@@ -5,70 +5,39 @@ import CtaSection from "@organisms/CtaSection.astro";
 import Divider from "@atoms/Divider.astro";
 import Icon from "@atoms/Icon.astro";
 import { site } from "@lib/site";
+import { getLocale, useTranslations } from "@i18n";
 
-const title = "About";
-const description =
-  "Computeflux is a deep tech R&D studio for high-performance AI systems. We combine cutting-edge AI research with systems-engineering rigor to ship reliable, efficient production systems.";
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const principles = [
-  {
-    icon: "gauge",
-    title: "Measure, then optimize",
-    body: "Every claim we make is backed by a benchmark. We instrument before we touch anything, so improvements are proven — not asserted.",
-  },
-  {
-    icon: "check",
-    title: "Reliability is an architecture",
-    body: "You don't bolt reliability on at the end. We design for observability, evaluation and graceful failure from the first commit.",
-  },
-  {
-    icon: "bolt",
-    title: "The right tool for the hot path",
-    body: "We reach for Rust, Zig or Go where it matters and stay pragmatic everywhere else. Performance is a scalpel, not a hammer.",
-  },
-  {
-    icon: "layers",
-    title: "No bullshit",
-    body: "We tell you when we're not the right fit, when a problem is easier than you think, and when it's harder. Honesty compounds.",
-  },
+  { icon: "gauge", title: t("about.pr1.title"), body: t("about.pr1.body") },
+  { icon: "check", title: t("about.pr2.title"), body: t("about.pr2.body") },
+  { icon: "bolt", title: t("about.pr3.title"), body: t("about.pr3.body") },
+  { icon: "layers", title: t("about.pr4.title"), body: t("about.pr4.body") },
 ];
 ---
 
-<PageLayout title={title} description={description} dragon>
+<PageLayout title={t("about.title")} description={t("about.metaDescription")} dragon>
   <PageHero
-    eyebrow="Who we are"
-    title="A deep tech R&D studio for AI in production"
-    lead="Computeflux specializes in high-complexity software and AI systems. We build reliable, interpretable and ruthlessly efficient AI — blending research with systems-engineering excellence."
+    eyebrow={t("about.hero.eyebrow")}
+    title={t("about.hero.title")}
+    lead={t("about.hero.lead")}
   />
 
   <!-- Narrative -->
   <section class="container-prose pb-8">
-    <Divider label="THE STUDIO" />
+    <Divider label={t("about.studio")} />
     <div class="prose-flux py-12">
-      <p>
-        We started Computeflux because we kept seeing the same thing: capable
-        teams with promising models, blocked not by the model but by everything
-        <em>around</em> it. Inference that cost too much. Agents that worked in a
-        demo and fell over in production. Pipelines that couldn't keep up.
-      </p>
-      <p>
-        Those are engineering problems, and they're the ones we love. We come
-        from backgrounds in high-volume, low-latency systems and modern AI
-        engineering — the intersection where cost, latency and reliability are
-        non-negotiable.
-      </p>
-      <p>
-        We stay deliberately small and senior. When you work with Computeflux,
-        you work with the people doing the work, and you keep everything we
-        build. Case studies are always anonymized and only published with
-        explicit permission.
-      </p>
+      <p>{t("about.p1")}</p>
+      <p>{t("about.p2")}</p>
+      <p>{t("about.p3")}</p>
     </div>
   </section>
 
   <!-- Principles -->
   <section class="container-flux py-12 md:py-16">
-    <Divider label="HOW WE THINK" />
+    <Divider label={t("about.principles")} />
     <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
       {
         principles.map((p) => (
@@ -94,15 +63,15 @@ const principles = [
       data-reveal
     >
       <div class="flex flex-col gap-1">
-        <span class="eyebrow">Based in</span>
+        <span class="eyebrow">{t("about.basedIn")}</span>
         <span class="text-lg font-medium text-ink-50">{site.location}</span>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="eyebrow">Founded</span>
+        <span class="eyebrow">{t("about.founded")}</span>
         <span class="text-lg font-medium text-ink-50">{site.foundingYear}</span>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="eyebrow">Contact</span>
+        <span class="eyebrow">{t("nav.contact")}</span>
         <a href={`mailto:${site.email}`} class="text-lg font-medium text-flux-blue hover:underline">
           {site.email}
         </a>

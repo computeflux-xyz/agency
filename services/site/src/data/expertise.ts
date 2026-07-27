@@ -1,7 +1,16 @@
 /**
  * Expertise / service lines. Powers the /expertise landing, the satellite
- * /expertise/[slug] pages, homepage grid and mega-menu.
+ * /expertise/[slug] pages, the mega-menu and footer.
+ *
+ * Copy is French-first (the agency is French); English mirrors it. Content is
+ * locale-aware via getExpertise(locale) / getExpertiseItem(locale, slug).
+ *
+ * No unprovable numbers, no programming-language lists. The framing targets
+ * the people who buy this: teams that need AI engineers, data engineers and
+ * data architects to get things into production.
  */
+
+import type { Locale } from "@i18n";
 
 export type Capability = {
   title: string;
@@ -21,154 +30,292 @@ export type Expertise = {
   /** Longer intro shown on the detail page. */
   intro: string;
   capabilities: Capability[];
-  stack: string[];
-  /** Representative, defensible outcome metric. */
-  outcome: { value: string; label: string };
 };
 
-export const expertise: Expertise[] = [
+const expertiseFr: Expertise[] = [
+  {
+    slug: "ai-engineering",
+    index: "01",
+    title: "Ingénierie IA",
+    shortTitle: "Ingénierie IA",
+    tagline: "Ce qui fait tenir vos modèles et vos agents face au réel.",
+    summary:
+      "Nous construisons l'ingénierie autour du modèle : évaluation, garde-fous, observabilité et maîtrise des coûts, pour que vos fonctionnalités d'IA tiennent en production.",
+    intro:
+      "L'ingénierie IA, c'est le métier qui consiste à mettre des systèmes à base de modèles et d'agents en production, de façon fiable et sans faire exploser la facture. Nous entraînons rarement des modèles ; nous bâtissons ce qui les entoure : ingestion, recherche, évaluation, observabilité, maîtrise des coûts et sécurité, pour que votre équipe livre des fonctionnalités qui tiennent sous le trafic réel.",
+    capabilities: [
+      {
+        title: "Recherche augmentée (RAG)",
+        description:
+          "Recherche documentaire et récupération de contexte réglées pour la pertinence et la latence.",
+      },
+      {
+        title: "Évaluation & observabilité",
+        description:
+          "Bancs d'évaluation automatisés, traçage et garde-fous de non-régression pour que la qualité se mesure au lieu de se ressentir.",
+      },
+      {
+        title: "Maîtrise des coûts",
+        description:
+          "Routage de modèles, cache et budgets pour garder une dépense d'inférence prévisible quand l'usage grandit.",
+      },
+      {
+        title: "Sécurité & garde-fous",
+        description:
+          "Défense contre l'injection de prompt, validation des sorties et contrôle des données personnelles à la frontière du système.",
+      },
+    ],
+  },
+  {
+    slug: "inference-optimization",
+    index: "02",
+    title: "Inférence",
+    shortTitle: "Inférence",
+    tagline: "Moins de latence, moins de coût, à qualité au moins égale.",
+    summary:
+      "Quantification, décodage spéculatif, batching et architecture de service pour faire baisser le coût et la latence de vos modèles sans sacrifier la qualité.",
+    intro:
+      "L'inférence est souvent la plus grosse ligne de dépense d'un projet d'IA. Nous l'attaquons sous tous les angles : quantification, distillation, décodage spéculatif, stratégie de batching, gestion du cache et composants critiques sur mesure, pour faire baisser le coût et la latence de queue sans dégrader la qualité des réponses.",
+    capabilities: [
+      {
+        title: "Quantification & distillation",
+        description:
+          "Réduction de précision et distillation, avec un benchmarking rigoureux de la qualité avant toute mise en production.",
+      },
+      {
+        title: "Architecture de service",
+        description:
+          "Batching continu, réglage du cache et décodage spéculatif sur des moteurs d'inférence éprouvés.",
+      },
+      {
+        title: "Composants critiques sur mesure",
+        description:
+          "Composants du chemin critique conçus pour la performance quand la latence et la mémoire ne sont pas négociables.",
+      },
+      {
+        title: "Benchmarking",
+        description:
+          "Des mesures de latence, coût et qualité reproductibles, pour que les gains soient prouvés et non promis.",
+      },
+    ],
+  },
+  {
+    slug: "agentic-systems",
+    index: "03",
+    title: "Systèmes agentiques",
+    shortTitle: "Agents",
+    tagline: "Des agents autonomes qui survivent à la production.",
+    summary:
+      "Des architectures d'agents fiables avec mémoire, appel d'outils, stratégies de repli et évaluation, pensées pour de vrais usages, pas pour une démo.",
+    intro:
+      "La plupart des démos d'agents s'effondrent en production. Nous concevons des systèmes agentiques qui tiennent : mémoire durable, appel d'outils fiable, boucles de raisonnement bornées, stratégies de repli et évaluation continue. Le résultat est une autonomie à laquelle vous pouvez confier de vrais processus métier.",
+    capabilities: [
+      {
+        title: "Architecture d'agents",
+        description:
+          "Orchestration à état explicite, avec reprises et points de contrôle où un humain peut reprendre la main.",
+      },
+      {
+        title: "Mémoire & outils",
+        description:
+          "Contrats d'appel d'outils fiables et gestion de mémoire qui reste cohérente sur la durée.",
+      },
+      {
+        title: "Fiabilité",
+        description:
+          "Replis, coupe-circuits et délais d'attente pour qu'un outil défaillant ne fasse pas tomber toute la chaîne.",
+      },
+      {
+        title: "Évaluation des agents",
+        description:
+          "Évaluation et supervision au niveau des parcours, pour attraper les régressions avant vos utilisateurs.",
+      },
+    ],
+  },
+  {
+    slug: "data-engineering",
+    index: "04",
+    title: "Ingénierie & architecture de données",
+    shortTitle: "Données",
+    tagline: "Des données propres et une architecture sur laquelle s'appuyer.",
+    summary:
+      "Pipelines, modélisation et architecture de données fiables, sur lesquels vos équipes et vos modèles peuvent réellement compter.",
+    intro:
+      "Un projet d'IA ne vaut que ce que valent ses données. Nous concevons et fiabilisons les fondations : ingestion, pipelines, modélisation et architecture de données, afin que vos équipes prennent des décisions sur des chiffres justes et que vos modèles s'entraînent et s'exécutent sur une base saine.",
+    capabilities: [
+      {
+        title: "Pipelines de données",
+        description:
+          "Ingestion et transformations fiables, remplaçant les traitements lents et fragiles par des chaînes tenables.",
+      },
+      {
+        title: "Architecture de données",
+        description:
+          "Modélisation et organisation de la donnée pensées pour l'analyse, le reporting et l'entraînement de modèles.",
+      },
+      {
+        title: "Qualité & fraîcheur",
+        description:
+          "Contrôles de qualité et de fraîcheur pour que les tableaux de bord et les modèles s'appuient sur des données à jour.",
+      },
+      {
+        title: "Performance",
+        description:
+          "Profilage et réglage pour trouver et lever les vrais goulots d'étranglement de vos traitements.",
+      },
+    ],
+  },
+];
+
+const expertiseEn: Expertise[] = [
   {
     slug: "ai-engineering",
     index: "01",
     title: "AI Engineering",
     shortTitle: "AI Engineering",
-    tagline: "The factory that runs LLMs and agents in production.",
+    tagline: "What makes your models and agents hold up against the real world.",
     summary:
-      "We build the reliable, observable and cost-controlled infrastructure that turns models into products — RAG, evaluation, routing, guardrails and everything in between.",
+      "We build the engineering around the model: evaluation, guardrails, observability and cost control, so your AI features hold up in production.",
     intro:
-      "AI Engineering is the discipline of putting LLM- and agent-based systems into production reliably, at scale and within budget. We rarely train models; we build the factory around them — ingestion, retrieval, evaluation, observability, cost governance and safety — so your team ships AI features that hold up under real traffic.",
+      "AI engineering is the discipline of putting model- and agent-based systems into production reliably and within budget. We rarely train models; we build everything around them: ingestion, retrieval, evaluation, observability, cost control and safety, so your team ships features that hold up under real traffic.",
     capabilities: [
       {
-        title: "Advanced RAG",
+        title: "Retrieval-augmented (RAG)",
         description:
-          "HyDE, CRAG, Self-RAG and Graph-RAG patterns over high-performance vector stores, tuned for recall and latency.",
+          "Document search and context retrieval tuned for relevance and latency.",
       },
       {
         title: "Evaluation & observability",
         description:
-          "Automated eval harnesses, tracing and regression gates so quality is measurable, not vibes.",
+          "Automated eval harnesses, tracing and regression gates so quality is measured, not felt.",
       },
       {
-        title: "Cost & token governance",
+        title: "Cost control",
         description:
           "Model routing, caching and budgets that keep inference spend predictable as usage grows.",
       },
       {
         title: "Safety & guardrails",
         description:
-          "Prompt-injection defense, output validation and PII controls enforced at the system boundary.",
+          "Prompt-injection defense, output validation and personal-data controls at the system boundary.",
       },
     ],
-    stack: ["Python", "TypeScript", "vLLM", "LangGraph", "Qdrant", "LangFuse"],
-    outcome: { value: "99.9%", label: "eval-gated release confidence" },
   },
   {
     slug: "inference-optimization",
     index: "02",
-    title: "Inference Optimization",
+    title: "Inference",
     shortTitle: "Inference",
-    tagline: "Lower latency. Lower cost. Same or better quality.",
+    tagline: "Lower latency, lower cost, quality at least as good.",
     summary:
-      "Quantization, speculative decoding, custom kernels and serving architecture that typically cut inference cost by 40–70% while improving tail latency.",
+      "Quantization, speculative decoding, batching and serving architecture to bring down the cost and latency of your models without sacrificing quality.",
     intro:
-      "Inference is the single largest line item in most AI budgets. We attack it from every angle — quantization, distillation, speculative decoding, batching strategy, KV-cache management and custom GPU/CPU kernels — to drive down cost and tail latency without sacrificing output quality.",
+      "Inference is often the biggest line item in an AI project. We attack it from every angle: quantization, distillation, speculative decoding, batching strategy, cache management and custom hot-path components, to drive down cost and tail latency without degrading answer quality.",
     capabilities: [
       {
         title: "Quantization & distillation",
         description:
-          "INT8/FP8 and structured distillation with rigorous quality benchmarking before anything ships.",
+          "Precision reduction and distillation, with rigorous quality benchmarking before anything ships.",
       },
       {
         title: "Serving architecture",
         description:
-          "Continuous batching, KV-cache tuning and speculative decoding on vLLM / TensorRT-LLM.",
+          "Continuous batching, cache tuning and speculative decoding on proven inference engines.",
       },
       {
-        title: "Custom kernels",
+        title: "Custom hot-path components",
         description:
-          "Rust, Zig and CUDA components for the hot path — tokenizers, samplers, caches, rate limiters.",
+          "Critical-path components built for performance where latency and memory are non-negotiable.",
       },
       {
         title: "Benchmarking",
         description:
-          "Reproducible latency/cost/quality benchmarks so gains are proven, not promised.",
+          "Reproducible latency, cost and quality measurements so gains are proven, not promised.",
       },
     ],
-    stack: ["Rust", "CUDA", "vLLM", "TensorRT-LLM", "Triton", "Zig"],
-    outcome: { value: "40–70%", label: "typical inference cost reduction" },
   },
   {
     slug: "agentic-systems",
     index: "03",
     title: "Agentic Systems",
-    shortTitle: "Agentic",
-    tagline: "Autonomous agents that survive contact with production.",
+    shortTitle: "Agents",
+    tagline: "Autonomous agents that survive production.",
     summary:
-      "Reliable agent architectures with memory, tool-calling, fallback strategies and evaluation — designed for real workloads, not demos.",
+      "Reliable agent architectures with memory, tool-calling, fallback strategies and evaluation, designed for real workloads, not a demo.",
     intro:
-      "Most agent demos fall apart in production. We design agentic systems that don't: durable memory, dependable tool-calling, bounded reasoning loops, fallback strategies and continuous evaluation. The result is autonomy you can actually trust with real business processes.",
+      "Most agent demos fall apart in production. We design agentic systems that hold: durable memory, dependable tool-calling, bounded reasoning loops, fallback strategies and continuous evaluation. The result is autonomy you can trust with real business processes.",
     capabilities: [
       {
         title: "Agent architecture",
         description:
-          "Graph-based orchestration with explicit state, retries and human-in-the-loop checkpoints.",
+          "Explicit-state orchestration with retries and human-in-the-loop checkpoints.",
       },
       {
         title: "Memory & tools",
         description:
-          "Reliable tool-calling contracts and memory management that stays coherent over long horizons.",
+          "Reliable tool-calling contracts and memory that stays coherent over time.",
       },
       {
-        title: "Reliability engineering",
+        title: "Reliability",
         description:
-          "Fallbacks, circuit breakers and timeouts so a single flaky tool doesn't sink the run.",
+          "Fallbacks, circuit breakers and timeouts so one flaky tool doesn't sink the whole run.",
       },
       {
         title: "Agent evaluation",
         description:
-          "Trajectory-level evaluation and monitoring to catch quality regressions before users do.",
+          "Trajectory-level evaluation and monitoring to catch regressions before your users do.",
       },
     ],
-    stack: ["Python", "LangGraph", "Go", "Temporal", "LangFuse", "Rust"],
-    outcome: { value: "10×", label: "fewer production incidents vs. naive agents" },
   },
   {
-    slug: "systems-programming",
+    slug: "data-engineering",
     index: "04",
-    title: "Systems Programming",
-    shortTitle: "Systems",
-    tagline: "Low-level performance and safety for the critical path.",
+    title: "Data engineering & architecture",
+    shortTitle: "Data",
+    tagline: "Clean data and an architecture you can build on.",
     summary:
-      "When milliseconds and memory matter, we drop to Rust, Zig, Go and C++ to build the fast, safe components your platform depends on.",
+      "Reliable pipelines, modelling and data architecture your teams and your models can actually rely on.",
     intro:
-      "Some problems can't be solved in a scripting language. When throughput, latency or memory safety are non-negotiable, we build in Rust, Zig, Go and C++ — data pipelines, inference servers, caches, network services and embedded components engineered for performance and correctness.",
+      "An AI project is only as good as its data. We design and harden the foundations: ingestion, pipelines, modelling and data architecture, so your teams decide on accurate numbers and your models train and run on a healthy base.",
     capabilities: [
       {
-        title: "High-throughput pipelines",
+        title: "Data pipelines",
         description:
-          "Replace slow Python/Spark stages with Rust/Go pipelines for order-of-magnitude speedups.",
+          "Reliable ingestion and transformations, replacing slow, fragile jobs with sustainable chains.",
       },
       {
-        title: "Low-latency services",
+        title: "Data architecture",
         description:
-          "Network and serving components tuned for predictable p99 under heavy concurrency.",
+          "Modelling and organisation of data built for analytics, reporting and model training.",
       },
       {
-        title: "Memory safety",
+        title: "Quality & freshness",
         description:
-          "Rust/Zig sandboxing and safe FFI for security-sensitive and resource-constrained workloads.",
+          "Quality and freshness checks so dashboards and models rely on up-to-date data.",
       },
       {
-        title: "Profiling & tuning",
+        title: "Performance",
         description:
-          "Deep profiling — CPU, memory, cache, syscalls — to find and remove the real bottlenecks.",
+          "Profiling and tuning to find and remove the real bottlenecks in your jobs.",
       },
     ],
-    stack: ["Rust", "Zig", "Go", "C++", "Kubernetes", "eBPF"],
-    outcome: { value: "p99", label: "latency engineered, not hoped for" },
   },
 ];
 
-export function getExpertise(slug: string): Expertise | undefined {
-  return expertise.find((e) => e.slug === slug);
+const byLocale: Record<Locale, Expertise[]> = {
+  fr: expertiseFr,
+  en: expertiseEn,
+};
+
+/** All expertise entries for a locale (falls back to English). */
+export function getExpertise(locale: Locale): Expertise[] {
+  return byLocale[locale] ?? expertiseEn;
 }
+
+/** A single expertise entry by slug for a locale. */
+export function getExpertiseItem(locale: Locale, slug: string): Expertise | undefined {
+  return getExpertise(locale).find((e) => e.slug === slug);
+}
+
+/** Slugs are locale-independent; used by getStaticPaths. */
+export const expertiseSlugs = expertiseEn.map((e) => e.slug);

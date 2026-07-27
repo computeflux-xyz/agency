@@ -6,70 +6,78 @@ import ApproachSection from "@organisms/ApproachSection.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import NotchedPanel from "@organisms/NotchedPanel.astro";
 import SectionHeader from "@molecules/SectionHeader.astro";
-import ExpertiseCard from "@molecules/ExpertiseCard.astro";
 import ArticleCard from "@molecules/ArticleCard.astro";
-import StatBlock from "@molecules/StatBlock.astro";
 import Divider from "@atoms/Divider.astro";
 import Button from "@atoms/Button.astro";
-import { expertise } from "@data/expertise";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 
 const studies = (await getCollection("studies", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
   .slice(0, 3);
 
-const stats = [
-  { value: "40–70%", label: "typical inference cost reduction", accent: "blue" as const },
-  { value: "10×", label: "fewer agent incidents in production", accent: "magenta" as const },
-  { value: "22×", label: "throughput from Rust hot-path rewrites", accent: "amber" as const },
-  { value: "p99", label: "latency engineered, not hoped for", accent: "none" as const },
+const practices = [
+  { title: t("home.intro.li1title"), body: t("home.intro.li1body"), href: localizedPath("/expertise/ai-engineering", locale) },
+  { title: t("home.intro.li2title"), body: t("home.intro.li2body"), href: localizedPath("/expertise/inference-optimization", locale) },
+  { title: t("home.intro.li3title"), body: t("home.intro.li3body"), href: localizedPath("/expertise/data-engineering", locale) },
 ];
 ---
 
 <PageLayout dragon>
   <Hero />
 
-  <section class="container-flux">
-    <Divider label="WHAT WE OPTIMIZE" />
-    <div class="grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16" data-reveal-stagger="100">
-      {stats.map((s) => <StatBlock value={s.value} label={s.label} accent={s.accent} />)}
+  <!-- What we do: editorial, asymmetric, not a symmetric card grid -->
+  <section class="container-flux py-16 md:py-24">
+    <Divider label={t("home.intro.eyebrow")} />
+    <div class="grid gap-10 py-12 md:grid-cols-[1.15fr_1fr] md:gap-16 md:py-16">
+      <div class="flex flex-col gap-6">
+        <h2 class="text-balance text-3xl font-semibold leading-tight tracking-tight text-ink-50 md:text-[2.5rem]">
+          {t("home.intro.title")}
+        </h2>
+        <p class="text-pretty text-lg leading-relaxed text-ink-300">{t("home.intro.p1")}</p>
+        <p class="text-pretty text-lg leading-relaxed text-ink-300">{t("home.intro.p2")}</p>
+      </div>
+      <ul class="flex flex-col divide-y divide-[var(--color-ink-line)] border-t border-[var(--color-ink-line)]" data-reveal-stagger="90">
+        {
+          practices.map((p, i) => (
+            <li data-reveal>
+              <a href={p.href} class="group flex flex-col gap-1.5 py-6 transition-colors">
+                <span class="flex items-baseline gap-3">
+                  <span class="font-mono text-xs text-ink-400">0{i + 1}</span>
+                  <span class="text-xl font-semibold tracking-tight text-ink-50 transition-colors group-hover:text-flux-blue">{p.title}</span>
+                </span>
+                <span class="pl-8 text-pretty leading-relaxed text-ink-300">{p.body}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 
   <section class="container-flux py-16 md:py-24">
-    <SectionHeader
-      eyebrow="Expertise"
-      title="Four practices. One obsession with production."
-      lead="We go deep on the problems that decide whether an AI system is viable in production: cost, latency, reliability and raw performance."
-      class="mb-14"
-    />
-    <div class="grid gap-4 md:grid-cols-2" data-reveal-stagger="90">
-      {expertise.map((item) => <ExpertiseCard item={item} />)}
-    </div>
-  </section>
-
-  <section class="container-flux py-16 md:py-24">
-    <NotchedPanel tone="surface" data-reveal>
+    <NotchedPanel bg="#157493" data-reveal>
       <div class="relative px-6 py-14 md:px-16 md:py-20">
         <div class="flex flex-col gap-6 md:max-w-3xl">
-          <span class="eyebrow">Our thesis</span>
-          <p class="text-balance text-2xl font-semibold leading-snug tracking-tight text-ink-50 md:text-[2rem]">
-            Most AI systems don't fail because the model is bad. They fail because the
-            <span class="flux-gradient-text">engineering around the model</span>
-            is missing — the evaluation, the serving, the safety, the cost control.
+          <span class="font-mono text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-900/70">{t("home.thesis.eyebrow")}</span>
+          <p class="text-balance text-2xl font-semibold leading-snug tracking-tight text-ink-900 md:text-[2rem]">
+            {t("home.thesis.p1a")}
+            <span class="flux-gradient-text">{t("home.thesis.p1span")}</span>
+            {t("home.thesis.p1b")}
           </p>
-          <p class="max-w-2xl text-pretty text-lg leading-relaxed text-ink-300">
-            Computeflux is a deep tech R&amp;D studio. We build that engineering:
-            reliable, observable, ruthlessly efficient systems that turn promising
-            models into products you can trust in production.
+          <p class="max-w-2xl text-pretty text-lg leading-relaxed text-ink-900/85">
+            {t("home.thesis.p2")}
           </p>
-          <p class="text-sm text-ink-400">
-            What we don't sell:
-            <span data-dragon="burn" class="font-medium text-ink-200">slideware</span>,
-            <span data-dragon="burn" class="font-medium text-ink-200">vanity benchmarks</span>
-            or <span data-dragon="burn" class="font-medium text-ink-200">hype</span>.
+          <p class="text-sm text-ink-900/70">
+            {t("home.thesis.dont")}
+            <span data-dragon="burn" class="font-medium text-ink-950">{t("home.thesis.slideware")}</span>,
+            <span data-dragon="burn" class="font-medium text-ink-950">{t("home.thesis.vanity")}</span>
+            {t("home.thesis.or")} <span data-dragon="burn" class="font-medium text-ink-950">{t("home.thesis.hype")}</span>.
           </p>
           <div>
-            <Button href="/about" variant="outline" arrow>How we think</Button>
+            <Button href={localizedPath("/about", locale)} variant="outline" arrow onDark>{t("home.thesis.cta")}</Button>
           </div>
         </div>
       </div>
@@ -79,17 +87,17 @@ const stats = [
   <section class="container-flux py-16 md:py-24">
     <div class="mb-14 flex flex-wrap items-end justify-between gap-6">
       <SectionHeader
-        eyebrow="Selected work"
-        title="Measured outcomes, not slideware"
-        lead="Anonymized case studies where the numbers moved — and we can prove they did."
+        eyebrow={t("home.work.eyebrow")}
+        title={t("home.work.title")}
+        lead={t("home.work.lead")}
       />
-      <Button href="/studies" variant="ghost" arrow class="shrink-0">All studies</Button>
+      <Button href={localizedPath("/studies", locale)} variant="ghost" arrow class="shrink-0">{t("home.work.all")}</Button>
     </div>
     <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
       {
         studies.map((study) => (
           <ArticleCard
-            href={`/studies/${study.id}`}
+            href={localizedPath(`/studies/${study.id}`, locale)}
             title={study.data.title}
             description={study.data.description}
             kind="study"
@@ -106,3 +114,4 @@ const stats = [
 
   <CtaSection />
 </PageLayout>
+
