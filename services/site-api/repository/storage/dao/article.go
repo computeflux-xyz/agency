@@ -9,6 +9,7 @@ import (
 type Article struct {
 	ID               string     `gorm:"column:id;primaryKey"`
 	Slug             string     `gorm:"column:slug"`
+	Lang             string     `gorm:"column:lang"`
 	Type             string     `gorm:"column:type"`
 	Title            string     `gorm:"column:title"`
 	ShortDesc        string     `gorm:"column:shortdesc"`
@@ -69,6 +70,7 @@ func ToArticleModel(a Article) models.Article {
 	m := models.Article{
 		ID:             a.ID,
 		Slug:           a.Slug,
+		Lang:           models.Lang(a.Lang),
 		Type:           models.ArticleType(a.Type),
 		Title:          a.Title,
 		ShortDesc:      a.ShortDesc,

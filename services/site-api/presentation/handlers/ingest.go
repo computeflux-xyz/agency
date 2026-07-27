@@ -51,6 +51,7 @@ func (h *IngestHandler) HandleBegin(c *gin.Context) {
 
 	req := appcontracts.IngestBeginRequest{
 		Slug:           body.Slug,
+		Lang:           models.ParseLang(body.Lang),
 		Type:           models.ArticleType(body.Type),
 		Title:          body.Title,
 		ShortDesc:      body.ShortDesc,

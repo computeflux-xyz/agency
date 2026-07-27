@@ -66,6 +66,7 @@ func parseArticleListFilter(c *gin.Context) (contracts.ArticleListFilter, error)
 	f := contracts.ArticleListFilter{
 		TopicSlugs: csvParam(c, "topics", "topic"),
 		Featured:   boolPtrParam(c, "featured"),
+		Lang:       models.ParseLang(c.Query("lang")),
 		Search:     strings.TrimSpace(firstNonEmpty(c.Query("q"), c.Query("search"))),
 		Pagination: parsePagination(c),
 	}

@@ -28,20 +28,90 @@ import (
 	"time"
 )
 
+// localeMeta is the per-language editorial block of an article.json (v2). Entry
+// is the dist-relative entrypoint for that locale (e.g. "index.html" for en,
+// "fr/index.html" for fr).
+type localeMeta struct {
+	Entry          string `json:"entry"`
+	Title          string `json:"title"`
+	ShortDesc      string `json:"shortdesc"`
+	LongDesc       string `json:"longdesc"`
+	ReadingMinutes int    `json:"readingMinutes"`
+	SEOTitle       string `json:"seoTitle"`
+	SEODescription string `json:"seoDescription"`
+	CanonicalURL   string `json:"canonicalUrl"`
+}
+
 type articleMeta struct {
-	Slug           string   `json:"slug"`
-	Type           string   `json:"type"`
-	Title          string   `json:"title"`
-	ShortDesc      string   `json:"shortdesc"`
-	LongDesc       string   `json:"longdesc"`
-	Topics         []string `json:"topics"`
-	Authors        []string `json:"authors"`
-	Featured       bool     `json:"featured"`
-	ReadingMinutes int      `json:"readingMinutes"`
-	SEOTitle       string   `json:"seoTitle"`
-	SEODescription string   `json:"seoDescription"`
-	CanonicalURL   string   `json:"canonicalUrl"`
-	Cover          string   `json:"cover"`
+	Slug     string                `json:"slug"`
+	Type     string                `json:"type"`
+	Topics   []string              `json:"topics"`
+	Authors  []string              `json:"authors"`
+	Featured bool                  `json:"featured"`
+	Cover    string                `json:"cover"`
+	Locales  map[string]localeMeta `json:"locales"`
+
+	// Legacy single-locale fields (pre-v2 article.json). When Locales is empty
+	// these populate an implicit "en" locale with entry "index.html".
+	Title          string `json:"title"`
+	ShortDesc      string `json:"shortdesc"`
+	LongDesc       string `json:"longdesc"`
+	ReadingMinutes int    `json:"readingMinutes"`
+	SEOTitle       string `json:"seoTitle"`
+	SEODescription string `json:"seoDescription"`
+	CanonicalURL   string `json:"canonicalUrl"`
+}
+
+type localeEntry struct {
+	lang string
+	meta localeMeta
+}
+
+// orderedLocales returns the locales to publish — "en" first, then the rest in
+// lexical order, so the canonical locale is always published first. A legacy
+// (no `locales`) file yields a single implicit "en" locale from the top-level
+// editorial fields.
+func (m articleMeta) orderedLocales() []localeEntry {
+	src := m.Locales
+	if len(src) == 0 {
+		src = map[string]localeMeta{
+			"en": {
+				Entry:          "index.html",
+				Title:          m.Title,
+				ShortDesc:      m.ShortDesc,
+				LongDesc:       m.LongDesc,
+				ReadingMinutes: m.ReadingMinutes,
+				SEOTitle:       m.SEOTitle,
+				SEODescription: m.SEODescription,
+				CanonicalURL:   m.CanonicalURL,
+			},
+		}
+	}
+
+	langs := make([]string, 0, len(src))
+	for l := range src {
+		langs = append(langs, l)
+	}
+
+	sort.Slice(langs, func(i, j int) bool {
+		if langs[i] == "en" || langs[j] == "en" {
+			return langs[i] == "en"
+		}
+
+		return langs[i] < langs[j]
+	})
+
+	out := make([]localeEntry, 0, len(langs))
+	for _, l := range langs {
+		lm := src[l]
+		if lm.Entry == "" {
+			lm.Entry = "index.html"
+		}
+
+		out = append(out, localeEntry{lang: l, meta: lm})
+	}
+
+	return out
 }
 
 type fileSpec struct {
@@ -54,6 +124,7 @@ type fileSpec struct {
 
 type beginRequest struct {
 	Slug           string     `json:"slug"`
+	Lang           string     `json:"lang"`
 	Type           string     `json:"type"`
 	Title          string     `json:"title"`
 	ShortDesc      string     `json:"shortdesc"`
@@ -160,52 +231,64 @@ func run(dir, distDir, apiBase, token, actor, commit, ref string) error {
 	}
 
 	coverPath := resolveCover(meta.Cover, files)
-	req := beginRequest{
-		Slug:           meta.Slug,
-		Type:           meta.Type,
-		Title:          meta.Title,
-		ShortDesc:      meta.ShortDesc,
-		LongDesc:       meta.LongDesc,
-		Topics:         meta.Topics,
-		Authors:        meta.Authors,
-		Featured:       meta.Featured,
-		ReadingMinutes: meta.ReadingMinutes,
-		SEOTitle:       meta.SEOTitle,
-		SEODescription: meta.SEODescription,
-		CanonicalURL:   meta.CanonicalURL,
-		CoverPath:      coverPath,
-		SourceDir:      filepath.Base(dir),
-		SourceCommit:   commit,
-		SourceRef:      ref,
-		Files:          files,
-	}
-
 	client := &http.Client{Timeout: 60 * time.Second}
 
-	fmt.Printf("→ begin: %s (%s), %d files\n", meta.Slug, meta.Type, len(files))
-	begin, err := doBegin(client, apiBase, token, actor, req)
-	if err != nil {
-		return err
-	}
-
-	if begin.AlreadyPublished {
-		fmt.Printf("✓ already published (version %d); nothing to upload\n", begin.Version)
-		return nil
-	}
-
-	fmt.Printf("  version %d, %d to upload, %d skipped\n", begin.Version, len(begin.Uploads), len(begin.Skipped))
-	for _, u := range begin.Uploads {
-		if err := putBlob(client, distDir, u); err != nil {
-			return fmt.Errorf("upload %s: %w", u.Path, err)
+	// Publish one begin/upload/commit cycle per locale. Each (slug, lang) is an
+	// independent version with its own entrypoint. The built tree is shared, so
+	// only the entrypoint flag differs between locales.
+	for _, loc := range meta.orderedLocales() {
+		localeFiles, err := flagEntrypoint(files, loc.meta.Entry)
+		if err != nil {
+			return fmt.Errorf("locale %q: %w", loc.lang, err)
 		}
+
+		req := beginRequest{
+			Slug:           meta.Slug,
+			Lang:           loc.lang,
+			Type:           meta.Type,
+			Title:          loc.meta.Title,
+			ShortDesc:      loc.meta.ShortDesc,
+			LongDesc:       loc.meta.LongDesc,
+			Topics:         meta.Topics,
+			Authors:        meta.Authors,
+			Featured:       meta.Featured,
+			ReadingMinutes: loc.meta.ReadingMinutes,
+			SEOTitle:       loc.meta.SEOTitle,
+			SEODescription: loc.meta.SEODescription,
+			CanonicalURL:   loc.meta.CanonicalURL,
+			CoverPath:      coverPath,
+			SourceDir:      filepath.Base(dir),
+			SourceCommit:   commit,
+			SourceRef:      ref,
+			Files:          localeFiles,
+		}
+
+		fmt.Printf("→ begin: %s [%s] (%s), %d files, entry %s\n", meta.Slug, loc.lang, meta.Type, len(localeFiles), loc.meta.Entry)
+		begin, err := doBegin(client, apiBase, token, actor, req)
+		if err != nil {
+			return err
+		}
+
+		if begin.AlreadyPublished {
+			fmt.Printf("✓ %s [%s] already published (version %d); nothing to upload\n", meta.Slug, loc.lang, begin.Version)
+			continue
+		}
+
+		fmt.Printf("  version %d, %d to upload, %d skipped\n", begin.Version, len(begin.Uploads), len(begin.Skipped))
+		for _, u := range begin.Uploads {
+			if err := putBlob(client, distDir, u); err != nil {
+				return fmt.Errorf("upload %s: %w", u.Path, err)
+			}
+		}
+
+		fmt.Printf("  uploaded %d blobs\n", len(begin.Uploads))
+		if err := doCommit(client, apiBase, token, actor, begin.VersionID, begin.JobID); err != nil {
+			return err
+		}
+
+		fmt.Printf("✓ published %s [%s] → %s%s\n", meta.Slug, loc.lang, strings.TrimSuffix(begin.BaseURL, "/")+"/", begin.Entrypoint)
 	}
 
-	fmt.Printf("  uploaded %d blobs\n", len(begin.Uploads))
-	if err := doCommit(client, apiBase, token, actor, begin.VersionID, begin.JobID); err != nil {
-		return err
-	}
-
-	fmt.Printf("✓ published %s → %s%s\n", meta.Slug, strings.TrimSuffix(begin.BaseURL, "/")+"/", begin.Entrypoint)
 	return nil
 }
 
@@ -220,15 +303,33 @@ func readMeta(path string) (articleMeta, error) {
 		return m, fmt.Errorf("parse article.json: %w", err)
 	}
 
-	if m.Slug == "" || m.Type == "" || m.Title == "" {
-		return m, fmt.Errorf("article.json must set slug, type and title")
+	if m.Slug == "" || m.Type == "" {
+		return m, fmt.Errorf("article.json must set slug and type")
+	}
+
+	locales := m.orderedLocales()
+	hasEN := false
+	for _, loc := range locales {
+		if loc.meta.Title == "" {
+			return m, fmt.Errorf("article.json: locale %q must set a title", loc.lang)
+		}
+
+		if loc.lang == "en" {
+			hasEN = true
+		}
+	}
+
+	if !hasEN {
+		return m, fmt.Errorf("article.json: an 'en' locale is required (canonical, always-complete locale)")
 	}
 
 	return m, nil
 }
 
 // walkDist enumerates every file under distDir, computing its relative path,
-// sha256, size and content type. index.html at the root is flagged entrypoint.
+// sha256, size and content type. The entrypoint flag is left unset here and
+// applied per-locale by flagEntrypoint (a multi-locale build has one entry
+// document per language).
 func walkDist(distDir string) ([]fileSpec, error) {
 	var files []fileSpec
 	err := filepath.WalkDir(distDir, func(p string, d os.DirEntry, err error) error {
@@ -252,11 +353,10 @@ func walkDist(distDir string) ([]fileSpec, error) {
 		}
 
 		files = append(files, fileSpec{
-			Path:         rel,
-			SHA256:       sum,
-			ByteSize:     size,
-			ContentType:  contentType(rel),
-			IsEntrypoint: rel == "index.html",
+			Path:        rel,
+			SHA256:      sum,
+			ByteSize:    size,
+			ContentType: contentType(rel),
 		})
 
 		return nil
@@ -267,6 +367,28 @@ func walkDist(distDir string) ([]fileSpec, error) {
 
 	sort.Slice(files, func(i, j int) bool { return files[i].Path < files[j].Path })
 	return files, nil
+}
+
+// flagEntrypoint returns a copy of files with IsEntrypoint set only on the file
+// whose path equals entry. It errors if entry is not present in the built tree,
+// so a mis-declared locale entrypoint fails loudly at publish time.
+func flagEntrypoint(files []fileSpec, entry string) ([]fileSpec, error) {
+	entry = filepath.ToSlash(entry)
+	out := make([]fileSpec, len(files))
+	found := false
+	for i, f := range files {
+		out[i] = f
+		out[i].IsEntrypoint = f.Path == entry
+		if out[i].IsEntrypoint {
+			found = true
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("entrypoint %q not found in dist", entry)
+	}
+
+	return out, nil
 }
 
 func hashFile(path string) (string, int64, error) {

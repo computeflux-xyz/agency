@@ -18,6 +18,7 @@ type ArticleSummaryResp struct {
 	ID            string      `json:"id"`
 	Type          string      `json:"type"`
 	Slug          string      `json:"slug"`
+	Lang          string      `json:"lang"`
 	Title         string      `json:"title"`
 	ShortDesc     string      `json:"shortdesc"`
 	CoverImage    *string     `json:"coverImage"`
@@ -70,6 +71,7 @@ type PaginatedArticlesResp struct {
 
 type IngestBeginReq struct {
 	Slug           string          `json:"slug" binding:"required"`
+	Lang           string          `json:"lang"`
 	Type           string          `json:"type" binding:"required"`
 	Title          string          `json:"title" binding:"required"`
 	ShortDesc      string          `json:"shortdesc"`
@@ -149,6 +151,7 @@ func ArticleToSummaryResp(a models.Article) ArticleSummaryResp {
 		ID:            a.ID,
 		Type:          string(a.Type),
 		Slug:          a.Slug,
+		Lang:          string(a.Lang),
 		Title:         a.Title,
 		ShortDesc:     a.ShortDesc,
 		CoverImage:    nilIfEmpty(a.CoverImageURL),

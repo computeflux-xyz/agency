@@ -1,4 +1,5 @@
 ---
+import { getLocale, localizedPath } from "@i18n";
 
 interface Props {
   href?: string | null;
@@ -13,11 +14,13 @@ const {
   ariaLabel = "Computeflux — home",
 } = Astro.props;
 
-const Tag = href ? "a" : "div";
+const locale = getLocale(Astro);
+const resolvedHref = href === "/" ? localizedPath("/", locale) : href;
+const Tag = resolvedHref ? "a" : "div";
 ---
 
 <Tag
-  {...href ? { href } : {}}
+  {...resolvedHref ? { href: resolvedHref } : {}}
   class:list={["group inline-flex items-center gap-2.5", className]}
   aria-label={ariaLabel}
 >

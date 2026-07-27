@@ -1,6 +1,6 @@
 ---
-// English article detail (root). Locale-aware logic lives in the shared
-// component. The French route is src/pages/fr/articles/[...slug].astro.
+// French article detail (/fr/articles/[slug]). Same shared component as the
+// English route. It resolves the locale from the URL and requests ?lang=fr.
 export const prerender = false;
 import ArticleDetail from "@organisms/ArticleDetail.astro";
 

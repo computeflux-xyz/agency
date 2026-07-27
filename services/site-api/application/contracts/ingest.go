@@ -14,6 +14,7 @@ type IngestFileSpec struct {
 // IngestBeginRequest is the metadata + file list submitted to start a publish.
 type IngestBeginRequest struct {
 	Slug           string
+	Lang           models.Lang
 	Type           models.ArticleType
 	Title          string
 	ShortDesc      string

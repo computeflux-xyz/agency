@@ -50,9 +50,14 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		return resp, err
 	}
 
+	lang := req.Lang
+	if !lang.Valid() {
+		lang = models.LangDefault
+	}
+
 	checksum := manifestChecksum(req.Files)
 
-	if existing, err := uc.store.FindCommittedVersionByChecksum(ctx, req.Slug, checksum); err != nil {
+	if existing, err := uc.store.FindCommittedVersionByChecksum(ctx, req.Slug, lang, checksum); err != nil {
 		return resp, err
 	} else if existing != nil {
 		return contracts.IngestBeginResponse{
@@ -65,12 +70,12 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		}, nil
 	}
 
-	version, err := uc.store.NextVersion(ctx, req.Slug)
+	version, err := uc.store.NextVersion(ctx, req.Slug, lang)
 	if err != nil {
 		return resp, err
 	}
 
-	prefix := uc.versionPrefix(req.Type, req.Slug, version)
+	prefix := uc.versionPrefix(req.Type, req.Slug, lang, version)
 	entrypoint := resolveEntrypoint(req.Files)
 
 	manifest := models.Manifest{
@@ -128,6 +133,7 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 
 	article := &models.Article{
 		Slug:           req.Slug,
+		Lang:           lang,
 		Type:           req.Type,
 		Title:          req.Title,
 		ShortDesc:      req.ShortDesc,
@@ -243,14 +249,14 @@ func (uc *IngestUseCase) Delete(ctx context.Context, slug string) error {
 
 // versionPrefix builds the immutable R2 key prefix for one build:
 //
-//	[<keyPrefix>/]articles/<type>/<slug>/v<version>/
-func (uc *IngestUseCase) versionPrefix(t models.ArticleType, slug string, version int) string {
+//	[<keyPrefix>/]articles/<type>/<slug>/<lang>/v<version>/
+func (uc *IngestUseCase) versionPrefix(t models.ArticleType, slug string, lang models.Lang, version int) string {
 	parts := []string{}
 	if uc.cfg.KeyPrefix != "" {
 		parts = append(parts, strings.Trim(uc.cfg.KeyPrefix, "/"))
 	}
 
-	parts = append(parts, "articles", string(t), slug, fmt.Sprintf("v%d", version))
+	parts = append(parts, "articles", string(t), slug, string(lang), fmt.Sprintf("v%d", version))
 	return path.Join(parts...) + "/"
 }
 

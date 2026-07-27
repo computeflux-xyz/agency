@@ -19,6 +19,7 @@ type ArticleListFilter struct {
 	TopicSlugs []string
 	Featured   *bool
 	Status     models.ArticleStatus
+	Lang       models.Lang
 	Search     string
 	Sort       ArticleSort
 	Pagination Pagination
@@ -38,7 +39,7 @@ type TopicWithCount struct {
 
 type ArticleReadStorage interface {
 	ListArticles(ctx context.Context, filter ArticleListFilter) (ArticleListResult, error)
-	GetPublishedArticleBySlug(ctx context.Context, slug string) (*models.Article, error)
+	GetPublishedArticleBySlug(ctx context.Context, slug string, lang models.Lang) (*models.Article, error)
 	ListTopics(ctx context.Context) ([]TopicWithCount, error)
 }
 
@@ -50,13 +51,13 @@ type IngestJobInput struct {
 }
 
 type ArticleWriteStorage interface {
-	// NextVersion returns the version number a new build for slug would receive
-	// (max existing + 1, or 1 if the article does not exist yet).
-	NextVersion(ctx context.Context, slug string) (int, error)
-	// FindCommittedVersionByChecksum returns an already-published version of slug
-	// whose manifest checksum matches, enabling idempotent re-publishes. Returns
-	// (nil, nil) when none exists.
-	FindCommittedVersionByChecksum(ctx context.Context, slug, checksum string) (*models.ArticleVersion, error)
+	// NextVersion returns the version number a new build for (slug, lang) would
+	// receive (max existing + 1, or 1 if that locale does not exist yet).
+	NextVersion(ctx context.Context, slug string, lang models.Lang) (int, error)
+	// FindCommittedVersionByChecksum returns an already-published version of
+	// (slug, lang) whose manifest checksum matches, enabling idempotent
+	// re-publishes. Returns (nil, nil) when none exists.
+	FindCommittedVersionByChecksum(ctx context.Context, slug string, lang models.Lang, checksum string) (*models.ArticleVersion, error)
 	// BeginIngest upserts the article (draft), inserts the draft version and the
 	// ingest job in one transaction, and returns the persisted version id and
 	// job id.

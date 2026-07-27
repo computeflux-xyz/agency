@@ -24,8 +24,8 @@ func (uc *ReadUseCase) ListArticles(ctx context.Context, filter contracts.Articl
 	return uc.store.ListArticles(ctx, filter)
 }
 
-func (uc *ReadUseCase) GetArticle(ctx context.Context, slug string) (*models.Article, error) {
-	return uc.store.GetPublishedArticleBySlug(ctx, slug)
+func (uc *ReadUseCase) GetArticle(ctx context.Context, slug string, lang models.Lang) (*models.Article, error) {
+	return uc.store.GetPublishedArticleBySlug(ctx, slug, lang)
 }
 
 func (uc *ReadUseCase) ListTopics(ctx context.Context) ([]contracts.TopicWithCount, error) {

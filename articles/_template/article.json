@@ -1,14 +1,28 @@
 {
   "slug": "template-article",
   "type": "blog",
-  "title": "Template Article",
-  "shortdesc": "Copy this directory to start a new ObservableHQ article.",
-  "longdesc": "A minimal Observable Framework app wired for the Computeflux publish pipeline.",
   "topics": ["ai-engineering"],
   "authors": ["computeflux"],
   "featured": false,
-  "readingMinutes": 3,
-  "seoTitle": "",
-  "seoDescription": "",
-  "cover": ""
+  "cover": "",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "Template Article",
+      "shortdesc": "Copy this directory to start a new ObservableHQ article.",
+      "longdesc": "A minimal Observable Framework app wired for the Computeflux publish pipeline.",
+      "readingMinutes": 3,
+      "seoTitle": "",
+      "seoDescription": ""
+    },
+    "fr": {
+      "entry": "fr/index.html",
+      "title": "Article modèle",
+      "shortdesc": "Copiez ce dossier pour démarrer un nouvel article ObservableHQ.",
+      "longdesc": "Une application Observable Framework minimale, câblée pour le pipeline de publication Computeflux.",
+      "readingMinutes": 3,
+      "seoTitle": "",
+      "seoDescription": ""
+    }
+  }
 }

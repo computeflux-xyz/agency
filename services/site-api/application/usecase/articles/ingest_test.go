@@ -53,10 +53,10 @@ func TestAssetKindForPath(t *testing.T) {
 
 func TestVersionPrefix(t *testing.T) {
 	uc := &IngestUseCase{cfg: IngestConfig{}}
-	assert.Equal(t, "articles/blog/my-post/v3/", uc.versionPrefix(models.ArticleTypeBlog, "my-post", 3))
+	assert.Equal(t, "articles/blog/my-post/en/v3/", uc.versionPrefix(models.ArticleTypeBlog, "my-post", models.LangEN, 3))
 
 	withPrefix := &IngestUseCase{cfg: IngestConfig{KeyPrefix: "agency"}}
-	assert.Equal(t, "agency/articles/study/case/v1/", withPrefix.versionPrefix(models.ArticleTypeStudy, "case", 1))
+	assert.Equal(t, "agency/articles/study/case/fr/v1/", withPrefix.versionPrefix(models.ArticleTypeStudy, "case", models.LangFR, 1))
 }
 
 func TestValidateBegin(t *testing.T) {

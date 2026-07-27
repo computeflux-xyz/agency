@@ -1,9 +1,14 @@
 ---
 import Logo from "@atoms/Logo.astro";
 import NewsletterForm from "@molecules/NewsletterForm.astro";
-import { footerNav } from "@data/navigation";
-import { site } from "@lib/site";
+import { getFooterNav } from "@data/navigation";
+import { site, siteFor } from "@lib/site";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
 
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const localizedSite = siteFor(locale);
+const footerNav = getFooterNav(t, locale);
 const year = new Date().getFullYear();
 ---
 
@@ -13,11 +18,11 @@ const year = new Date().getFullYear();
       <div class="flex flex-col gap-6">
         <Logo />
         <p class="max-w-sm text-pretty text-sm leading-relaxed text-ink-300">
-          {site.description}
+          {localizedSite.description}
         </p>
         <div class="flex flex-col gap-2.5">
           <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-400">
-            Newsletter
+            {t("nav.newsletter")}
           </span>
           <NewsletterForm compact class="max-w-sm" />
         </div>
@@ -56,7 +61,7 @@ const year = new Date().getFullYear();
         <a href={site.social.github} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">GitHub</a>
         <a href={site.social.linkedin} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">LinkedIn</a>
         <a href={site.social.x} class="transition-colors hover:text-ink-50" rel="me noopener" target="_blank">X</a>
-        <a href="/privacy" class="transition-colors hover:text-ink-50">Privacy</a>
+        <a href={localizedPath("/privacy", locale)} class="transition-colors hover:text-ink-50">{t("nav.privacy")}</a>
       </div>
     </div>
   </div>

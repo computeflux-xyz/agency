@@ -137,6 +137,8 @@ export type ApiClientOptions = {
   baseUrl: string;
   token?: string;
   fetch?: typeof fetch;
+  /** Content language forwarded as `?lang=` on every request (e.g. "fr"). */
+  lang?: string;
 };
 
 export interface ComputefluxApi {
@@ -246,6 +248,17 @@ class HttpApi implements ComputefluxApi {
             Authorization: `Bearer ${options.token}`,
           };
           return context;
+        },
+      });
+    }
+    if (options.lang) {
+      middleware.push({
+        pre: async (context) => {
+          const url = new URL(context.url);
+          if (!url.searchParams.has("lang")) {
+            url.searchParams.set("lang", options.lang as string);
+          }
+          return { url: url.toString(), init: context.init };
         },
       });
     }

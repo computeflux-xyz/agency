@@ -55,6 +55,7 @@ const (
 type Article struct {
 	ID             string
 	Slug           string
+	Lang           Lang
 	Type           ArticleType
 	Title          string
 	ShortDesc      string

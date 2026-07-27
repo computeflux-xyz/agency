@@ -1,0 +1,62 @@
+---
+import {
+  getLocale,
+  toCanonicalPath,
+  localizedPath,
+  LOCALES,
+  LOCALE_SHORT,
+  LOCALE_LABELS,
+  useTranslations,
+} from "@i18n";
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+
+const locale = getLocale(Astro);
+const canonicalPath = toCanonicalPath(Astro.url.pathname);
+const t = useTranslations(locale);
+---
+
+<div
+  class:list={["flex items-center gap-0.5", className]}
+  role="group"
+  aria-label={t("lang.switch")}
+>
+  {
+    LOCALES.map((l) => {
+      const active = l === locale;
+      return (
+        <a
+          href={localizedPath(canonicalPath, l)}
+          hreflang={l}
+          lang={l}
+          data-set-locale={l}
+          aria-current={active ? "true" : undefined}
+          title={LOCALE_LABELS[l]}
+          class:list={[
+            "rounded-[var(--radius-sm)] px-2 py-1 font-mono text-xs font-medium uppercase tracking-widest transition-colors",
+            active
+              ? "text-ink-50"
+              : "text-ink-400 hover:text-ink-50",
+          ]}
+        >
+          {LOCALE_SHORT[l]}
+        </a>
+      );
+    })
+  }
+</div>
+
+<script>
+  document.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement | null;
+    const link = target?.closest?.("[data-set-locale]");
+    if (!link) return;
+    const locale = link.getAttribute("data-set-locale");
+    if (locale) {
+      document.cookie = `locale=${locale}; path=/; max-age=31536000; samesite=lax`;
+    }
+  });
+</script>

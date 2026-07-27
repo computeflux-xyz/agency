@@ -2,7 +2,16 @@
 import Logo from "@atoms/Logo.astro";
 import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
-import { primaryNav, headerCta } from "@data/navigation";
+import LanguageSwitcher from "@molecules/LanguageSwitcher.astro";
+import { getPrimaryNav, getHeaderCta } from "@data/navigation";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const primaryNav = getPrimaryNav(t, locale);
+const headerCta = getHeaderCta(t, locale);
+const contactHref = localizedPath("/contact", locale);
+const bookHref = localizedPath("/book", locale);
 ---
 
 <header
@@ -112,11 +121,12 @@ import { primaryNav, headerCta } from "@data/navigation";
       </nav>
 
       <div class="flex items-center gap-2">
+        <LanguageSwitcher class="hidden md:flex" />
         <a
-          href="/contact"
+          href={contactHref}
           class="hidden text-sm font-medium text-ink-300 transition-colors hover:text-ink-50 md:inline-flex"
         >
-          Contact
+          {t("cta.contact")}
         </a>
         <Button href={headerCta.href} size="sm" variant="primary" class="hidden sm:inline-flex" arrow>
           {headerCta.label}
@@ -127,7 +137,7 @@ import { primaryNav, headerCta } from "@data/navigation";
           type="button"
           aria-expanded="false"
           aria-controls="mobile-drawer"
-          aria-label="Open menu"
+          aria-label={t("menu.open")}
           class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-ink-50 text-ink-50 transition-colors hover:bg-ink-800 lg:hidden"
         >
           <Icon name="menu" size={18} />
@@ -151,7 +161,7 @@ import { primaryNav, headerCta } from "@data/navigation";
       <button
         data-menu-toggle
         type="button"
-        aria-label="Close menu"
+        aria-label={t("menu.close")}
         class="flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-ink-50 text-ink-50 hover:bg-ink-800"
       >
         <Icon name="close" size={16} />
@@ -204,8 +214,9 @@ import { primaryNav, headerCta } from "@data/navigation";
     </nav>
 
     <div class="flex flex-col gap-3 border-t border-[var(--color-ink-line)] p-5">
-      <Button href="/book" variant="primary" fullWidth arrow>Book a call</Button>
-      <Button href="/contact" variant="outline" fullWidth>Contact</Button>
+      <Button href={bookHref} variant="primary" fullWidth arrow>{t("nav.bookCall")}</Button>
+      <Button href={contactHref} variant="outline" fullWidth>{t("cta.contact")}</Button>
+      <LanguageSwitcher class="justify-center pt-1" />
     </div>
   </div>
 </div>

@@ -17,7 +17,7 @@ export function organizationSchema(): Json {
   };
 }
 
-export function websiteSchema(): Json {
+export function websiteSchema(lang: string = site.lang): Json {
   return {
     "@type": "WebSite",
     "@id": `${site.url}/#website`,
@@ -25,7 +25,7 @@ export function websiteSchema(): Json {
     name: site.name,
     description: site.description,
     publisher: { "@id": `${site.url}/#organization` },
-    inLanguage: site.lang,
+    inLanguage: lang,
   };
 }
 
@@ -33,6 +33,7 @@ export function webPageSchema(opts: {
   url: string;
   title: string;
   description: string;
+  lang?: string;
 }): Json {
   return {
     "@type": "WebPage",
@@ -41,7 +42,7 @@ export function webPageSchema(opts: {
     name: opts.title,
     description: opts.description,
     isPartOf: { "@id": `${site.url}/#website` },
-    inLanguage: site.lang,
+    inLanguage: opts.lang ?? site.lang,
   };
 }
 
@@ -69,6 +70,7 @@ export function articleSchema(opts: {
   authorName: string;
   section?: string;
   tags?: string[];
+  lang?: string;
 }): Json {
   return {
     "@type": "Article",
@@ -83,7 +85,7 @@ export function articleSchema(opts: {
     mainEntityOfPage: opts.url,
     ...(opts.section ? { articleSection: opts.section } : {}),
     ...(opts.tags && opts.tags.length ? { keywords: opts.tags.join(", ") } : {}),
-    inLanguage: site.lang,
+    inLanguage: opts.lang ?? site.lang,
   };
 }
 

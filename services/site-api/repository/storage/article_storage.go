@@ -84,7 +84,14 @@ func (s *articleStorage) filtered(ctx context.Context, f contracts.ArticleListFi
 		status = models.ArticleStatusPublished
 	}
 
-	q := s.db.WithContext(ctx).Model(&dao.Article{}).Where("articles.status = ?", string(status))
+	lang := f.Lang
+	if lang == "" {
+		lang = models.LangDefault
+	}
+
+	q := s.db.WithContext(ctx).Model(&dao.Article{}).
+		Where("articles.status = ?", string(status)).
+		Where("articles.lang = ?", string(lang))
 	if includeType && len(f.Types) > 0 {
 		types := make([]string, len(f.Types))
 		for i, t := range f.Types {
@@ -99,7 +106,11 @@ func (s *articleStorage) filtered(ctx context.Context, f contracts.ArticleListFi
 	}
 
 	if strings.TrimSpace(f.Search) != "" {
-		q = q.Where("articles.search_tsv @@ plainto_tsquery('english', ?)", f.Search)
+		if lang == models.LangFR {
+			q = q.Where("articles.search_tsv_fr @@ plainto_tsquery('french', ?)", f.Search)
+		} else {
+			q = q.Where("articles.search_tsv @@ plainto_tsquery('english', ?)", f.Search)
+		}
 	}
 
 	if len(f.TopicSlugs) > 0 {
@@ -167,20 +178,27 @@ func (s *articleStorage) attachTopics(ctx context.Context, articles []models.Art
 	return nil
 }
 
-func (s *articleStorage) GetPublishedArticleBySlug(ctx context.Context, slug string) (*models.Article, error) {
-	var row dao.Article
-	err := s.db.WithContext(ctx).
-		Where("slug = ? AND status = ?", slug, string(models.ArticleStatusPublished)).
-		First(&row).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+func (s *articleStorage) GetPublishedArticleBySlug(ctx context.Context, slug string, lang models.Lang) (*models.Article, error) {
+	if lang == "" {
+		lang = models.LangDefault
+	}
+
+	row, err := s.findPublishedRow(ctx, slug, lang)
+	if err != nil {
+		return nil, err
+	}
+
+	if row == nil && lang != models.LangDefault {
+		if row, err = s.findPublishedRow(ctx, slug, models.LangDefault); err != nil {
+			return nil, err
+		}
+	}
+
+	if row == nil {
 		return nil, errorx.NewNotFound("article %q not found", slug)
 	}
 
-	if err != nil {
-		return nil, errorx.NewInternal("get article", err)
-	}
-
-	article := dao.ToArticleModel(row)
+	article := dao.ToArticleModel(*row)
 
 	if row.CurrentVersionID != nil {
 		var v dao.ArticleVersion
@@ -215,6 +233,22 @@ func (s *articleStorage) GetPublishedArticleBySlug(ctx context.Context, slug str
 
 	article.Authors = authors
 	return &article, nil
+}
+
+func (s *articleStorage) findPublishedRow(ctx context.Context, slug string, lang models.Lang) (*dao.Article, error) {
+	var row dao.Article
+	err := s.db.WithContext(ctx).
+		Where("slug = ? AND lang = ? AND status = ?", slug, string(lang), string(models.ArticleStatusPublished)).
+		First(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, errorx.NewInternal("get article", err)
+	}
+
+	return &row, nil
 }
 
 func (s *articleStorage) topicsForArticle(ctx context.Context, articleID string) ([]models.Topic, error) {
@@ -294,13 +328,13 @@ func (s *articleStorage) ListTopics(ctx context.Context) ([]contracts.TopicWithC
 	return out, nil
 }
 
-func (s *articleStorage) NextVersion(ctx context.Context, slug string) (int, error) {
+func (s *articleStorage) NextVersion(ctx context.Context, slug string, lang models.Lang) (int, error) {
 	var n int
 	err := s.db.WithContext(ctx).Raw(
 		`SELECT COALESCE(MAX(av.version), 0) + 1
 		   FROM article_versions av
 		   JOIN articles a ON a.id = av.article_id
-		  WHERE a.slug = ?`, slug).Scan(&n).Error
+		  WHERE a.slug = ? AND a.lang = ?`, slug, string(lang)).Scan(&n).Error
 	if err != nil {
 		return 0, errorx.NewInternal("compute next version", err)
 	}
@@ -312,7 +346,7 @@ func (s *articleStorage) NextVersion(ctx context.Context, slug string) (int, err
 	return n, nil
 }
 
-func (s *articleStorage) FindCommittedVersionByChecksum(ctx context.Context, slug, checksum string) (*models.ArticleVersion, error) {
+func (s *articleStorage) FindCommittedVersionByChecksum(ctx context.Context, slug string, lang models.Lang, checksum string) (*models.ArticleVersion, error) {
 	if checksum == "" {
 		return nil, nil
 	}
@@ -322,8 +356,8 @@ func (s *articleStorage) FindCommittedVersionByChecksum(ctx context.Context, slu
 		Table("article_versions av").
 		Select("av.*").
 		Joins("JOIN articles a ON a.id = av.article_id").
-		Where("a.slug = ? AND av.checksum = ? AND av.status = ? AND av.committed_at IS NOT NULL",
-			slug, checksum, string(models.ArticleStatusPublished)).
+		Where("a.slug = ? AND a.lang = ? AND av.checksum = ? AND av.status = ? AND av.committed_at IS NOT NULL",
+			slug, string(lang), checksum, string(models.ArticleStatusPublished)).
 		First(&v).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -353,6 +387,7 @@ func (s *articleStorage) BeginIngest(
 		row := &dao.Article{
 			ID:             uuid.NewString(),
 			Slug:           article.Slug,
+			Lang:           string(article.Lang),
 			Type:           string(article.Type),
 			Title:          article.Title,
 			ShortDesc:      article.ShortDesc,
@@ -369,7 +404,7 @@ func (s *articleStorage) BeginIngest(
 			SourceDir:      article.SourceDir,
 		}
 		if err := tx.Clauses(clause.OnConflict{
-			Columns: []clause.Column{{Name: "slug"}},
+			Columns: []clause.Column{{Name: "slug"}, {Name: "lang"}},
 			DoUpdates: clause.AssignmentColumns([]string{
 				"type", "title", "shortdesc", "longdesc", "featured", "sort_order",
 				"cover_image_url", "cover_video_url", "reading_minutes",
@@ -379,17 +414,17 @@ func (s *articleStorage) BeginIngest(
 			return err
 		}
 
-		// On the ON CONFLICT (slug) DO UPDATE path GORM does not return the
+		// On the ON CONFLICT (slug, lang) DO UPDATE path GORM does not return the
 		// existing row's id (the PK was client-supplied), so read it back by
-		// slug to get the canonical id for both insert and update cases.
+		// (slug, lang) to get the canonical id for both insert and update cases.
 		var articleID string
-		if err := tx.Model(&dao.Article{}).Where("slug = ?", article.Slug).
+		if err := tx.Model(&dao.Article{}).Where("slug = ? AND lang = ?", article.Slug, string(article.Lang)).
 			Select("id").Scan(&articleID).Error; err != nil {
 			return err
 		}
 
 		if articleID == "" {
-			return fmt.Errorf("article id not found after upsert for slug %q", article.Slug)
+			return fmt.Errorf("article id not found after upsert for slug %q lang %q", article.Slug, article.Lang)
 		}
 
 		// 2. Upsert + link topics (replace the article's topic set).

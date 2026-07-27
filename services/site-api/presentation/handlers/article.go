@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/computeflux-xyz/agency/services/site-api/models"
 	pcontracts "github.com/computeflux-xyz/agency/services/site-api/presentation/contracts"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/dtos"
 )
@@ -27,6 +28,7 @@ func NewArticleHandler(reader pcontracts.ArticleReader) *ArticleHandler {
 // @Param        featured  query    boolean false "Only featured articles"
 // @Param        q         query    string false "Full-text search over title/summary/body"
 // @Param        sort      query    string false "recent | title | featured (default)"
+// @Param        lang      query    string false "Content language: en (default) | fr"
 // @Param        page      query    int    false "1-based page (default 1)"
 // @Param        pageSize  query    int    false "Items per page (default 12, max 100)"
 // @Success      200 {object} dtos.PaginatedArticlesResp
@@ -50,15 +52,16 @@ func (h *ArticleHandler) HandleListArticles(c *gin.Context) {
 
 // HandleGetArticle godoc
 // @Summary      Get a published article
-// @Description  Returns article metadata plus the render manifest (entry URL + R2 blob list).
+// @Description  Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
 // @Tags         articles
 // @Produce      json
 // @Param        slug path string true "Article slug"
+// @Param        lang query string false "Content language: en (default) | fr"
 // @Success      200 {object} dtos.ArticleDetailResp
 // @Failure      404 {object} dtos.ErrorResp
 // @Router       /api/articles/{slug} [get]
 func (h *ArticleHandler) HandleGetArticle(c *gin.Context) {
-	article, err := h.reader.GetArticle(c.Request.Context(), c.Param("slug"))
+	article, err := h.reader.GetArticle(c.Request.Context(), c.Param("slug"), models.ParseLang(c.Query("lang")))
 	if err != nil {
 		_ = c.Error(err)
 		return

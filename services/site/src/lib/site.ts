@@ -42,3 +42,21 @@ export const site: SiteConfig = {
 };
 
 export const twitterHandle = "@computeflux";
+
+import { DATE_LOCALE, OG_LOCALE, type Locale } from "@i18n/config";
+import { ui } from "@i18n/ui";
+
+export function siteFor(locale: Locale): SiteConfig {
+  const dict = ui[locale] ?? ui.en;
+  return {
+    ...site,
+    tagline: dict["site.tagline"] ?? site.tagline,
+    description: dict["site.description"] ?? site.description,
+    lang: locale,
+    locale: OG_LOCALE[locale] ?? site.locale,
+  };
+}
+
+export function dateLocale(locale: Locale): string {
+  return DATE_LOCALE[locale] ?? "en-GB";
+}
