@@ -8,6 +8,7 @@ import (
 	appcontracts "github.com/computeflux-xyz/agency/services/site-api/application/contracts"
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/articles"
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/contact"
+	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/meeting"
 	"github.com/computeflux-xyz/agency/services/site-api/config"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/handlers"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/middlewares"
@@ -95,7 +96,10 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 	})
 	ingestHandler := handlers.NewIngestHandler(ingestUseCase)
 
-	var contactMailer appcontracts.ContactMailer
+	var (
+		contactMailer appcontracts.ContactMailer
+		meetingMailer appcontracts.MeetingMailer
+	)
 	if cfg.Resend.Enabled {
 		resendClient, err := mailer.NewResendClient(ctx, mailer.ResendConfig{
 			APIKey:    cfg.Resend.APIKey,
@@ -110,15 +114,28 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 			FirstContactTemplateID:      cfg.Resend.FirstContactTemplateID,
 			FirstContactAdminTemplateID: cfg.Resend.FirstContactAdminTemplateID,
 		})
-		log.Info("Resend contact mailer enabled")
+		meetingMailer = emailadapter.NewResendMeetingMailer(resendClient, emailadapter.MeetingConfig{
+			AdminEmail:             cfg.Resend.AdminEmail,
+			RequestTemplateID:      cfg.Resend.MeetingTemplateID,
+			RequestAdminTemplateID: cfg.Resend.MeetingAdminTemplateID,
+			ReplyLinkedIn:          cfg.Resend.MeetingReplyLinkedIn,
+			ReplyPersonalEmail:     cfg.Resend.MeetingReplyPersonalEmail,
+			ReplyPhone:             cfg.Resend.MeetingReplyPhone,
+		})
+		log.Info("Resend contact + meeting mailers enabled")
 	} else {
 		contactMailer = emailadapter.NewNoOpContactMailer(log)
-		log.Info("Resend disabled: using no-op contact mailer")
+		meetingMailer = emailadapter.NewNoOpMeetingMailer(log)
+		log.Info("Resend disabled: using no-op contact + meeting mailers")
 	}
 
 	contactStorage := storage.NewContactStorage(gormDB)
 	submitUseCase := contact.NewSubmitUseCase(contactStorage, contactMailer, log)
 	contactHandler := handlers.NewContactHandler(submitUseCase)
+
+	meetingStorage := storage.NewMeetingStorage(gormDB)
+	meetingUseCase := meeting.NewRequestUseCase(meetingStorage, meetingMailer, log)
+	meetingHandler := handlers.NewMeetingHandler(meetingUseCase)
 
 	routes := func(r *gin.Engine) {
 		r.Use(middlewares.ErrorHandler(log))
@@ -134,6 +151,7 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 			api.GET("/topics", articleHandler.HandleListTopics)
 
 			api.POST("/contact", middlewares.ContactAuth(cfg.Contact.Token), contactHandler.HandleSubmit)
+			api.POST("/meetings", middlewares.ContactAuth(cfg.Contact.Token), meetingHandler.HandleSubmit)
 
 			if cfg.Ingest.Enabled {
 				admin := api.Group("/admin", middlewares.AdminAuth(cfg.Ingest.Token))

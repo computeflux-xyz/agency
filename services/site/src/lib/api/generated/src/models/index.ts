@@ -674,6 +674,86 @@ export interface DtosManifestFileResp {
 /**
  * 
  * @export
+ * @interface DtosMeetingRequestReq
+ */
+export interface DtosMeetingRequestReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    company?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    email: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    endDate: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    linkedinProfile?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    message: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    phoneNumber: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    startDate: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestReq
+     */
+    surname: string;
+}
+/**
+ * 
+ * @export
+ * @interface DtosMeetingRequestResp
+ */
+export interface DtosMeetingRequestResp {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosMeetingRequestResp
+     */
+    id?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosMeetingRequestResp
+     */
+    ok?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface DtosPaginatedArticlesResp
  */
 export interface DtosPaginatedArticlesResp {

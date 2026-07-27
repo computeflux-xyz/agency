@@ -16,12 +16,16 @@ docs/DtosIngestCommitReq.md
 docs/DtosIngestFileReq.md
 docs/DtosIngestUploadResp.md
 docs/DtosManifestFileResp.md
+docs/DtosMeetingRequestReq.md
+docs/DtosMeetingRequestResp.md
 docs/DtosPaginatedArticlesResp.md
 docs/DtosTopicResp.md
+docs/MeetingsApi.md
 package.json
 src/apis/AdminApi.ts
 src/apis/ArticlesApi.ts
 src/apis/ContactApi.ts
+src/apis/MeetingsApi.ts
 src/apis/index.ts
 src/index.ts
 src/models/index.ts

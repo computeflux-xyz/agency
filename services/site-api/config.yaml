@@ -27,16 +27,21 @@ storage:
 
 ingest:
   enabled: true
-  token: "local-dev-ingest-token"          # override with CONFIG_INGEST_TOKEN
+  token: "local-dev-ingest-token"
   presign_ttl_minutes: 30
 
 contact:
-  token: "local-dev-contact-token"         # override with CONFIG_CONTACT_TOKEN (the site worker sends this as a bearer)
+  token: "local-dev-contact-token"
 
 resend:
-  enabled: false                           # set true (+ api_key) to actually send emails; false = log-only no-op mailer
-  api_key: ""                              # override with CONFIG_RESEND_API_KEY
+  enabled: false
+  api_key: ""
   from_email: "noreply@computeflux.xyz"
-  admin_email: "contact@computeflux.xyz"   # recipient of the admin notification
+  admin_email: "gabriel.mougard@gmail.com"
   first_contact_template_id: "computeflux-first-contact"
   first_contact_admin_template_id: "computeflux-first-contact-admin"
+  meeting_template_id: "computeflux-30min-request"
+  meeting_admin_template_id: "computeflux-30min-request-admin"
+  meeting_reply_linkedin: "https://www.linkedin.com/in/gabriel-mougard/"
+  meeting_reply_personal_email: "gabriel.mougard@gmail.com"
+  meeting_reply_phone: "07 69 28 14 93"

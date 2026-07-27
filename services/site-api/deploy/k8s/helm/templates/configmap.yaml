@@ -47,3 +47,8 @@ data:
       admin_email: {{ .Values.config.resend.admin_email | quote }}
       first_contact_template_id: {{ .Values.config.resend.first_contact_template_id | quote }}
       first_contact_admin_template_id: {{ .Values.config.resend.first_contact_admin_template_id | quote }}
+      meeting_template_id: {{ .Values.config.resend.meeting_template_id | quote }}
+      meeting_admin_template_id: {{ .Values.config.resend.meeting_admin_template_id | quote }}
+      meeting_reply_linkedin: {{ .Values.config.resend.meeting_reply_linkedin | default "" | quote }}
+      meeting_reply_personal_email: {{ .Values.config.resend.meeting_reply_personal_email | default "" | quote }}
+      meeting_reply_phone: {{ .Values.config.resend.meeting_reply_phone | default "" | quote }}

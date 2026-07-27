@@ -5,7 +5,7 @@ import Field from "@atoms/Field.astro";
 import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
 import Divider from "@atoms/Divider.astro";
-import ApiNotice from "@molecules/ApiNotice.astro";
+import { site } from "@lib/site";
 
 const title = "Book a call";
 const description =
@@ -44,7 +44,7 @@ const expect = [
         <div class="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5">
           <p class="text-sm text-ink-300">
             Prefer email? Reach us directly at
-            <a href="mailto:hello@computeflux.xyz" class="text-flux-blue hover:underline">hello@computeflux.xyz</a>.
+            <a href={`mailto:${site.email}`} class="text-flux-blue hover:underline">{site.email}</a>.
           </p>
         </div>
       </div>
@@ -57,48 +57,131 @@ const expect = [
           </span>
           <div class="flex flex-col">
             <h2 class="text-lg font-semibold text-ink-50">Request a slot</h2>
-            <p class="text-sm text-ink-400">We'll confirm by email within one business day.</p>
+            <p class="text-sm text-ink-400">Tell us when suits you — we'll confirm by email within one business day.</p>
           </div>
         </div>
 
-        <ApiNotice>
-          Live scheduling activates once our backend goes live — it'll embed
-          real availability here. For now, submit your details or email us and
-          we'll set up a time.
-        </ApiNotice>
-
-        <form class="flex flex-col gap-4" data-book-form aria-label="Request a call">
+        <form class="flex flex-col gap-4" data-book-form aria-label="Request a 30-minute call">
           <div class="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" name="name" required disabled />
-            <Field label="Email" name="email" type="email" required disabled />
+            <Field label="First name" name="name" required />
+            <Field label="Last name" name="surname" required />
           </div>
-          <Field label="Company" name="company" disabled />
-          <Field
-            label="Topic"
-            name="topic"
-            as="select"
-            disabled
-            options={[
-              { value: "inference", label: "Inference optimization" },
-              { value: "agentic", label: "Agentic systems" },
-              { value: "ai-engineering", label: "AI engineering" },
-              { value: "systems", label: "Systems programming" },
-              { value: "other", label: "Something else" },
-            ]}
-          />
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Email" name="email" type="email" required />
+            <Field label="Phone number" name="phoneNumber" type="tel" required />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Company" name="company" hint="Optional" />
+            <Field
+              label="LinkedIn profile"
+              name="linkedinProfile"
+              type="url"
+              placeholder="https://www.linkedin.com/in/…"
+              hint="Optional"
+            />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label="Preferred window — from" name="startDate" type="datetime-local" required />
+            <Field label="…until" name="endDate" type="datetime-local" required />
+          </div>
           <Field
             label="What would you like to solve?"
             name="message"
             as="textarea"
             rows={4}
             required
-            disabled
           />
-          <Button type="submit" variant="primary" fullWidth disabled arrow>
-            Request call
-          </Button>
+          <Button type="submit" variant="primary" fullWidth arrow>Request call</Button>
+
+          <p
+            data-book-status
+            role="status"
+            aria-live="polite"
+            hidden
+            class="text-sm text-ink-400"
+          >
+          </p>
         </form>
       </div>
     </div>
   </section>
 </PageLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("[data-book-form]");
+
+  if (form) {
+    const statusEl = form.querySelector<HTMLElement>("[data-book-status]");
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    const setStatus = (message: string, tone: "idle" | "error" | "success") => {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.hidden = message === "";
+      statusEl.className =
+        "text-sm " +
+        (tone === "error"
+          ? "text-flux-magenta"
+          : tone === "success"
+            ? "text-flux-blue"
+            : "text-ink-400");
+    };
+
+    const toISO = (v: string) => {
+      if (!v) return "";
+      const d = new Date(v);
+      return Number.isNaN(d.getTime()) ? "" : d.toISOString();
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const data = new FormData(form);
+      const start = toISO(String(data.get("startDate") ?? ""));
+      const end = toISO(String(data.get("endDate") ?? ""));
+
+      if (start && end && new Date(end) <= new Date(start)) {
+        setStatus("The end of your window must be after the start.", "error");
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus("Sending your request…", "idle");
+
+      const payload = {
+        name: String(data.get("name") ?? ""),
+        surname: String(data.get("surname") ?? ""),
+        email: String(data.get("email") ?? ""),
+        phoneNumber: String(data.get("phoneNumber") ?? ""),
+        company: String(data.get("company") ?? ""),
+        linkedinProfile: String(data.get("linkedinProfile") ?? ""),
+        startDate: start,
+        endDate: end,
+        message: String(data.get("message") ?? ""),
+      };
+
+      try {
+        const res = await fetch("/api/book", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string };
+
+        if (res.ok && body.ok) {
+          form.reset();
+          setStatus(
+            "Thanks — your request is in. We'll confirm a time by email within one business day.",
+            "success",
+          );
+        } else {
+          setStatus(body.message ?? "Something went wrong. Please try again.", "error");
+        }
+      } catch {
+        setStatus("Network error. Please try again, or email us directly.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

@@ -44,6 +44,12 @@ type Resend struct {
 	AdminEmail                  string `mapstructure:"admin_email"`
 	FirstContactTemplateID      string `mapstructure:"first_contact_template_id"`
 	FirstContactAdminTemplateID string `mapstructure:"first_contact_admin_template_id"`
+
+	MeetingTemplateID         string `mapstructure:"meeting_template_id"`
+	MeetingAdminTemplateID    string `mapstructure:"meeting_admin_template_id"`
+	MeetingReplyLinkedIn      string `mapstructure:"meeting_reply_linkedin"`
+	MeetingReplyPersonalEmail string `mapstructure:"meeting_reply_personal_email"`
+	MeetingReplyPhone         string `mapstructure:"meeting_reply_phone"`
 }
 
 func (c *Config) Validate() error {
@@ -114,6 +120,14 @@ func (c *Config) Validate() error {
 
 		if c.Resend.FirstContactAdminTemplateID == "" {
 			errors = append(errors, "resend.first_contact_admin_template_id is required when resend is enabled")
+		}
+
+		if c.Resend.MeetingTemplateID == "" {
+			errors = append(errors, "resend.meeting_template_id is required when resend is enabled")
+		}
+
+		if c.Resend.MeetingAdminTemplateID == "" {
+			errors = append(errors, "resend.meeting_admin_template_id is required when resend is enabled")
 		}
 	}
 

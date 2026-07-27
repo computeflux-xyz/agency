@@ -268,6 +268,42 @@ definitions:
       url:
         type: string
     type: object
+  dtos.MeetingRequestReq:
+    properties:
+      company:
+        type: string
+      email:
+        type: string
+      endDate:
+        type: string
+      linkedinProfile:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      phoneNumber:
+        type: string
+      startDate:
+        type: string
+      surname:
+        type: string
+    required:
+    - email
+    - endDate
+    - message
+    - name
+    - phoneNumber
+    - startDate
+    - surname
+    type: object
+  dtos.MeetingRequestResp:
+    properties:
+      id:
+        type: string
+      ok:
+        type: boolean
+    type: object
   dtos.PaginatedArticlesResp:
     properties:
       items:
@@ -498,6 +534,39 @@ paths:
       summary: Submit a contact request
       tags:
       - contact
+  /api/meetings:
+    post:
+      consumes:
+      - application/json
+      description: Registers a "30-minute Rendez-vous" request and triggers the acknowledgement
+        email to the requester plus a notification email to the team.
+      parameters:
+      - description: Meeting request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.MeetingRequestReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.MeetingRequestResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Request a 30-minute meeting
+      tags:
+      - meetings
   /api/topics:
     get:
       description: Curated taxonomy with published-article counts.

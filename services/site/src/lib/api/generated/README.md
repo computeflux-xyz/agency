@@ -61,6 +61,7 @@ All URIs are relative to *http://localhost*
 *ArticlesApi* | [**apiArticlesSlugGet**](docs/ArticlesApi.md#apiarticlesslugget) | **GET** /api/articles/{slug} | Get a published article
 *ArticlesApi* | [**apiTopicsGet**](docs/ArticlesApi.md#apitopicsget) | **GET** /api/topics | List topics
 *ContactApi* | [**apiContactPost**](docs/ContactApi.md#apicontactpost) | **POST** /api/contact | Submit a contact request
+*MeetingsApi* | [**apiMeetingsPost**](docs/MeetingsApi.md#apimeetingspost) | **POST** /api/meetings | Request a 30-minute meeting
 
 
 ### Models
@@ -77,6 +78,8 @@ All URIs are relative to *http://localhost*
 - [DtosIngestFileReq](docs/DtosIngestFileReq.md)
 - [DtosIngestUploadResp](docs/DtosIngestUploadResp.md)
 - [DtosManifestFileResp](docs/DtosManifestFileResp.md)
+- [DtosMeetingRequestReq](docs/DtosMeetingRequestReq.md)
+- [DtosMeetingRequestResp](docs/DtosMeetingRequestResp.md)
 - [DtosPaginatedArticlesResp](docs/DtosPaginatedArticlesResp.md)
 - [DtosTopicResp](docs/DtosTopicResp.md)
 

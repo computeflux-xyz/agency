@@ -311,6 +311,57 @@
                 }
             }
         },
+        "/api/meetings": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Registers a \"30-minute Rendez-vous\" request and triggers the acknowledgement email to the requester plus a notification email to the team.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "meetings"
+                ],
+                "summary": "Request a 30-minute meeting",
+                "parameters": [
+                    {
+                        "description": "Meeting request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.MeetingRequestReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.MeetingRequestResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/topics": {
             "get": {
                 "description": "Curated taxonomy with published-article counts.",
@@ -736,6 +787,58 @@
                 },
                 "url": {
                     "type": "string"
+                }
+            }
+        },
+        "dtos.MeetingRequestReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "endDate",
+                "message",
+                "name",
+                "phoneNumber",
+                "startDate",
+                "surname"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "linkedinProfile": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.MeetingRequestResp": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
                 }
             }
         },

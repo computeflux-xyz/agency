@@ -2,6 +2,7 @@ import {
   Configuration,
   ArticlesApi,
   ContactApi,
+  MeetingsApi,
   ResponseError,
   type Middleware,
   type DtosArticleDetailResp,
@@ -101,6 +102,17 @@ export type ContactPayload = {
   linkedinProfile?: string;
   message: string;
 };
+export type MeetingPayload = {
+  name: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  company?: string;
+  linkedinProfile?: string;
+  startDate: string; // ISO 8601 (RFC3339)
+  endDate: string; // ISO 8601 (RFC3339)
+  message: string;
+};
 export type JobApplicationPayload = {
   name: string;
   email: string;
@@ -136,6 +148,7 @@ export interface ComputefluxApi {
   listBookingSlots(): Promise<BookingSlot[]>;
   book(slotId: string, payload: ContactPayload): Promise<{ confirmationId: string }>;
   submitContact(payload: ContactPayload): Promise<{ ok: true }>;
+  requestMeeting(payload: MeetingPayload): Promise<{ ok: true }>;
   applyForJob(payload: JobApplicationPayload): Promise<{ ok: true }>;
   subscribeNewsletter(payload: NewsletterPayload): Promise<{ ok: true }>;
 }
@@ -221,6 +234,7 @@ async function asError(e: unknown): Promise<Error> {
 class HttpApi implements ComputefluxApi {
   private readonly articles: ArticlesApi;
   private readonly contact: ContactApi;
+  private readonly meetings: MeetingsApi;
 
   constructor(options: ApiClientOptions) {
     const middleware: Middleware[] = [];
@@ -242,6 +256,7 @@ class HttpApi implements ComputefluxApi {
     });
     this.articles = new ArticlesApi(config);
     this.contact = new ContactApi(config);
+    this.meetings = new MeetingsApi(config);
   }
 
   async listArticles(params: ListArticlesParams = {}): Promise<Paginated<ArticleSummary>> {
@@ -300,6 +315,26 @@ class HttpApi implements ComputefluxApi {
           preferredContact: payload.preferredContact,
           company: payload.company,
           linkedinProfile: payload.linkedinProfile,
+          message: payload.message,
+        },
+      });
+      return { ok: true };
+    } catch (e) {
+      throw await asError(e);
+    }
+  }
+  async requestMeeting(payload: MeetingPayload): Promise<{ ok: true }> {
+    try {
+      await this.meetings.apiMeetingsPost({
+        body: {
+          name: payload.name,
+          surname: payload.surname,
+          email: payload.email,
+          phoneNumber: payload.phoneNumber,
+          company: payload.company,
+          linkedinProfile: payload.linkedinProfile,
+          startDate: payload.startDate,
+          endDate: payload.endDate,
           message: payload.message,
         },
       });
