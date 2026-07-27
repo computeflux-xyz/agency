@@ -108,11 +108,15 @@ const expect = [
 </PageLayout>
 
 <script>
+  import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+
   const form = document.querySelector<HTMLFormElement>("[data-book-form]");
 
   if (form) {
     const statusEl = form.querySelector<HTMLElement>("[data-book-status]");
     const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phoneNumber"]');
+    if (phoneInput) enhancePhoneInput(phoneInput);
 
     const setStatus = (message: string, tone: "idle" | "error" | "success") => {
       if (!statusEl) return;
@@ -152,7 +156,7 @@ const expect = [
         name: String(data.get("name") ?? ""),
         surname: String(data.get("surname") ?? ""),
         email: String(data.get("email") ?? ""),
-        phoneNumber: String(data.get("phoneNumber") ?? ""),
+        phoneNumber: phoneInput ? getPhoneE164(phoneInput) : String(data.get("phoneNumber") ?? ""),
         company: String(data.get("company") ?? ""),
         linkedinProfile: String(data.get("linkedinProfile") ?? ""),
         startDate: start,

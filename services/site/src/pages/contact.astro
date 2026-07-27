@@ -112,11 +112,15 @@ const channels = [
 </PageLayout>
 
 <script>
+  import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+
   const form = document.querySelector<HTMLFormElement>("[data-contact-form]");
 
   if (form) {
     const statusEl = form.querySelector<HTMLElement>("[data-contact-status]");
     const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phoneNumber"]');
+    if (phoneInput) enhancePhoneInput(phoneInput);
 
     const setStatus = (message: string, tone: "idle" | "error" | "success") => {
       if (!statusEl) return;
@@ -141,7 +145,7 @@ const channels = [
         name: String(data.get("name") ?? ""),
         surname: String(data.get("surname") ?? ""),
         email: String(data.get("email") ?? ""),
-        phoneNumber: String(data.get("phoneNumber") ?? ""),
+        phoneNumber: phoneInput ? getPhoneE164(phoneInput) : String(data.get("phoneNumber") ?? ""),
         preferredContact: String(data.get("preferredContact") ?? ""),
         company: String(data.get("company") ?? ""),
         linkedinProfile: String(data.get("linkedinProfile") ?? ""),

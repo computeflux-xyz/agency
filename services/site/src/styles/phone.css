@@ -1,0 +1,55 @@
+.iti {
+  width: 100%;
+  display: block;
+  font-family: var(--font-sans);
+}
+
+.iti__selected-country {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+.iti__selected-country:hover,
+.iti__selected-country:focus,
+.iti__selected-country-primary:hover {
+  background-color: var(--color-ink-800);
+}
+
+.iti__dropdown-content {
+  background-color: var(--color-ink-950);
+  color: var(--color-ink-50);
+  border: 1px solid var(--color-ink-line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgb(32 31 30 / 0.14);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+.iti__search-input {
+  background-color: var(--color-ink-950);
+  color: var(--color-ink-50);
+  border: none;
+  border-bottom: 1px solid var(--color-ink-line);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+}
+.iti__search-input::placeholder {
+  color: var(--color-ink-400);
+}
+.iti__search-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-flux-blue);
+}
+
+.iti__country-list {
+  color: var(--color-ink-50);
+}
+.iti__country {
+  padding: 0.5rem 0.8rem;
+}
+.iti__country.iti__highlight,
+.iti__country:hover {
+  background-color: var(--color-ink-800);
+}
+.iti__dial-code {
+  color: var(--color-ink-400);
+}
