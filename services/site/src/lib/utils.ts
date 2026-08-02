@@ -29,7 +29,7 @@ export function absoluteUrl(path: string, origin: string): string {
   return new URL(path, origin).href;
 }
 
-export function formatDate(input: string | Date, locale = "en-GB"): string {
+export function formatDate(input: string | Date, locale = "fr-FR"): string {
   const date = typeof input === "string" ? new Date(input) : input;
   return date.toLocaleDateString(locale, {
     day: "numeric",

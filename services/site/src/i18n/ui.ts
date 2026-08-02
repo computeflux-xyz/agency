@@ -95,70 +95,156 @@ export const ui = {
     "article.preparing": "This article is being prepared and will be available shortly.",
 
     // Home — hero
-    "hero.eyebrow": "Engineering studio · France",
-    "hero.titleA": "We put your",
-    "hero.titleHighlight": "AI",
-    "hero.titleB": "into production.",
-    "hero.lead": "Computeflux is a French engineering studio. We provide the engineers who make AI and data hold up against the real world:",
-    "hero.rot.1": "inference in production.",
-    "hero.rot.2": "reliable agents.",
-    "hero.rot.3": "your data pipelines.",
-    "hero.rot.4": "your costs under control.",
+    "hero.eyebrow": "Data & AI engineering · fully remote",
+    "hero.top": "Data, AI and systems engineering. 100% remote.",
+    "hero.subrow":
+      "We excel at cloud architectures, but also bare metal when sovereignty matters to you.",
+    "hero.title.a": "From",
+    "hero.title.hl": "bare metal",
+    "hero.title.b": "to the model.",
+    "hero.title.l2": "And it holds in production.",
+    "hero.lead": "Computeflux is a French data and AI engineering agency, working entirely remotely. We step in where things break between the prototype and production:",
+    "hero.rot.1": "inference that costs too much.",
+    "hero.rot.2": "the pipeline that fails at night.",
+    "hero.rot.3": "the agent that only worked in the demo.",
+    "hero.rot.4": "numbers nobody believes.",
+    "hero.rot.5": "servers that need taming.",
     "hero.ctaExplore": "See what we do",
-    "hero.pill.inference": "AI engineers",
-    "hero.pill.agentic": "Data engineers",
-    "hero.pill.langs": "Data architects",
+    "hero.photo.a": "Scoping",
+    "hero.photo.b": "Execution",
     "hero.scroll": "Scroll",
 
-    // Home — what we do (editorial block, replaces stat row + card grid)
-    "home.intro.eyebrow": "What we do",
-    "home.intro.title": "Engineers, not slides.",
-    "home.intro.p1": "Most AI projects don't stall because of the model. They stall because the engineering around it is missing: production, reliability, clean data, cost control.",
-    "home.intro.p2": "That is exactly our job. We plug into your team, work in your code, and leave you a system you understand and keep.",
-    "home.intro.li1title": "AI engineering",
-    "home.intro.li1body": "Getting your models and agents into production: evaluation, guardrails, observability, controlled cost.",
-    "home.intro.li2title": "Inference",
-    "home.intro.li2body": "Bringing down the latency and the bill of your models without sacrificing quality.",
-    "home.intro.li3title": "Data engineering & architecture",
-    "home.intro.li3body": "Pipelines and a data architecture your teams and your models can rely on.",
+    // Home — diagnostic section (case nav + content cards)
+    "diag.causeLabel": "What is usually going on",
+    "diag.actionLabel": "What we do",
 
-    // Home — thesis panel
-    "home.thesis.eyebrow": "Our point of view",
-    "home.thesis.p1a": "A promising model is not enough. What decides in production is",
-    "home.thesis.p1span": "the engineering around the model",
-    "home.thesis.p1b": ": evaluation, serving, data, reliability.",
-    "home.thesis.p2": "We build that engineering. Reliable, observable, frugal systems that turn a promising model into a product you can count on.",
-    "home.thesis.dont": "What we don't sell:",
+    // Home — cases section header (the ten-case rotation)
+    "diagHome.eyebrow": "Typical cases",
+    "diagHome.title": "A few typical cases we treat on a regular basis.",
+    "diagHome.more": "See the expertise",
+
+    // Home — "your problems" revealing deck
+    "vostro.eyebrow": "Your problems",
+    "vostro.title": "Six problems we solve from day one.",
+    "vostro.sub": "Scroll. Each card is a real 2026 need — pick yours, we'll tell you how we'd approach it.",
+    "vostro.cta": "Book a call",
+
+    // Home — our own systems in production
+    "systems.eyebrow": "Our own systems",
+    "systems.title.a": "We don't just advise.",
+    "systems.title.hl": "We run our own platforms.",
+    "systems.subtitle.hl": "Computeflux",
+    "systems.subtitle.rest":
+      "The products below are ours: designed, shipped and maintained by us. We only sell engagements with real added value.",
+    "systems.hardLabel": "The hard part",
+    "systems.visit": "Visit the site",
+    "systems.source": "Source code",
+
+    // Home — what we do
+    "practices.eyebrow": "What we do",
+    "practices.title": "Our technical expertise gives us an end-to-end approach.",
+    "practices.lead.a": "Most suppliers stop at the edge of their own layer.",
+    "practices.lead.b": "We are able to",
+    "practices.lead.hl": "go down into the low layers of cloud and bare-metal systems to optimise performance and costs",
+    "practices.lead.c": "while keeping the solutions understandable at knowledge handover. No black boxes, no AI hyphen-slop.",
+    "practices.learnMore": "Learn more",
+    "practices.1.title": "Data engineering & architecture",
+    "practices.1.body":
+      "We design scalable, reliable systems: ingestion, contracts, modelling and warehousing. A base analytics and training can both stand on, with the quality checks that keep numbers trustworthy.",
+    "practices.2.title": "AI engineering",
+    "practices.2.body":
+      "We don't reach for a large model for everything. Most needs deserve a dedicated machine: recommenders, multi-armed bandits, classifiers, well served and cheap. One thing, done well.",
+    "practices.3.title": "Agentic systems",
+    "practices.3.body":
+      "Bounded loops, verifiable tool calls, explicit fallbacks and trajectory-level evaluation. Agents you can hand a real business process to — and that survive production.",
+    "practices.4.title": "Bare metal & compute",
+    "practices.4.body":
+      "Dedicated servers, GPUs, storage and network, well run. When the load is heavy and steady, hardware beats the cloud — and for sovereignty, your data stays under your control, not a US operator's.",
+    "practices.5.title": "Inference & performance",
+    "practices.5.body":
+      "Quantization, continuous batching, caching, speculative decoding, on vLLM, llama.cpp, SGLang or TensorRT, or a custom inference server when the path is critical. Served where you decide — including self-hosted, for sovereignty. Measured before and after.",
+
+    // Home — sovereignty, energy and cost structure
+    "sov.eyebrow": "Sovereignty & cost",
+    "sov.title": "Your data has no reason to cross the Atlantic.",
+    "sov.lead": "We design and operate data and AI systems at European providers — OVHcloud, Scaleway, Hetzner — or on hardware you own. Not out of principle: because energy, law and cost structure all point that way, and because an open stack lets you leave whenever you want.",
+    "sov.photo.label": "Trade-offs",
+    "sov.c1.title": "Energy is the limiting factor again",
+    "sov.c1.body": "Data centres consumed around 415 TWh of electricity in 2024, close to 1.5% of world consumption, and the IEA projects roughly 945 TWh by 2030. Counting AI and crypto with them, the same agency saw the total passing 1,000 TWh as early as 2026. In practice: capacity is booked years ahead, the price of a kWh belongs in the architecture equation, and the idea that compute gets cheaper forever is no longer a given. What you pay per token, someone pays first in megawatts.",
+    "sov.c1.action": "So we measure what you actually consume, size accordingly, and move heavy batch work to the hours when electricity is cheapest and least carbon-intensive.",
+    "sov.c2.title": "Variable or fixed cost is a decision, not a religion",
+    "sov.c2.body": "Metered billing is excellent when the load is irregular or unknown. It turns into a tax when the load is heavy and predictable: nightly training, hot storage, continuous ingestion. The historical lock-in was getting data out; the European Data Act removed it — switching charges are being phased out and disappear entirely in January 2027. Migrating is a calculation again, not a punishment.",
+    "sov.c3.title": "The law follows the provider, not the location of the disk",
+    "sov.c3.body": "The CLOUD Act lets US authorities compel an American operator to hand over data it controls, including data stored in Europe; and since the Schrems II judgment, a transfer to the United States requires demonstrable supplementary safeguards. A European provider, a SecNumCloud qualification or your own hardware are not marketing arguments: they are the only answers that survive the question “who can be compelled?”.",
+    "sov.c4.title": "Portability is a technical property, not a contract clause",
+    "sov.c4.body": "Open formats and replaceable engines: a lakehouse in Parquet and Iceberg can be read elsewhere, an open-weight model served by vLLM redeploys onto other GPUs, a cluster described in OpenTofu rebuilds at another provider. We avoid services whose API is the entire product — that is what makes the cost of leaving quantifiable from day one.",
+    "sov.stackLabel": "What we build on",
+    "sov.stackNote": "Nothing on this list belongs to a single vendor.",
+    "sov.sourcesLabel": "Sources",
+    "sov.sourceAria": "Source {n}",
+    "sov.cta": "Talk about infrastructure",
+
+    // Sovereignty expertise page deep-dive
+    "sovPage.steps": "Our approach",
+
+    // Home — why Computeflux
+    "why.eyebrow": "Why Computeflux",
+    "why.title": "Why companies call us",
+    "why.lead": "Six commitments. Each one is checkable during the engagement, not in a brochure.",
+    "why.r1.title": "Production, not the pitch deck",
+    "why.r1.body": "An engagement is judged on what runs at the end, not on what was presented at the start. A promising model is never enough: what decides is the engineering around it — evaluation, serving, data, reliability.",
+    "why.r1.dont": "What we don't sell:",
+    "why.r2.title": "From bare metal to the model",
+    "why.r2.body": "Few teams cover both the physical server and the model. We go down to the disk and back up to evaluation, without handing off halfway.",
+    "why.r3.title": "Seniors, not juniors on your invoice",
+    "why.r3.body": "You talk to the engineers writing the code. Nobody learns the trade on your budget, and there is no layer between the decision and the execution.",
+    "why.r4.title": "Fully remote, and it shows on the quote",
+    "why.r4.body": "No office to fund, no travel to bill back to you. We work in writing and asynchronously: decisions leave a trail, and that trail stays with you.",
+    "why.r5.title": "Measured before, measured after",
+    "why.r5.body": "We instrument before we touch anything. An improvement is a reproducible before-and-after, not an end-of-sprint impression. If the gain doesn't show up in the measurements, it doesn't exist.",
+    "why.r6.title": "Your data stays where you decide",
+    "why.r6.body": "Hosted in France, at your provider, or on your own hardware. GDPR is settled when the architecture is drawn, not with a box ticked at delivery.",
+    "why.photo.baremetal": "Bare metal",
+    "why.photo.senior": "Seniors",
+    "why.photo.remote": "Remote",
+    "why.photo.measure": "Measurement",
+
+    // Reused by the "why" section — the dragon can burn these words
     "home.thesis.slideware": "slideware",
     "home.thesis.vanity": "empty promises",
     "home.thesis.or": "or",
     "home.thesis.hype": "hype",
-    "home.thesis.cta": "Who we are",
 
-    // Home — selected work
-    "home.work.eyebrow": "Selected work",
-    "home.work.title": "Real outcomes, not slideware",
+    // Home — case studies (API-driven, hidden when empty)
+    "home.work.eyebrow": "Case studies",
+    "home.work.title": "What it looks like for real",
     "home.work.lead": "Anonymized client work, published only with their consent.",
-    "home.work.all": "All work",
+    "home.work.all": "All case studies",
+
+    // Home — writing (API-driven, hidden when empty)
+    "home.writing.eyebrow": "Field notes",
+    "home.writing.title": "What we write when we've learned something",
+    "home.writing.lead": "No recycled industry news. Field reports, with the numbers when we're allowed to publish them.",
+    "home.writing.all": "All articles",
 
     // Approach section (home + expertise) — simplified, no rigid cards
     "approach.eyebrow": "How we work",
-    "approach.title": "Simple and honest",
-    "approach.lead": "No catch-all retainer. Every engagement targets a clear outcome, agreed with you before we start.",
+    "approach.title": "Three ways to work together",
+    "approach.lead": "No catch-all retainer. Every engagement targets an outcome written down before we start.",
     "approach.s1.title": "We look first",
-    "approach.s1.desc": "We dig into your stack, measure, find what's stuck and hand you a concrete, prioritized plan.",
+    "approach.s1.desc": "We dig into your stack, measure, find what's stuck and hand you a prioritized plan. Usable even if you stop there.",
     "approach.s1.meta": "Scoping",
     "approach.s2.title": "We build",
-    "approach.s2.desc": "We design and ship the system or component: inference engine, agent architecture, data pipeline. Milestone-based, production-ready.",
+    "approach.s2.desc": "We design and ship the system: inference engine, agent architecture, pipeline, hardware foundation. Milestone by milestone, with code your team can take over.",
     "approach.s2.meta": "Build",
     "approach.s3.title": "We strengthen your team",
-    "approach.s3.desc": "We plug into your team, work in your code, level up your engineers and leave you self-sufficient.",
+    "approach.s3.desc": "We plug into your team, work in your repository, level up your engineers — and leave when you no longer need us.",
     "approach.s3.meta": "Embed",
 
     // CTA section (default copy)
     "cta.eyebrow": "Let's work together",
-    "cta.title": "An AI or data project to get into production?",
-    "cta.lead": "Book a 30-minute call. We'll tell you honestly whether we can help, and how.",
+    "cta.title": "A system to make hold in production?",
+    "cta.lead": "Book thirty minutes. We'll tell you straight whether it's for us — and if not, who to call.",
     "cta.studies": "See our work",
 
     // Expertise
@@ -398,9 +484,24 @@ export const ui = {
     "studies.hero.title": "Case studies",
     "studies.hero.lead":
       "Anonymized client work, published only with their consent.",
+    "studies.searchPlaceholder": "Search case studies…",
+    "studies.searchLabel": "Search case studies",
+    "studies.searchButton": "Search",
     "studies.countOne": "STUDY",
     "studies.countMany": "STUDIES",
     "studies.filterAll": "All",
+    "studies.empty": "No case studies match your filters.",
+    "studies.clearFilters": "Clear filters",
+    "studies.prev": "← Prev",
+    "studies.next": "Next →",
+    "studies.pagination": "Pagination",
+    "studies.ctaEyebrow": "Your turn",
+    "studies.ctaTitle": "Talk through your own case",
+    "studies.ctaLead":
+      "Bring us the problem as it stands today. We'll tell you what we would do about it.",
+
+    // Study detail
+    "study.preparing": "This case study is being prepared and will be available shortly.",
 
     // 404
     "notFound.code": "Error 404",
@@ -512,70 +613,156 @@ export const ui = {
     "article.preparing": "Cet article est en préparation et sera bientôt disponible.",
 
     // Home — hero
-    "hero.eyebrow": "studio d'ingénierie de données 100% remote",
-    "hero.titleA": "Des ingénieurs pour votre",
-    "hero.titleHighlight": "IA",
-    "hero.titleB": "en production.",
-    "hero.lead": "Computeflux est un studio d'ingénierie de données bordelais. Nous fournissons les ingénieurs qui font tenir l'IA et vos données face au réel :",
-    "hero.rot.1": "l'inférence en production.",
-    "hero.rot.2": "des agents fiables.",
-    "hero.rot.3": "vos pipelines de données.",
-    "hero.rot.4": "vos coûts sous contrôle.",
+    "hero.eyebrow": "Ingénierie data & IA · 100 % à distance",
+    "hero.top": "Ingénierie data, IA et système. 100 % à distance.",
+    "hero.subrow":
+      "Nous excellons dans les architectures cloud, mais aussi en bare metal si la souveraineté vous semble primordiale.",
+    "hero.title.a": "Du",
+    "hero.title.hl": "bare metal",
+    "hero.title.b": "au modèle.",
+    "hero.title.l2": "Et ça tient en production.",
+    "hero.lead": "Computeflux est une agence française d'ingénierie data et IA, entièrement à distance. Nous intervenons là où ça casse entre le prototype et la production :",
+    "hero.rot.1": "l'inférence qui coûte trop cher.",
+    "hero.rot.2": "le pipeline qui tombe la nuit.",
+    "hero.rot.3": "l'agent qui ne marchait qu'en démo.",
+    "hero.rot.4": "les chiffres que personne ne croit.",
+    "hero.rot.5": "les serveurs qu'il faut dompter.",
     "hero.ctaExplore": "Voir ce que nous faisons",
-    "hero.pill.inference": "Ingénieurs IA",
-    "hero.pill.agentic": "Data engineers",
-    "hero.pill.langs": "Architectes de données",
+    "hero.photo.a": "Cadrage",
+    "hero.photo.b": "Exécution",
     "hero.scroll": "Défiler",
 
-    // Home — what we do (editorial block, replaces stat row + card grid)
-    "home.intro.eyebrow": "Ce que nous faisons",
-    "home.intro.title": "Des ingénieurs, pas des slides.",
-    "home.intro.p1": "La plupart des projets d'IA ne calent pas à cause du modèle. Ils calent parce qu'il manque l'ingénierie autour : la mise en production, la fiabilité, les données propres, la maîtrise des coûts.",
-    "home.intro.p2": "C'est exactement notre métier. Nous nous intégrons à votre équipe, nous travaillons dans votre code, et nous vous laissons un système que vous comprenez et que vous gardez.",
-    "home.intro.li1title": "Ingénierie IA",
-    "home.intro.li1body": "Mettre vos modèles et vos agents en production : évaluation, garde-fous, observabilité, coûts maîtrisés.",
-    "home.intro.li2title": "Inférence",
-    "home.intro.li2body": "Faire baisser la latence et la facture de vos modèles sans sacrifier la qualité.",
-    "home.intro.li3title": "Ingénierie & architecture de données",
-    "home.intro.li3body": "Des pipelines et une architecture de données sur lesquels vos équipes et vos modèles peuvent s'appuyer.",
+    // Home — section diagnostic (navigation des cas + cartes de contenu)
+    "diag.causeLabel": "Ce qui se passe le plus souvent",
+    "diag.actionLabel": "Ce qu'on fait",
 
-    // Home — thesis panel
-    "home.thesis.eyebrow": "Notre point de vue",
-    "home.thesis.p1a": "Un modèle prometteur ne suffit pas. Ce qui décide en production, c'est",
-    "home.thesis.p1span": "l'ingénierie autour du modèle",
-    "home.thesis.p1b": ": l'évaluation, la mise en service, les données, la fiabilité.",
-    "home.thesis.p2": "Nous construisons cette ingénierie. Des systèmes fiables, observables et sobres, qui transforment un modèle prometteur en produit sur lequel vous pouvez compter.",
-    "home.thesis.dont": "Ce que nous ne vendons pas :",
+    // Home — header de section des cas
+    "diagHome.eyebrow": "Cas typiques",
+    "diagHome.title": "Quelques cas typiques que nous traitons régulièrement.",
+    "diagHome.more": "Voir l'expertise",
+
+    // Home — deck révélateur « vos problématiques »
+    "vostro.eyebrow": "Vos problématiques",
+    "vostro.title": "Six problèmes qu'on règle dès le premier jour.",
+    "vostro.sub": "Faites défiler. Chaque carte est un besoin réel de 2026 — prenez le vôtre, on vous dira comment on l'aborderait.",
+    "vostro.cta": "Réserver un appel",
+
+    // Home — nos propres systèmes en production
+    "systems.eyebrow": "Nos propres systèmes",
+    "systems.title.a": "Nous ne faisons pas que conseiller,",
+    "systems.title.hl": "nous maintenons nos propres plateformes",
+    "systems.subtitle.hl": "Computeflux",
+    "systems.subtitle.rest":
+      "Les produits ci-dessous sont les nôtres : conçus, mis en ligne et maintenus par nous. Nous ne vendons que des prestations avec une vraie valeur ajoutée.",
+    "systems.hardLabel": "Le morceau difficile",
+    "systems.visit": "Voir le site",
+    "systems.source": "Code source",
+
+    // Home — ce que nous faisons
+    "practices.eyebrow": "Ce que nous faisons",
+    "practices.title": "Notre expertise technique nous permet d'avoir une approche de bout en bout.",
+    "practices.lead.a": "La plupart des prestataires s'arrêtent à la frontière de leur zone de connaissance.",
+    "practices.lead.b": "Nous sommes en mesure de",
+    "practices.lead.hl": "descendre dans les couches basses des systèmes cloud et bare metal pour optimiser la performance et les coûts",
+    "practices.lead.c": "tout en gardant les solutions compréhensibles lors de la passation des connaissances.",
+    "practices.learnMore": "En savoir plus",
+    "practices.1.title": "Ingénierie & architecture de données",
+    "practices.1.body":
+      "Nous concevons des systèmes scalables et fiables : ingestion, contrats, modélisation et entrepôt. Une base sur laquelle l'analyse et l'entraînement s'appuient, avec les contrôles de qualité qui rendent les chiffres dignes de confiance.",
+    "practices.2.title": "Ingénierie IA",
+    "practices.2.body":
+      "Nous ne sortons pas le grand modèle pour tout. La plupart des besoins méritent une machine dédiée : recommandations, bandits multi-bras, classifieurs, bien servis et peu coûteux. Une chose, et bien faite.",
+    "practices.3.title": "Systèmes agentiques",
+    "practices.3.body":
+      "Boucles bornées, appels d'outils vérifiables, replis explicites et évaluation de parcours. Des agents à qui on peut confier un vrai processus métier, et qui survivent à la production.",
+    "practices.4.title": "Bare metal & calcul",
+    "practices.4.body":
+      "Serveurs dédiés, GPU, stockage et réseau, bien exploités. Quand la charge est lourde et régulière, le matériel bat le cloud — et pour la souveraineté, vos données restent sous votre contrôle, pas sous celui d'un opérateur américain.",
+    "practices.5.title": "Inférence & performance",
+    "practices.5.body":
+      "Quantification, batching continu, cache, décodage spéculatif, sur vLLM, llama.cpp, SGLang ou TensorRT, ou un serveur d'inférence sur mesure quand le chemin critique l'exige. Servi là où vous décidez, y compris en auto-hébergement, pour la souveraineté. Mesuré avant et après.",
+
+    // Home — souveraineté, énergie et structure de coûts
+    "sov.eyebrow": "Souveraineté & coûts",
+    "sov.title": "Vos données n'ont aucune raison de traverser l'Atlantique.",
+    "sov.lead": "Nous concevons et exploitons des systèmes data et IA chez des hébergeurs européens — OVHcloud, Scaleway, Hetzner — ou sur du matériel qui vous appartient. Pas par principe : parce que l'énergie, le droit et la structure de coûts vont dans ce sens, et parce qu'un stack ouvert vous laisse partir quand vous voulez.",
+    "sov.photo.label": "Arbitrage",
+    "sov.c1.title": "L'énergie est redevenue le facteur limitant",
+    "sov.c1.body": "Les centres de données ont consommé environ 415 TWh d'électricité en 2024, près de 1,5 % de la consommation mondiale, et l'AIE projette autour de 945 TWh en 2030. En y ajoutant l'IA et la crypto, la même agence voyait le total dépasser 1 000 TWh dès 2026. Concrètement : la capacité se réserve des années à l'avance, le prix du kWh entre dans l'équation d'architecture, et l'idée que le calcul coûtera toujours moins cher n'est plus un acquis. Ce qui se paie au token se paie d'abord en mégawatts.",
+    "sov.c1.action": "Donc on mesure ce que vous consommez réellement, on dimensionne en conséquence, et on décale les traitements lourds vers les heures où l'électricité est la moins chère et la moins carbonée.",
+    "sov.c2.title": "Coût variable ou coût fixe : c'est une décision, pas une religion",
+    "sov.c2.body": "La facturation à l'usage est excellente quand la charge est irrégulière ou inconnue. Elle devient un impôt quand la charge est lourde et prévisible : entraînement nocturne, stockage chaud, ingestion continue. Le verrou historique, c'était de faire sortir les données ; le Data Act européen l'a levé — les frais de changement de fournisseur s'éteignent progressivement et disparaissent en janvier 2027. Migrer redevient un calcul, plus une punition.",
+    "sov.c3.title": "Le droit suit le fournisseur, pas l'emplacement du disque",
+    "sov.c3.body": "Le CLOUD Act permet aux autorités américaines d'exiger d'un opérateur américain les données qu'il contrôle, y compris stockées en Europe ; et depuis l'arrêt Schrems II, un transfert vers les États-Unis exige des garanties supplémentaires démontrables. Un hébergeur européen, une qualification SecNumCloud ou votre propre matériel ne sont pas des arguments marketing : ce sont les seules réponses qui tiennent à la question « qui peut être contraint ? ».",
+    "sov.c4.title": "La portabilité est une propriété technique, pas une clause de contrat",
+    "sov.c4.body": "Formats ouverts et moteurs interchangeables : un lakehouse en Parquet et Iceberg se relit ailleurs, un modèle à poids ouverts servi par vLLM se redéploie sur d'autres GPU, un cluster décrit en OpenTofu se reconstruit chez un autre hébergeur. On évite les services dont l'API est tout le produit — c'est ce qui rend le coût de sortie chiffrable dès le premier jour.",
+    "sov.stackLabel": "Ce sur quoi nous construisons",
+    "sov.stackNote": "Rien dans cette liste n'appartient à un seul fournisseur.",
+    "sov.sourcesLabel": "Sources",
+    "sov.sourceAria": "Source {n}",
+    "sov.cta": "Parler d'infrastructure",
+
+    // Page expertise souveraineté — approfondissement
+    "sovPage.steps": "Notre approche",
+
+    // Home — pourquoi Computeflux
+    "why.eyebrow": "Pourquoi Computeflux",
+    "why.title": "Pourquoi les entreprises nous appellent",
+    "why.lead": "Six engagements. Chacun se vérifie pendant la mission, pas dans une plaquette.",
+    "why.r1.title": "La production, pas la plaquette",
+    "why.r1.body": "Une mission se juge à ce qui tourne à la fin, pas à ce qui a été présenté au début. Un modèle prometteur ne suffit jamais : ce qui décide, c'est l'ingénierie autour — l'évaluation, la mise en service, les données, la fiabilité.",
+    "why.r1.dont": "Ce que nous ne vendons pas :",
+    "why.r2.title": "Du bare metal au modèle",
+    "why.r2.body": "Peu d'équipes couvrent à la fois le serveur physique et le modèle. Nous descendons jusqu'au disque et nous remontons jusqu'à l'évaluation, sans passer le relais au milieu du chemin.",
+    "why.r3.title": "Des seniors, pas des juniors refacturés",
+    "why.r3.body": "Vous parlez aux ingénieurs qui écrivent le code. Personne n'apprend le métier sur votre budget, et il n'y a pas d'intermédiaire entre la décision et l'exécution.",
+    "why.r4.title": "Entièrement à distance, et ça se voit sur le devis",
+    "why.r4.body": "Pas de bureau à financer, pas de déplacement à vous refacturer. On travaille en écrit et en asynchrone : les décisions laissent des traces, et ces traces restent chez vous.",
+    "why.r5.title": "Mesuré avant, mesuré après",
+    "why.r5.body": "On instrumente avant de toucher quoi que ce soit. Une amélioration est un avant/après reproductible, pas une impression de fin de sprint. Si le gain n'apparaît pas dans les mesures, il n'existe pas.",
+    "why.r6.title": "Vos données restent où vous décidez",
+    "why.r6.body": "Hébergement en France, chez votre fournisseur ou sur votre propre matériel. Le RGPD se traite au moment où l'architecture se dessine, pas dans une case cochée à la livraison.",
+    "why.photo.baremetal": "Bare metal",
+    "why.photo.senior": "Seniors",
+    "why.photo.remote": "À distance",
+    "why.photo.measure": "Mesure",
+
+    // Réutilisées par la section « pourquoi » — le dragon peut brûler ces mots
     "home.thesis.slideware": "des slides",
     "home.thesis.vanity": "de fausses promesses",
     "home.thesis.or": "ni",
     "home.thesis.hype": "de hype",
-    "home.thesis.cta": "Qui sommes-nous",
 
-    // Home — selected work
-    "home.work.eyebrow": "Quelques réalisations",
-    "home.work.title": "Des résultats concrets, pas des slides",
+    // Home — études de cas (API, masquée si vide)
+    "home.work.eyebrow": "Études de cas",
+    "home.work.title": "Ce que ça donne en vrai",
     "home.work.lead": "Des cas clients anonymisés, publiés uniquement avec leur accord.",
-    "home.work.all": "Toutes les réalisations",
+    "home.work.all": "Toutes les études",
+
+    // Home — notes de terrain (API, masquée si vide)
+    "home.writing.eyebrow": "Notes de terrain",
+    "home.writing.title": "Ce qu'on écrit quand on a appris quelque chose",
+    "home.writing.lead": "Pas de veille recopiée. Des retours d'expérience, avec les chiffres quand on a le droit de les publier.",
+    "home.writing.all": "Tous les articles",
 
     // Approach section (home + expertise) — simplified, no rigid cards
     "approach.eyebrow": "Notre façon de travailler",
-    "approach.title": "Simple et honnête",
-    "approach.lead": "Pas de forfait fourre-tout. Chaque mission vise un résultat clair, discuté avec vous avant de commencer.",
+    "approach.title": "Trois manières de travailler ensemble",
+    "approach.lead": "Pas de forfait fourre-tout. Chaque mission vise un résultat écrit noir sur blanc avant qu'on commence.",
     "approach.s1.title": "On regarde d'abord",
-    "approach.s1.desc": "On plonge dans votre stack, on mesure, on identifie ce qui coince et on vous rend un plan concret et priorisé.",
+    "approach.s1.desc": "On plonge dans votre stack, on mesure, on identifie ce qui coince et on vous rend un plan priorisé. Utilisable même si vous vous arrêtez là.",
     "approach.s1.meta": "Cadrage",
     "approach.s2.title": "On construit",
-    "approach.s2.desc": "On conçoit et on livre le système ou le composant : moteur d'inférence, architecture d'agents, pipeline de données. Par jalons, prêt pour la production.",
+    "approach.s2.desc": "On conçoit et on livre le système : moteur d'inférence, architecture d'agents, pipeline, socle matériel. Par jalons, avec du code que vos équipes peuvent reprendre.",
     "approach.s2.meta": "Développement",
     "approach.s3.title": "On renforce votre équipe",
-    "approach.s3.desc": "On s'intègre à votre équipe, on travaille dans votre code, on fait monter vos ingénieurs en compétence et on vous laisse autonomes.",
+    "approach.s3.desc": "On s'intègre à votre équipe, on travaille dans votre dépôt, on fait monter vos ingénieurs — et on part quand vous n'avez plus besoin de nous.",
     "approach.s3.meta": "Renfort",
 
     // CTA section (default copy)
     "cta.eyebrow": "Travaillons ensemble",
-    "cta.title": "Un projet d'IA ou de données à faire tenir en production ?",
-    "cta.lead": "Réservez un appel de 30 minutes. On vous dira franchement si on peut vous aider, et comment.",
+    "cta.title": "Un système à faire tenir en production ?",
+    "cta.lead": "Réservez trente minutes. On vous dira franchement si c'est pour nous — et sinon, vers qui aller.",
     "cta.studies": "Voir les réalisations",
 
     // Expertise
@@ -815,9 +1002,24 @@ export const ui = {
     "studies.hero.title": "Études de cas",
     "studies.hero.lead":
       "Des cas clients anonymisés, publiés uniquement avec leur accord.",
+    "studies.searchPlaceholder": "Rechercher des études de cas…",
+    "studies.searchLabel": "Rechercher des études de cas",
+    "studies.searchButton": "Rechercher",
     "studies.countOne": "ÉTUDE",
     "studies.countMany": "ÉTUDES",
     "studies.filterAll": "Toutes",
+    "studies.empty": "Aucune étude de cas ne correspond à vos filtres.",
+    "studies.clearFilters": "Réinitialiser les filtres",
+    "studies.prev": "← Précédent",
+    "studies.next": "Suivant →",
+    "studies.pagination": "Pagination",
+    "studies.ctaEyebrow": "À votre tour",
+    "studies.ctaTitle": "Parlons de votre cas",
+    "studies.ctaLead":
+      "Présentez-nous le problème tel qu'il se pose aujourd'hui. Nous vous dirons comment nous l'aborderions.",
+
+    // Study detail
+    "study.preparing": "Cette étude de cas est en préparation et sera bientôt disponible.",
 
     // 404
     "notFound.code": "Erreur 404",

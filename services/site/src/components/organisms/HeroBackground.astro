@@ -1,0 +1,60 @@
+---
+/**
+ * HeroBackground — the landing hero's photograph, rendered on a dedicated
+ * background underlay.
+ *
+ * This is pulled OUT of the promoted `<main>` flow and injected into the
+ * `underlay` slot of `PageLayout`, whose `.page-underlay` box sits at a NEGATIVE
+ * z-index against `<body>`. Painting order is therefore:
+ *     paper dots < hero photo (z:-1) < dragon (z:0) < hero text / content (z:1)
+ * so the interactive dragon flies IN FRONT of the photograph but still behind
+ * the text — it never disappears beneath the picture again.
+ *
+ * The NotchedPanel-shaped clip and the light gradient (which protects the dark
+ * copy's contrast) travel with the photo here, because the hero section can no
+ * longer clip a sibling element.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["container-flux", className]}>
+  <div
+    class="hero-photo relative mx-auto w-full overflow-hidden"
+    style="--n: clamp(20px, 4vw, 44px); aspect-ratio: 16 / 9"
+  >
+    <img
+      src="/photos/hero-bg-800.webp"
+      srcset="/photos/hero-bg-800.webp 1x, /photos/hero-bg-1280.webp 2x"
+      alt=""
+      width="1280"
+      height="733"
+      fetchpriority="high"
+      decoding="async"
+      class="hero-img size-full object-cover"
+    />
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--color-bg)] via-[var(--color-bg)]/60 to-[var(--color-bg)]/10"></div>
+    <div class="pointer-events-none absolute inset-0 dot-grid opacity-40"></div>
+  </div>
+</div>
+
+<style>
+  .hero-photo {
+    clip-path: polygon(
+      var(--n) 0,
+      calc(100% - var(--n)) 0,
+      calc(100% - var(--n)) var(--n),
+      100% var(--n),
+      100% calc(100% - var(--n)),
+      calc(100% - var(--n)) calc(100% - var(--n)),
+      calc(100% - var(--n)) 100%,
+      var(--n) 100%,
+      var(--n) calc(100% - var(--n)),
+      0 calc(100% - var(--n)),
+      0 var(--n),
+      var(--n) var(--n)
+    );
+  }
+</style>

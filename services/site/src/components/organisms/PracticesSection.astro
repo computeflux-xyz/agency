@@ -1,0 +1,231 @@
+---
+/**
+ * "Ce que nous faisons" — five service lines as cards.
+ *
+ * Each card is a whole-page link to its `/expertise/<slug>` page, shows the
+ * domain tooling as a row of monochrome `TechMark` glyphs, and reacts on hover
+ * (lift + accent). The section header asserts the end-to-end thesis from the
+ * brief. Below the cards sits the merged "-- integrate the Why content --" strip:
+ * the six commitments (`why.*`) that used to be their own section, now a compact
+ * band so the page doesn't grow another full block.
+ */
+import Eyebrow from "@atoms/Eyebrow.astro";
+import Highlight from "@atoms/Highlight.astro";
+import Icon from "@atoms/Icon.astro";
+import FramedPhoto from "@molecules/FramedPhoto.astro";
+import TechMark from "@atoms/TechMark.astro";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+
+type Tool = { name: string; si?: string; mono?: string };
+type Practice = {
+  index: string;
+  title: string;
+  body: string;
+  path: string;
+  tools: Tool[];
+  accent: string;
+};
+
+const practices: Practice[] = [
+  {
+    index: "01",
+    title: t("practices.1.title"),
+    body: t("practices.1.body"),
+    path: "/expertise/data-engineering",
+    accent: "data",
+    tools: [
+      { name: "Python", si: "Python" },
+      { name: "Airflow", si: "Apacheairflow" },
+      { name: "ClickHouse", si: "Clickhouse" },
+      { name: "DuckDB", si: "Duckdb" },
+      { name: "Trino", si: "Trino" },
+      { name: "Kafka", si: "Apachekafka" },
+      { name: "Spark", si: "Apachespark" },
+      { name: "Flink", si: "Apacheflink" },
+    ],
+  },
+  {
+    index: "02",
+    title: t("practices.2.title"),
+    body: t("practices.2.body"),
+    path: "/expertise/ai-engineering",
+    accent: "ai",
+    tools: [
+      { name: "PyTorch", si: "Pytorch" },
+      { name: "Hugging Face", si: "Huggingface" },
+      { name: "LangChain", si: "Langchain" },
+      { name: "MLflow", si: "Mlflow" },
+      { name: "ONNX", si: "Onnx" },
+    ],
+  },
+  {
+    index: "03",
+    title: t("practices.3.title"),
+    body: t("practices.3.body"),
+    path: "/expertise/agentic-systems",
+    accent: "agents",
+    tools: [
+      { name: "LangChain", si: "Langchain" },
+      { name: "Ollama", si: "Ollama" },
+      { name: "Hugging Face", si: "Huggingface" },
+      { name: "Docker", si: "Docker" },
+    ],
+  },
+  {
+    index: "04",
+    title: t("practices.4.title"),
+    body: t("practices.4.body"),
+    path: "/expertise/bare-metal",
+    accent: "metal",
+    tools: [
+      { name: "NVIDIA", si: "Nvidia" },
+      { name: "Linux", si: "Linux" },
+      { name: "Kubernetes", si: "Kubernetes" },
+      { name: "Argo", si: "Argo" },
+      { name: "OpenTofu", si: "Opentofu" },
+    ],
+  },
+  {
+    index: "05",
+    title: t("practices.5.title"),
+    body: t("practices.5.body"),
+    path: "/expertise/inference-optimization",
+    accent: "inference",
+    tools: [
+      { name: "vLLM", si: "Vllm" },
+      { name: "Ollama", si: "Ollama" },
+      { name: "NVIDIA", si: "Nvidia" },
+      { name: "ONNX", si: "Onnx" },
+      { name: "TensorFlow", si: "Tensorflow" },
+    ],
+  },
+];
+
+/* Timers / docs grid for the merged Why band. */
+const reasons = [
+  { n: "01", title: t("why.r1.title"), body: t("why.r1.body") },
+  { n: "02", title: t("why.r2.title"), body: t("why.r2.body") },
+  { n: "03", title: t("why.r3.title"), body: t("why.r3.body") },
+  { n: "04", title: t("why.r4.title"), body: t("why.r4.body") },
+  { n: "05", title: t("why.r5.title"), body: t("why.r5.body") },
+  { n: "06", title: t("why.r6.title"), body: t("why.r6.body") },
+];
+
+const accentHover: Record<string, string> = {
+  data: "group-hover:border-flux-blue",
+  ai: "group-hover:border-flux-magenta",
+  agents: "group-hover:border-flux-magenta",
+  metal: "group-hover:border-flux-amber",
+  inference: "group-hover:border-flux-blue",
+};
+const accentDot: Record<string, string> = {
+  data: "bg-flux-blue",
+  ai: "bg-flux-magenta",
+  agents: "bg-flux-magenta",
+  metal: "bg-flux-amber",
+  inference: "bg-flux-blue",
+};
+---
+
+<section id="practices" class="container-flux scroll-mt-24 py-20 md:py-28">
+  <header class="mb-12 flex max-w-3xl flex-col gap-4 md:mb-16" data-reveal>
+    <Eyebrow accent="blue">{t("practices.eyebrow")}</Eyebrow>
+    <h2 class="text-balance text-3xl font-semibold leading-[1.05] sm:text-4xl md:text-[2.75rem]">
+      {t("practices.title")}
+    </h2>
+    <p class="max-w-2xl text-pretty text-base leading-relaxed text-ink-300 md:text-lg" data-reveal>
+      <strong class="font-semibold text-ink-50">{t("practices.lead.a")}</strong>{" "}
+      {t("practices.lead.b")} <Highlight grade="mark">{t("practices.lead.hl")}</Highlight>{" "}
+      {t("practices.lead.c")}
+    </p>
+  </header>
+
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="90">
+    {
+      practices.map((practice) => (
+        <a
+          href={localizedPath(practice.path, locale)}
+          class:list={[
+            "group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-ink-900 p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-ink-900/70 md:p-7",
+            accentHover[practice.accent],
+          ]}
+          data-reveal
+        >
+          <div class="flex items-baseline justify-between gap-3">
+            <span class="font-mono text-xs text-ink-400">{practice.index}</span>
+            <span class:list={["size-1.5 rounded-full", accentDot[practice.accent]]} aria-hidden="true" />
+          </div>
+
+          <h3 class="text-balance text-xl font-semibold tracking-tight text-ink-50 transition-colors group-hover:text-flux-blue">
+            {practice.title}
+          </h3>
+
+          <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{practice.body}</p>
+
+          <div class="mt-auto flex flex-wrap gap-1.5 pt-1">
+            {
+              practice.tools.map((tool) => (
+                <span
+                  class="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-900 px-2.5 text-ink-300 transition-colors duration-300 group-hover:border-[var(--color-border-strong)]"
+                  title={tool.name}
+                >
+                  <TechMark name={tool.name} si={tool.si} mono={tool.mono} class="size-4" />
+                  <span class="text-[0.72rem] font-medium leading-none">{tool.name}</span>
+                </span>
+              ))
+            }
+          </div>
+
+          <span class="inline-flex items-center gap-2 pt-2 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-400 transition-colors group-hover:text-flux-blue">
+            {t("practices.learnMore")}
+            <Icon name="arrow" size={14} class="transition-transform duration-300 group-hover:translate-x-1" />
+          </span>
+        </a>
+      ))
+    }
+  </div>
+
+  {/* Merged "why Computeflux" band. */}
+  <div class="mt-20 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-14 md:mt-28">
+    <div class="flex flex-col gap-8">
+      <header class="flex flex-col gap-3" data-reveal>
+        <Eyebrow accent="magenta">{t("why.eyebrow")}</Eyebrow>
+        <h3 class="text-2xl font-semibold tracking-tight text-ink-50 md:text-3xl">{t("why.title")}</h3>
+      </header>
+      <dl class="grid gap-x-8 gap-y-6 sm:grid-cols-2" data-reveal-stagger="80">
+        {
+          reasons.map((r) => (
+            <div class="flex flex-col gap-1.5 border-t border-[var(--color-ink-line)] pt-4" data-reveal>
+              <dt class="flex items-baseline gap-2.5">
+                <span class="font-mono text-xs text-ink-400">{r.n}</span>
+                <span class="font-semibold text-ink-50">{r.title}</span>
+              </dt>
+              <dd class="text-pretty text-sm leading-relaxed text-ink-300">{r.body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+    <div class="flex flex-col gap-4" data-reveal>
+      <FramedPhoto
+        src="/photos/reason-baremetal-800.webp"
+        src2x="/photos/reason-baremetal-1600.webp"
+        alt=""
+        label={t("why.photo.baremetal")}
+        corner="bl"
+        ratio="16/9"
+      />
+      <FramedPhoto
+        src="/photos/reason-remote-800.webp"
+        src2x="/photos/reason-remote-1600.webp"
+        alt=""
+        label={t("why.photo.remote")}
+        corner="br"
+        ratio="4/3"
+      />
+    </div>
+  </div>
+</section>

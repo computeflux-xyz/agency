@@ -1,106 +1,52 @@
 ---
+/**
+ * Landing hero.
+ *
+ * The two-person photograph sits in a NotchedPanel-shaped frame behind the
+ * copy, with a light gradient over the text zone so the dark ink stays readable
+ * however bright the photo is. Order on top of it: top line, title (one word
+ * gradient-highlighted), description (brand name badge-inline), the two CTAs,
+ * and a subrow about cloud vs bare metal.
+ */
 import Button from "@atoms/Button.astro";
-import Eyebrow from "@atoms/Eyebrow.astro";
-import ScrambleText from "@atoms/ScrambleText.astro";
-import Icon from "@atoms/Icon.astro";
+import Highlight from "@atoms/Highlight.astro";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
-
-const rotating = [
-  t("hero.rot.1"),
-  t("hero.rot.2"),
-  t("hero.rot.3"),
-  t("hero.rot.4"),
-];
 ---
 
-<section class="relative overflow-hidden pt-32 md:pt-40" aria-label="Introduction">
-  <div
-    class="pointer-events-none absolute left-1/2 top-0 -z-10 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-flux-blue/[0.07] blur-[120px]"
-    aria-hidden="true"
-  >
-  </div>
-
-  <div class="container-flux flex flex-col items-center gap-8 pb-20 text-center md:pb-28">
-    <div data-reveal>
-      <Eyebrow accent="blue">{t("hero.eyebrow")}</Eyebrow>
-    </div>
+<section class="relative overflow-hidden pt-24 md:pt-32" aria-label="Introduction">
+  <div class="container-flux flex flex-col items-center gap-7 text-center">
+    <p class="eyebrow text-ink-50" data-reveal>{t("hero.top")}</p>
 
     <h1
-      class="max-w-4xl text-balance text-[2.6rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl md:text-[4.5rem]"
+      class="max-w-4xl text-balance text-[2.4rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-[3.6rem]"
       data-reveal
     >
-      {t("hero.titleA")} <span class="flux-gradient-text">{t("hero.titleHighlight")}</span>
-      <br class="hidden sm:block" />
-      {t("hero.titleB")}
+      <Highlight>Du silicon au dashboard</Highlight>,
+      nous concevons votre plateforme de traitement de données.
     </h1>
 
-    <p class="max-w-2xl text-pretty text-lg leading-relaxed text-ink-300 md:text-xl" data-reveal>
-      {t("hero.lead")}{" "}
-      <span class="relative inline-grid align-bottom font-mono text-ink-100">
-        {/* Longest word reserves the width so the lead text never reflows. */}
-        {rotating.map((word) => (
-          <span class="invisible col-start-1 row-start-1 whitespace-nowrap" aria-hidden="true">{word}</span>
-        ))}
-        <span
-          data-rotator
-          data-words={JSON.stringify(rotating)}
-          class="col-start-1 row-start-1 whitespace-nowrap"
-          >{rotating[0]}</span
-        >
-      </span>
+    <p
+      class="hero-copy-card dot-grid max-w-2xl rounded-[var(--radius-md)] border border-[var(--color-border-strong)]/70 bg-ink-900/85 px-6 py-5 text-left text-pretty text-base leading-relaxed text-ink-100 shadow-[0_6px_24px_rgba(32,31,30,0.10)] backdrop-blur sm:px-8 sm:text-lg"
+      data-reveal
+    >
+      <Highlight logo>Computeflux</Highlight> est une agence française d'ingénierie data et IA.
+      Nous vous aidons à concevoir des systèmes intelligents basés sur vos besoins les plus exotiques,
+      qu'il s'agisse d'un prototypage ou du refactoring d'un système mature en production.
     </p>
 
     <div class="flex flex-col items-center gap-3 sm:flex-row" data-reveal>
       <Button href={localizedPath("/book", locale)} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>
-      <Button href={localizedPath("/expertise", locale)} variant="outline" size="lg">{t("hero.ctaExplore")}</Button>
+      <Button href="#practices" variant="secondary" size="lg">{t("hero.ctaExplore")}</Button>
     </div>
 
-    <div
-      class="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-xs uppercase tracking-[0.18em] text-ink-400"
+    <p
+      class="hero-copy-card dot-grid max-w-2xl rounded-[var(--radius-md)] border border-[var(--color-border-strong)]/70 bg-ink-900/85 px-6 py-4 text-pretty text-sm leading-relaxed text-ink-200 shadow-[0_6px_24px_rgba(32,31,30,0.10)] backdrop-blur sm:px-8"
       data-reveal
     >
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-blue"></span><ScrambleText text={t("hero.pill.inference")} /></span>
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-magenta"></span><ScrambleText text={t("hero.pill.agentic")} delay={120} /></span>
-      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-flux-amber"></span><ScrambleText text={t("hero.pill.langs")} delay={240} /></span>
-    </div>
-  </div>
-
-  <div class="flex justify-center pb-8" aria-hidden="true">
-    <span class="flex flex-col items-center gap-2 text-ink-500">
-      <span class="font-mono text-[0.6rem] uppercase tracking-[0.2em]">{t("hero.scroll")}</span>
-      <Icon name="chevron" size={16} class="animate-bounce" />
-    </span>
+      {t("hero.subrow")}
+    </p>
   </div>
 </section>
-
-<script>
-  import { TextScramble } from "@lib/client/scramble";
-
-  function initRotator() {
-    const el = document.querySelector<HTMLElement>("[data-rotator]");
-    if (!el) return;
-    let words: string[] = [];
-    try {
-      words = JSON.parse(el.dataset.words ?? "[]");
-    } catch {
-      return;
-    }
-    if (words.length < 2) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const fx = new TextScramble(el);
-    let i = 0;
-    const tick = async () => {
-      await fx.setText(words[i]);
-      i = (i + 1) % words.length;
-      window.setTimeout(tick, 2200);
-    };
-    window.setTimeout(tick, 1600);
-  }
-
-  initRotator();
-  document.addEventListener("astro:after-swap", initRotator);
-</script>

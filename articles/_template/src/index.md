@@ -7,7 +7,7 @@ toc: false
 
 This is a minimal [Observable Framework](https://observablehq.com/framework)
 article. Replace this content, update `../article.json`, then publish with the
-`publish-articles` GitHub Action.
+`publish-content` GitHub Action.
 
 <!-- Localization: this project is bilingual. `src/index.md` is the English
      entrypoint (dist/index.html). `src/fr/index.md` is the French one

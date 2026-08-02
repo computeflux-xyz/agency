@@ -158,10 +158,12 @@ const structuredData = jsonLdGraph(...graphNodes);
     <script>
       import { initReveal } from "@lib/client/reveal";
       import { initScramble } from "@lib/client/scramble";
+      import { initTabs } from "@lib/client/tabs";
 
       function boot() {
         initReveal();
         initScramble();
+        initTabs();
       }
       boot();
       document.addEventListener("astro:after-swap", boot);

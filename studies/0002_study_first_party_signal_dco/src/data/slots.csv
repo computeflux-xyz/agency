@@ -1,0 +1,7 @@
+slot,candidates,decided_by,constraint_en,constraint_fr
+Hero product,catalogue,contextual bandit,Must be in stock and in the recipient's currency.,Doit être en stock et dans la devise du destinataire.
+Secondary rail (3),catalogue,contextual bandit,No repeat of the hero; diversity floor across producers.,Pas de répétition du visuel principal ; plancher de diversité entre producteurs.
+Editorial block,editorial pool,contextual bandit,One per campaign; holdout arm always gets the default.,Un par campagne ; le bras témoin reçoit toujours la version par défaut.
+Subject line,copy pool,contextual bandit,Length capped for mobile preview panes.,Longueur plafonnée pour les volets d'aperçu mobiles.
+Call to action,copy pool,contextual bandit,Wording only; the destination never varies.,Formulation seulement ; la destination ne varie jamais.
+Send hour,24 hourly arms,per-cohort posterior,Respects the recipient's local time zone.,Respecte le fuseau horaire du destinataire.

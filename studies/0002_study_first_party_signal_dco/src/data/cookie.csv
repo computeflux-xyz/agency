@@ -1,0 +1,8 @@
+property,third_party_pixel,js_first_party,server_first_party
+Set by,vendor domain,page JavaScript,the operator's own origin
+Readable by page scripts,yes,yes,no (HttpOnly)
+Survives tracking protection,blocked outright,capped to days,not targeted
+Carries data,yes,yes,no (opaque pointer)
+Erasure,vendor request,browser only,delete one server-side record
+Works with no consent,no,no,degraded to cohort only
+Who can be asked for the data,the vendor,anyone with the page,the operator

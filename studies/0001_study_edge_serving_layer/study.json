@@ -1,0 +1,28 @@
+{
+  "slug": "edge-serving-layer",
+  "type": "study",
+  "topics": ["edge-computing", "platform-engineering", "data-pipelines"],
+  "authors": ["gabriel-mougard"],
+  "featured": true,
+  "cover": "cover.svg",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "The catalogue is a build artifact",
+      "shortdesc": "Part 2 of 3. Trading twenty-eight database triggers for one publish button: a versioned, content-hashed catalogue snapshot served from the edge, and the image pipeline that feeds it.",
+      "longdesc": "The second part of a three-part study on a luxury-spirits platform selling into Central Africa. Reads never touch the relational database: an image pipeline moves originals from object storage through libvips into a CDN bucket, and the catalogue is published to edge key-value storage as a versioned, content-hashed snapshot with a preview diff and a history. This part covers why the first version's trigger-per-row synchronisation had to go, and what replaced it.",
+      "readingMinutes": 12,
+      "seoTitle": "Publishing a catalogue to the edge as a versioned build artifact",
+      "seoDescription": "Case study: replacing trigger-driven row-by-row edge synchronisation with a staged, content-hashed catalogue publish, plus a libvips image pipeline and a Postgres-backed job queue."
+    },
+    "fr": {
+      "entry": "fr/index.html",
+      "title": "Le catalogue est un artefact de build",
+      "shortdesc": "Partie 2 sur 3. Échanger vingt-huit triggers de base de données contre un seul bouton « publier » : un instantané de catalogue versionné et adressé par hash, servi depuis l'edge, et le pipeline d'images qui l'alimente.",
+      "longdesc": "Deuxième partie d'une étude en trois volets sur une plateforme de spiritueux de luxe vendant en Afrique centrale. Les lectures ne touchent jamais la base relationnelle : un pipeline d'images convoie les originaux du stockage objet vers un bucket CDN en passant par libvips, et le catalogue est publié vers un stockage clé-valeur edge sous forme d'instantané versionné et adressé par hash de contenu, avec un diff de prévisualisation et un historique. Cette partie explique pourquoi la synchronisation ligne à ligne par triggers de la première version a dû disparaître, et ce qui l'a remplacée.",
+      "readingMinutes": 12,
+      "seoTitle": "Publier un catalogue vers l'edge comme un artefact de build",
+      "seoDescription": "Étude de cas : remplacer la synchronisation edge ligne à ligne par triggers par une publication de catalogue par étapes, adressée par hash, avec un pipeline d'images libvips et une file de jobs Postgres."
+    }
+  }
+}

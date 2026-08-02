@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="The catalogue is a build artifact">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#161d33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2f6bff"/>
+      <stop offset="1" stop-color="#8ab0ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.20" r="0.85">
+      <stop offset="0" stop-color="#2f6bff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2f6bff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.5" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8ab0ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <rect width="1200" height="600" fill="url(#dots)"/>
+  <rect width="1200" height="600" fill="url(#glow)"/>
+
+  <!-- Schematic: source of truth on the left, published snapshot on the right,
+       one directed publish edge between them. Structure only, no quantities. -->
+  <g transform="translate(78 404)" font-family="ui-monospace, Menlo, monospace">
+    <g fill="none" stroke="#8ab0ff" stroke-width="2" opacity="0.85">
+      <rect x="0" y="-70" width="286" height="140" rx="12"/>
+      <rect x="562" y="-70" width="286" height="140" rx="12"/>
+    </g>
+
+    <!-- core: a relational graph -->
+    <g stroke="#8ab0ff" stroke-width="1.8" opacity="0.9">
+      <path d="M70 -18 H143 M143 -18 H216 M143 -18 V28"/>
+    </g>
+    <g fill="#8ab0ff">
+      <circle cx="70" cy="-18" r="8"/><circle cx="143" cy="-18" r="8"/>
+      <circle cx="216" cy="-18" r="8"/><circle cx="143" cy="28" r="8"/>
+    </g>
+
+    <!-- published snapshot: independent, denormalised keys -->
+    <g fill="#8ab0ff" opacity="0.95">
+      <circle cx="632" cy="-24" r="8"/><circle cx="705" cy="-24" r="8"/>
+      <circle cx="778" cy="-24" r="8"/>
+      <circle cx="668" cy="24" r="8"/><circle cx="742" cy="24" r="8"/>
+    </g>
+    <g stroke="#8ab0ff" stroke-width="1.4" stroke-dasharray="4 4" opacity="0.5">
+      <path d="M632 -24 L668 24 M705 -24 L668 24 M705 -24 L742 24 M778 -24 L742 24"/>
+    </g>
+
+    <!-- the single publish edge -->
+    <path d="M292 0 H556" stroke="url(#accent)" stroke-width="5" fill="none" marker-end="url(#ar)"/>
+    <text x="424" y="-16" fill="#dfe6ff" font-size="17" letter-spacing="3" text-anchor="middle">PUBLISH</text>
+    <text x="424" y="30" fill="#8ab0ff" font-size="14" letter-spacing="1" text-anchor="middle">content hash · version</text>
+
+    <g fill="#8ab0ff" font-size="15" letter-spacing="2">
+      <text x="0" y="-88">SOURCE OF TRUTH</text>
+      <text x="562" y="-88">PUBLISHED SNAPSHOT</text>
+    </g>
+  </g>
+
+  <text x="80" y="92" font-family="ui-monospace, Menlo, monospace" font-size="19" letter-spacing="5" fill="#8ab0ff">COMPUTEFLUX · CASE STUDY 2/3</text>
+  <text x="78" y="190" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#f5f4ef">The catalogue is</text>
+  <text x="78" y="262" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#f5f4ef">a build artifact</text>
+</svg>

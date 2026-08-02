@@ -17,16 +17,17 @@
 ---
 
 <style is:global>
-  /* Lift page content above the behind-plane dragon canvas (#flux-dragon is
-     fixed at z-index:0). Header (z-50) and the top canvas (z-40) already sit
-     above content. Only the in-flow <main> needs promoting. */
+  /* Lift page content above the behind-plane dragon canvas. #flux-dragon is
+     fixed at z-index:1 (above the hero-photo underlay at z:0); the sticky header
+     (z-50) and the top canvas (z:40) already sit above content. Content is
+     promoted to z-index:2 so it stays above the dragon. */
   main {
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
   body > footer {
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
 
   /* Protective glow applied to an "important" element while the dragon breathes

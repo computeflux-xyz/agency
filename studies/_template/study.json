@@ -1,0 +1,28 @@
+{
+  "slug": "template-study",
+  "type": "study",
+  "topics": ["platform-engineering"],
+  "authors": ["computeflux"],
+  "featured": false,
+  "cover": "cover.svg",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "Template Study",
+      "shortdesc": "Copy this directory to start a new ObservableHQ case study.",
+      "longdesc": "A minimal Observable Framework app wired for the Computeflux publish pipeline, with the case-study chrome from studies/_shared.",
+      "readingMinutes": 3,
+      "seoTitle": "",
+      "seoDescription": ""
+    },
+    "fr": {
+      "entry": "fr/index.html",
+      "title": "Étude modèle",
+      "shortdesc": "Copiez ce dossier pour démarrer une nouvelle étude de cas ObservableHQ.",
+      "longdesc": "Une application Observable Framework minimale, câblée pour le pipeline de publication Computeflux, avec l'habillage « étude de cas » de studies/_shared.",
+      "readingMinutes": 3,
+      "seoTitle": "",
+      "seoDescription": ""
+    }
+  }
+}

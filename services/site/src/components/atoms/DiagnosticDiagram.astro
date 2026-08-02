@@ -1,0 +1,383 @@
+---
+/**
+ * DiagnosticDiagram — a draw.io/diagrams.net-style architecture SVG, tuned for
+ * the dark blue content card it lives in.
+ *
+ * Every node is ONE stroked `<path>` (a stencil: beveled box, storage drum,
+ * queue tube, cloud, hexagon, gate, document, transform) and every edge is ONE
+ * stroked `<path>` (line or rounded elbow, ending in a V arrowhead). Paths are
+ * emitted in traversal order — node, edge, node, edge — so vivus sketches the
+ * graph the way you would draw it on a whiteboard, left to right.
+ *
+ * While the sketch runs the parent adds `.is-drawing` on the `<svg>`: fills and
+ * labels are held back and fade in once the outline is finished. Without JS (or
+ * with reduced motion) the class is never set, so the diagram is simply static.
+ */
+import type { CaseDiagram, DiagramEdge, DiagramShape, DiagramTone } from "@data/diagrams";
+
+interface Props {
+  diagram: CaseDiagram;
+  slug: string;
+  kind: "cause" | "action";
+  class?: string;
+}
+
+const { diagram, slug, kind, class: className = "" } = Astro.props;
+
+/* ---- canvas + grid ---- */
+const VW = 480;
+const VH = 132;
+const PAD = 10;
+const GAP = 40; // column gutter — has to fit an arrow, so it is generous
+const MAX_W = 104;
+const LANE = 44; // vertical distance between two lanes
+const BEVEL = 7;
+const MARGIN = 4; // clearance between a node border and the arrow
+const HEAD = 9; // arrowhead length
+const HALF = 4.8; // arrowhead half width
+const ELBOW = 8; // corner radius of an elbow edge
+
+type Box = { x: number; y: number; w: number; h: number; cx: number; cy: number };
+
+const nodes = diagram.nodes;
+const cols = Math.max(...nodes.map((node, i) => node.col ?? i)) + 1;
+const fanOut = nodes.some((node) => (node.lane ?? 0) !== 0);
+const H = fanOut ? 34 : 44;
+const W = Math.min(MAX_W, (VW - 2 * PAD - GAP * (cols - 1)) / cols);
+const rowW = cols * W + GAP * (cols - 1);
+const x0 = (VW - rowW) / 2;
+
+const boxes: Box[] = nodes.map((node, i) => {
+  const x = x0 + (node.col ?? i) * (W + GAP);
+  const cy = VH / 2 + (node.lane ?? 0) * LANE;
+  return { x, y: cy - H / 2, w: W, h: H, cx: x + W / 2, cy };
+});
+const byId = new Map(nodes.map((node, i) => [node.id, { node, box: boxes[i] }]));
+
+/* ---- palette: opaque fills, so a node never shows the card through it ---- */
+const TONE: Record<DiagramTone, { stroke: string; fill: string; text: string }> = {
+  neutral: { stroke: "#cbe7f2", fill: "#0d5e7c", text: "#ffffff" },
+  bad: { stroke: "#ffd9fb", fill: "#c1199f", text: "#ffffff" },
+  good: { stroke: "#dde7ff", fill: "#2f6bff", text: "#ffffff" },
+  result: { stroke: "#fff1bb", fill: "#ffc40f", text: "#201f1e" },
+};
+const EDGE: Record<DiagramTone, string> = {
+  neutral: "#d7edf6",
+  bad: "#ff93ea",
+  good: "#aac5ff",
+  result: "#ffd869",
+};
+
+/* ---- stencils: each one is a single closed (or two-subpath) stroked path ---- */
+const f = (v: number) => Number(v.toFixed(1));
+
+/** Computeflux beveled box — a process or a service. */
+const rect = (b: Box): string =>
+  `M ${f(b.x + BEVEL)} ${f(b.y)} L ${f(b.x + b.w - BEVEL)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.y + BEVEL)}` +
+  ` L ${f(b.x + b.w)} ${f(b.y + b.h - BEVEL)} L ${f(b.x + b.w - BEVEL)} ${f(b.y + b.h)}` +
+  ` L ${f(b.x + BEVEL)} ${f(b.y + b.h)} L ${f(b.x)} ${f(b.y + b.h - BEVEL)} L ${f(b.x)} ${f(b.y + BEVEL)} Z`;
+
+/** Vertical drum — storage: a database, a table, a bucket. */
+const cylinder = (b: Box): string => {
+  const ry = Math.min(b.h * 0.2, 8);
+  const rx = b.w / 2;
+  const L = f(b.x);
+  const R = f(b.x + b.w);
+  const top = f(b.y + ry);
+  const bot = f(b.y + b.h - ry);
+  return (
+    // outline: over the top, down the right, under the bottom, up the left
+    `M ${L} ${top} A ${f(rx)} ${f(ry)} 0 0 1 ${R} ${top} L ${R} ${bot}` +
+    ` A ${f(rx)} ${f(ry)} 0 0 1 ${L} ${bot} Z` +
+    // the front lip of the top ellipse
+    ` M ${L} ${top} A ${f(rx)} ${f(ry)} 0 0 0 ${R} ${top}`
+  );
+};
+
+/** Horizontal tube — a queue, a log, a topic. */
+const queue = (b: Box): string => {
+  const rx = Math.min(b.w * 0.11, 12);
+  const ry = b.h / 2;
+  const T = f(b.y);
+  const B = f(b.y + b.h);
+  const l = f(b.x + rx);
+  const r = f(b.x + b.w - rx);
+  return (
+    `M ${l} ${T} L ${r} ${T} A ${f(rx)} ${f(ry)} 0 0 1 ${r} ${B} L ${l} ${B}` +
+    ` A ${f(rx)} ${f(ry)} 0 0 1 ${l} ${T} Z` +
+    // the inner lip: bulges right, so the tube reads as open on the left
+    ` M ${l} ${T} A ${f(rx)} ${f(ry)} 0 0 1 ${l} ${B}`
+  );
+};
+
+/** Cloud — the internet, a SaaS, a third party over the network. */
+const cloud = (b: Box): string => {
+  const px = (t: number) => f(b.x + t * b.w);
+  const py = (t: number) => f(b.y + t * b.h);
+  return (
+    `M ${px(0.25)} ${py(0.26)}` +
+    ` C ${px(0.05)} ${py(0.26)} ${px(0)} ${py(0.5)} ${px(0.16)} ${py(0.56)}` +
+    ` C ${px(0)} ${py(0.68)} ${px(0.18)} ${py(0.92)} ${px(0.31)} ${py(0.82)}` +
+    ` C ${px(0.4)} ${py(1)} ${px(0.7)} ${py(1)} ${px(0.8)} ${py(0.82)}` +
+    ` C ${px(1)} ${py(0.82)} ${px(1)} ${py(0.6)} ${px(0.87)} ${py(0.5)}` +
+    ` C ${px(1)} ${py(0.3)} ${px(0.8)} ${py(0.08)} ${px(0.62)} ${py(0.2)}` +
+    ` C ${px(0.55)} ${py(0.04)} ${px(0.35)} ${py(0.06)} ${px(0.25)} ${py(0.26)} Z`
+  );
+};
+
+/** Hexagon — a compute unit: GPU, model server, agent loop. */
+const hex = (b: Box): string => {
+  const k = Math.min(b.h * 0.42, 15);
+  return (
+    `M ${f(b.x + k)} ${f(b.y)} L ${f(b.x + b.w - k)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.cy)}` +
+    ` L ${f(b.x + b.w - k)} ${f(b.y + b.h)} L ${f(b.x + k)} ${f(b.y + b.h)} L ${f(b.x)} ${f(b.cy)} Z`
+  );
+};
+
+/** Gate — a check, a decision, a fork. A true rhombus, so it never reads as the
+ *  compute hexagon; labels on gate nodes are kept short on purpose. */
+const diamond = (b: Box): string =>
+  `M ${f(b.cx)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.cy)} L ${f(b.cx)} ${f(b.y + b.h)} L ${f(b.x)} ${f(b.cy)} Z`;
+
+/** Document — a report, a dashboard, a spec (wavy bottom edge). */
+const doc = (b: Box): string => {
+  const wave = b.h * 0.14;
+  const base = b.y + b.h - wave;
+  return (
+    `M ${f(b.x)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.y)} L ${f(b.x + b.w)} ${f(base)}` +
+    ` C ${f(b.x + b.w * 0.74)} ${f(base + wave * 2)} ${f(b.x + b.w * 0.26)} ${f(base - wave * 2)} ${f(b.x)} ${f(base)} Z`
+  );
+};
+
+/** Parallelogram — a transform step. */
+const para = (b: Box): string => {
+  const k = Math.min(b.w * 0.12, 12);
+  return (
+    `M ${f(b.x + k)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.y)} L ${f(b.x + b.w - k)} ${f(b.y + b.h)}` +
+    ` L ${f(b.x)} ${f(b.y + b.h)} Z`
+  );
+};
+
+const STENCIL: Record<DiagramShape, (b: Box) => string> = {
+  rect,
+  cylinder,
+  queue,
+  cloud,
+  hex,
+  diamond,
+  doc,
+  para,
+};
+
+/* ---- label fitting: shapes have different usable widths ---- */
+const INNER: Record<DiagramShape, number> = {
+  rect: 0.86,
+  cylinder: 0.82,
+  queue: 0.7,
+  cloud: 0.66,
+  hex: 0.72,
+  diamond: 0.46,
+  doc: 0.86,
+  para: 0.76,
+};
+const DY: Record<DiagramShape, number> = {
+  rect: 0,
+  cylinder: 2.5,
+  queue: 0,
+  cloud: 3,
+  hex: 0,
+  diamond: 0,
+  doc: -2,
+  para: 0,
+};
+/* How far the drawn outline sits inside the node box at mid height — an arrow
+   has to stop there, not at the box edge, or it looks detached. */
+const ATTACH: Record<DiagramShape, number> = {
+  rect: 0,
+  cylinder: 0,
+  queue: 0,
+  cloud: 0.06,
+  hex: 0,
+  diamond: 0,
+  doc: 0,
+  para: 0.06,
+};
+
+// Break a label on its most balanced space when it is too long for one line.
+const wrap = (label: string, maxChars: number): string[] => {
+  if (label.length <= maxChars) return [label];
+  const words = label.split(" ");
+  if (words.length < 2) return [label];
+  let cut = 1;
+  let best = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const score = Math.max(words.slice(0, i).join(" ").length, words.slice(i).join(" ").length);
+    if (score < best) {
+      best = score;
+      cut = i;
+    }
+  }
+  return [words.slice(0, cut).join(" "), words.slice(cut).join(" ")];
+};
+
+/* ---- edges: horizontal line, or a rounded elbow across lanes ---- */
+const edgeD = (a: Box, aShape: DiagramShape, b: Box, bShape: DiagramShape): string => {
+  const sx = a.x + a.w - a.w * ATTACH[aShape] + MARGIN;
+  const tx = b.x + b.w * ATTACH[bShape] - MARGIN; // arrow tip
+  const sy = a.cy;
+  const ty = b.cy;
+  const head =
+    ` M ${f(tx - HEAD)} ${f(ty - HALF)} L ${f(tx)} ${f(ty)} L ${f(tx - HEAD)} ${f(ty + HALF)}`;
+
+  if (Math.abs(ty - sy) < 0.5) return `M ${f(sx)} ${f(sy)} L ${f(tx)} ${f(ty)}` + head;
+
+  const dir = ty > sy ? 1 : -1;
+  const mid = (sx + tx) / 2;
+  const r = Math.min(ELBOW, Math.abs(ty - sy) / 2, (tx - sx) / 2);
+  return (
+    `M ${f(sx)} ${f(sy)} L ${f(mid - r)} ${f(sy)}` +
+    ` Q ${f(mid)} ${f(sy)} ${f(mid)} ${f(sy + dir * r)}` +
+    ` L ${f(mid)} ${f(ty - dir * r)}` +
+    ` Q ${f(mid)} ${f(ty)} ${f(mid + r)} ${f(ty)}` +
+    ` L ${f(tx)} ${f(ty)}` +
+    head
+  );
+};
+
+const edgeList: DiagramEdge[] =
+  diagram.edges ?? nodes.slice(1).map((_, i) => ({ from: nodes[i].id, to: nodes[i + 1].id }));
+
+/* ---- draw order: node, its outgoing edge, the node it lands on, ... ---- */
+type Item =
+  | { t: "node"; id: string }
+  | { t: "edge"; d: string; stroke: string };
+
+const order: Item[] = [];
+const seen = new Set<string>();
+const pushNode = (id: string) => {
+  if (seen.has(id) || !byId.has(id)) return;
+  seen.add(id);
+  order.push({ t: "node", id });
+};
+
+if (nodes[0]) pushNode(nodes[0].id);
+for (const e of edgeList) {
+  const a = byId.get(e.from);
+  const b = byId.get(e.to);
+  if (!a || !b) continue;
+  pushNode(e.from);
+  order.push({
+    t: "edge",
+    d: edgeD(a.box, a.node.shape ?? "rect", b.box, b.node.shape ?? "rect"),
+    stroke: EDGE[e.tone ?? "neutral"],
+  });
+  pushNode(e.to);
+}
+for (const node of nodes) pushNode(node.id);
+
+const drawn = order.map((item) => {
+  if (item.t === "edge") return item;
+  const entry = byId.get(item.id)!;
+  const shape = entry.node.shape ?? "rect";
+  const tone = TONE[entry.node.tone ?? "neutral"];
+  const box = entry.box;
+  const lines = wrap(entry.node.label, 11);
+  const avail = box.w * INNER[shape];
+  const longest = Math.max(...lines.map((l) => l.length));
+  const size = Math.max(7.4, Math.min(10.6, avail / (longest * 0.56)));
+  const step = size * 1.06;
+  const baseY = box.cy + DY[shape] - (lines.length - 1) * (step / 2);
+  return {
+    t: "node" as const,
+    d: STENCIL[shape](box),
+    fill: tone.fill,
+    stroke: tone.stroke,
+    text: tone.text,
+    lines: lines.map((text, i) => ({ text, y: f(baseY + i * step) })),
+    cx: f(box.cx),
+    size: f(size),
+  };
+});
+---
+
+<svg
+  id={`dg-${slug}-${kind}`}
+  viewBox={`0 0 ${VW} ${VH}`}
+  preserveAspectRatio="xMidYMid meet"
+  class:list={["dg-svg", className]}
+  data-diag-diagram
+  role="img"
+  aria-label={kind === "cause" ? "Problème" : "Solution"}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {
+    drawn.map((item) =>
+      item.t === "edge" ? (
+        <path
+          class="dg-edge"
+          d={item.d}
+          fill="none"
+          stroke={item.stroke}
+          stroke-width={1.9}
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      ) : (
+        <g>
+          <path
+            class="dg-node"
+            d={item.d}
+            fill={item.fill}
+            stroke={item.stroke}
+            stroke-width={1.6}
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+          {item.lines.map((line) => (
+            <text
+              class="dg-label"
+              x={item.cx}
+              y={line.y}
+              text-anchor="middle"
+              dominant-baseline="central"
+              font-size={item.size}
+              fill={item.text}
+            >
+              {line.text}
+            </text>
+          ))}
+        </g>
+      )
+    )
+  }
+</svg>
+
+<style>
+  .dg-svg {
+    display: block;
+    width: 100%;
+    /* `height:auto` keeps the viewBox ratio, `max-height` lets the diagram fit a
+       fixed-height card slot — the width then shrinks with it (replaced element
+       sizing), and the flex parent keeps it centered. */
+    height: auto;
+    max-height: 100%;
+  }
+  .dg-label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: opacity 0.4s ease 0.12s;
+  }
+  .dg-node {
+    transition: fill-opacity 0.45s ease 0.12s;
+  }
+  /* While vivus sketches the outline, hold the fills and the labels back. */
+  .dg-svg.is-drawing .dg-node {
+    fill-opacity: 0;
+    transition: none;
+  }
+  .dg-svg.is-drawing .dg-label {
+    opacity: 0;
+    transition: none;
+  }
+</style>

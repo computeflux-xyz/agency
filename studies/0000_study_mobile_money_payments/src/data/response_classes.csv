@@ -1,0 +1,10 @@
+code,class,retryable,operator_action,label_en,label_fr
+INS-0,success,no,none,Accepted by the rail,Accepté par le rail
+INS-6,transaction failed,no,surface to buyer,Transaction failed,Transaction échouée
+INS-9,request timeout,yes,query status then retry,Request timeout,Délai de requête dépassé
+INS-10,duplicate,no,resolve to existing payment,Duplicate instruction,Instruction en double
+INS-989,session invalid,yes,refresh session and replay,Session expired,Session expirée
+INS-2006,insufficient balance,no,surface to buyer,Insufficient balance,Solde insuffisant
+INS-2051,invalid MSISDN,no,surface to buyer,Invalid phone number,Numéro invalide
+INS-995,customer profile problem,no,surface to buyer,Customer profile problem,Profil client en anomalie
+5xx,transport,yes,exponential backoff,Rail unavailable,Rail indisponible

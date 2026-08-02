@@ -1,0 +1,10 @@
+---
+// English case-study detail (/en/studies/[slug]). Same shared component as the
+// French root route. It resolves the locale from the URL and requests ?lang=en.
+export const prerender = false;
+import StudyDetail from "@organisms/StudyDetail.astro";
+
+const slug = Astro.params.slug ?? "";
+---
+
+<StudyDetail slug={slug} />

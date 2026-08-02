@@ -138,8 +138,50 @@ tasks:
     cmds:
       - docker run --rm -v {{.PWD}}/{{.MIGRATIONS}}:/migrations {{.MIGRATE_IMAGE}} create -ext sql -dir /migrations -seq {{.CLI_ARGS}}
 
+  content:list:
+    desc: 'List every publishable content dir under articles/ and studies/'
+    dir: .
+    cmds:
+      - go run ./tools/article-publisher -list
+
+  content:publish:
+    desc: 'Build + publish one content dir locally (usage: task content:publish -- studies/0000_study_slug)'
+    dir: .
+    env:
+      API_BASE_URL: http://localhost:8080
+      INGEST_TOKEN: local-dev-ingest-token
+    cmds:
+      - (cd {{.CLI_ARGS}} && pnpm install && pnpm run build)
+      - go run ./tools/article-publisher -dir {{.CLI_ARGS}} -api "$API_BASE_URL" -token "$INGEST_TOKEN"
+
+  content:publish:all:
+    desc: 'Build + publish every article and study locally, then prune orphans'
+    dir: .
+    env:
+      API_BASE_URL: http://localhost:8080
+      INGEST_TOKEN: local-dev-ingest-token
+    cmds:
+      - |
+        set -euo pipefail
+        for dir in $(go run ./tools/article-publisher -list); do
+          echo "== $dir"
+          (cd "$dir" && pnpm install --silent && pnpm run build >/dev/null)
+          go run ./tools/article-publisher -dir "$dir" -api "$API_BASE_URL" -token "$INGEST_TOKEN"
+        done
+
+      - go run ./tools/article-publisher -prune -api "$API_BASE_URL" -token "$INGEST_TOKEN"
+
+  content:delete:
+    desc: 'Delete one published slug locally (usage: task content:delete -- some-slug)'
+    dir: .
+    env:
+      API_BASE_URL: http://localhost:8080
+      INGEST_TOKEN: local-dev-ingest-token
+    cmds:
+      - go run ./tools/article-publisher -delete {{.CLI_ARGS}} -api "$API_BASE_URL" -token "$INGEST_TOKEN"
+
   articles:publish:
-    desc: 'Build + publish one article locally (usage: task articles:publish -- 0000_blog_slug)'
+    desc: 'Deprecated alias for content:publish (article dirs only)'
     dir: .
     env:
       API_BASE_URL: http://localhost:8080

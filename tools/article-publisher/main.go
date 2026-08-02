@@ -1,10 +1,17 @@
 // Command article-publisher builds are already produced upstream. This tool
-// takes an article source directory that contains an `article.json` and a built
-// `dist/` tree, and publishes it to site-api via the presigned-URL ingest flow:
+// takes a content source directory that contains a metadata file
+// (`article.json` for an editorial post, `study.json` for a customer case
+// study) and a built `dist/` tree, and publishes it to site-api via the
+// presigned-URL ingest flow:
 //
 //	begin  -> receive presigned PUT URLs for missing blobs (dedup by sha256)
 //	upload -> PUT each blob straight to R2 (no R2 credentials needed here)
 //	commit -> site-api verifies + atomically publishes the version
+//
+// Both content trees — articles/ and studies/ — publish through this one tool
+// and land in the same site-api collection, distinguished only by the `type`
+// field ("blog" | "study"). The -list and -prune modes walk those trees so the
+// CI workflow never has to hard-code either the roots or the metadata filename.
 //
 // It is invoked by the publish GitHub Action after `npm run build`, and is also
 // runnable locally against the docker-compose stack.
@@ -164,27 +171,45 @@ type beginResponse struct {
 
 func main() {
 	var (
-		dir        = flag.String("dir", "", "article source directory (contains article.json and dist/)")
+		dir        = flag.String("dir", "", "content source directory (contains article.json or study.json, plus dist/)")
 		distDir    = flag.String("dist", "", "override path to the built dist/ dir (default <dir>/dist)")
 		apiBase    = flag.String("api", envOr("API_BASE_URL", "http://localhost:8080"), "site-api base URL")
 		token      = flag.String("token", os.Getenv("INGEST_TOKEN"), "admin ingest bearer token")
 		actor      = flag.String("actor", envOr("GITHUB_ACTOR", "local"), "who requested the publish")
 		commit     = flag.String("commit", os.Getenv("GITHUB_SHA"), "source git commit")
 		ref        = flag.String("ref", os.Getenv("GITHUB_REF_NAME"), "source git ref")
+		roots      = flag.String("roots", "articles,studies", "comma-separated content roots walked by -list and -prune")
+		list       = flag.Bool("list", false, "print every publishable directory under -roots, one per line, then exit")
 		deleteSlug = flag.String("delete", "", "delete a single article by slug, then exit")
-		prune      = flag.Bool("prune", false, "delete every remote article whose slug is not in -keep, then exit")
-		keep       = flag.String("keep", "", "comma-separated slugs to keep (the full local set); required with -prune")
+		prune      = flag.Bool("prune", false, "delete every remote article whose slug is not kept, then exit")
+		keep       = flag.String("keep", "", "comma-separated slugs to keep; defaults to every slug found under -roots")
 	)
 	flag.Parse()
 
+	// -list needs neither credentials nor the network: it is a filesystem walk
+	// the CI workflow uses to discover targets.
+	if *list {
+		dirs, err := discover(splitCSV(*roots))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "list failed: %v\n", err)
+			os.Exit(1)
+		}
+
+		for _, d := range dirs {
+			fmt.Println(d)
+		}
+
+		return
+	}
+
 	if *token == "" {
-		fmt.Fprintln(os.Stderr, "usage: article-publisher -token <ingest-token> [ -dir <dir> | -delete <slug> | -prune -keep <csv> ] [-api URL]")
+		fmt.Fprintln(os.Stderr, "usage: article-publisher [ -list | -dir <dir> -token <t> | -delete <slug> -token <t> | -prune -token <t> ] [-roots articles,studies] [-api URL]")
 		os.Exit(2)
 	}
 
 	client := &http.Client{Timeout: 60 * time.Second}
 
-	// Deletion modes exit early; the default mode publishes one article dir.
+	// Deletion modes exit early; the default mode publishes one content dir.
 	switch {
 	case *deleteSlug != "":
 		if err := doDelete(client, *apiBase, *token, *actor, *deleteSlug); err != nil {
@@ -193,7 +218,21 @@ func main() {
 		}
 		return
 	case *prune:
-		if err := doPrune(client, *apiBase, *token, *actor, *keep); err != nil {
+		keepSet := *keep
+		// With no explicit keep list, derive it from disk. That is the safe
+		// default: the local content trees *are* the source of truth for which
+		// slugs should exist remotely.
+		if strings.TrimSpace(keepSet) == "" {
+			derived, err := localSlugs(splitCSV(*roots))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "prune failed: %v\n", err)
+				os.Exit(1)
+			}
+
+			keepSet = strings.Join(derived, ",")
+		}
+
+		if err := doPrune(client, *apiBase, *token, *actor, keepSet); err != nil {
 			fmt.Fprintf(os.Stderr, "prune failed: %v\n", err)
 			os.Exit(1)
 		}
@@ -201,7 +240,7 @@ func main() {
 	}
 
 	if *dir == "" {
-		fmt.Fprintln(os.Stderr, "usage: article-publisher -dir <article-dir> -token <ingest-token> [-api URL]")
+		fmt.Fprintln(os.Stderr, "usage: article-publisher -dir <content-dir> -token <ingest-token> [-api URL]")
 		os.Exit(2)
 	}
 
@@ -216,7 +255,12 @@ func main() {
 }
 
 func run(dir, distDir, apiBase, token, actor, commit, ref string) error {
-	meta, err := readMeta(filepath.Join(dir, "article.json"))
+	metaPath, err := metaFile(dir)
+	if err != nil {
+		return err
+	}
+
+	meta, err := readMeta(metaPath)
 	if err != nil {
 		return err
 	}
@@ -292,26 +336,55 @@ func run(dir, distDir, apiBase, token, actor, commit, ref string) error {
 	return nil
 }
 
+// metaNames are the metadata filenames a content directory may use, in
+// precedence order. They are otherwise identical: `study.json` exists so a
+// directory under studies/ reads as what it is.
+var metaNames = []string{"article.json", "study.json"}
+
+// validTypes are the content types site-api understands. A directory whose
+// `type` is neither fails at publish time rather than landing in a collection
+// nothing queries.
+var validTypes = map[string]bool{"blog": true, "study": true}
+
+// metaFile returns the metadata file inside dir, or an error naming both
+// candidates if neither is present.
+func metaFile(dir string) (string, error) {
+	for _, name := range metaNames {
+		p := filepath.Join(dir, name)
+		if st, err := os.Stat(p); err == nil && !st.IsDir() {
+			return p, nil
+		}
+	}
+
+	return "", fmt.Errorf("%s contains no %s", dir, strings.Join(metaNames, " or "))
+}
+
 func readMeta(path string) (articleMeta, error) {
 	var m articleMeta
+	name := filepath.Base(path)
+
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return m, fmt.Errorf("read article.json: %w", err)
+		return m, fmt.Errorf("read %s: %w", name, err)
 	}
 
 	if err := json.Unmarshal(b, &m); err != nil {
-		return m, fmt.Errorf("parse article.json: %w", err)
+		return m, fmt.Errorf("parse %s: %w", name, err)
 	}
 
 	if m.Slug == "" || m.Type == "" {
-		return m, fmt.Errorf("article.json must set slug and type")
+		return m, fmt.Errorf("%s must set slug and type", name)
+	}
+
+	if !validTypes[m.Type] {
+		return m, fmt.Errorf("%s: type %q is not one of blog, study", name, m.Type)
 	}
 
 	locales := m.orderedLocales()
 	hasEN := false
 	for _, loc := range locales {
 		if loc.meta.Title == "" {
-			return m, fmt.Errorf("article.json: locale %q must set a title", loc.lang)
+			return m, fmt.Errorf("%s: locale %q must set a title", name, loc.lang)
 		}
 
 		if loc.lang == "en" {
@@ -320,10 +393,84 @@ func readMeta(path string) (articleMeta, error) {
 	}
 
 	if !hasEN {
-		return m, fmt.Errorf("article.json: an 'en' locale is required (canonical, always-complete locale)")
+		return m, fmt.Errorf("%s: an 'en' locale is required (canonical, always-complete locale)", name)
 	}
 
 	return m, nil
+}
+
+// splitCSV trims and drops empties, so a flag value like "articles, studies,"
+// behaves the way a human expects.
+func splitCSV(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+
+	return out
+}
+
+// discover returns every publishable directory under the given content roots,
+// as "<root>/<dir>" paths relative to the repository. A directory qualifies
+// when its name does not start with "_" (which excludes _shared and _template)
+// and it holds a metadata file.
+func discover(roots []string) ([]string, error) {
+	var out []string
+	for _, root := range roots {
+		entries, err := os.ReadDir(root)
+		if os.IsNotExist(err) {
+			continue
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", root, err)
+		}
+
+		for _, e := range entries {
+			if !e.IsDir() || strings.HasPrefix(e.Name(), "_") {
+				continue
+			}
+
+			p := filepath.Join(root, e.Name())
+			if _, err := metaFile(p); err != nil {
+				continue
+			}
+
+			out = append(out, filepath.ToSlash(p))
+		}
+	}
+
+	sort.Strings(out)
+	return out, nil
+}
+
+// localSlugs is the keep-set for a prune: every slug declared under the given
+// roots. It errors on an unreadable or invalid metadata file rather than
+// silently omitting a slug, because an omitted slug is a live deletion.
+func localSlugs(roots []string) ([]string, error) {
+	dirs, err := discover(roots)
+	if err != nil {
+		return nil, err
+	}
+
+	slugs := make([]string, 0, len(dirs))
+	for _, d := range dirs {
+		p, err := metaFile(d)
+		if err != nil {
+			return nil, err
+		}
+
+		m, err := readMeta(p)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", d, err)
+		}
+
+		slugs = append(slugs, m.Slug)
+	}
+
+	return slugs, nil
 }
 
 // walkDist enumerates every file under distDir, computing its relative path,

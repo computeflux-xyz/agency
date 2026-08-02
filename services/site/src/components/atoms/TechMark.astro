@@ -1,0 +1,162 @@
+---
+/**
+ * TechMark — a single tech logo in the hero carousel and practice cards.
+ *
+ * Renders a Simple Icons glyph when a `si` slug is supplied, otherwise a
+ * typographic monogram (some brands we use — AWS, Mojo, Triton — have no clean
+ * open source glyph). Simple Icons paths are `viewBox="0 0 24 24"` fill paths;
+ * they inherit `currentColor` so a single utility tints the whole mark.
+ *
+ * Brand glyphs render monochrome on purpose: a wall of rainbow logos fights the
+ * sand/deep-tech identity; the marks read as a flat technical texture and the
+ * accent colour comes from hover.
+ */
+import {
+  siPython,
+  siGooglebigquery,
+  siClickhouse,
+  siSnowflake,
+  siApacheairflow,
+  siMlflow,
+  siApachekafka,
+  siScylladb,
+  siGooglecloud,
+  siKubernetes,
+  siPytorch,
+  siVllm,
+  siOllama,
+  siNvidia,
+  siArgo,
+  siDocker,
+  siOpentofu,
+  siTerraform,
+  siGo,
+  siRust,
+  siOcaml,
+  siCplusplus,
+  siZig,
+  siGoogle,
+  siDuckdb,
+  siTrino,
+  siLangchain,
+  siOnnx,
+  siTensorflow,
+  siLinux,
+  siApachespark,
+  siApacheflink,
+  siHuggingface,
+  siQdrant,
+  siMilvus,
+  siRedis,
+  siPostgresql,
+  siOpentelemetry,
+  siGrafana,
+  siPrometheus,
+  siDatadog,
+  siGradio,
+  siRay,
+  siApachepulsar,
+  siPolars,
+  siNeo4j,
+  siMongodb,
+  siNumpy,
+  siWeightsandbiases,
+  siBentoml,
+  siElasticsearch,
+  siTypescript,
+} from "simple-icons";
+
+type IconGlyph = { path: string };
+
+const ICONS: Record<string, IconGlyph> = {
+  Python: siPython,
+  GoogleBigquery: siGooglebigquery,
+  Clickhouse: siClickhouse,
+  Snowflake: siSnowflake,
+  Apacheairflow: siApacheairflow,
+  Mlflow: siMlflow,
+  Apachekafka: siApachekafka,
+  Scylladb: siScylladb,
+  Googlecloud: siGooglecloud,
+  Kubernetes: siKubernetes,
+  Pytorch: siPytorch,
+  Vllm: siVllm,
+  Ollama: siOllama,
+  Nvidia: siNvidia,
+  Argo: siArgo,
+  Docker: siDocker,
+  Opentofu: siOpentofu,
+  Terraform: siTerraform,
+  Go: siGo,
+  Rust: siRust,
+  Ocaml: siOcaml,
+  Cplusplus: siCplusplus,
+  Zig: siZig,
+  Google: siGoogle,
+  Duckdb: siDuckdb,
+  Trino: siTrino,
+  Langchain: siLangchain,
+  Onnx: siOnnx,
+  Tensorflow: siTensorflow,
+  Linux: siLinux,
+  Apachespark: siApachespark,
+  Apacheflink: siApacheflink,
+  Huggingface: siHuggingface,
+  Qdrant: siQdrant,
+  Milvus: siMilvus,
+  Redis: siRedis,
+  Postgresql: siPostgresql,
+  Opentelemetry: siOpentelemetry,
+  Grafana: siGrafana,
+  Prometheus: siPrometheus,
+  Datadog: siDatadog,
+  Gradio: siGradio,
+  Ray: siRay,
+  Apachepulsar: siApachepulsar,
+  Polars: siPolars,
+  Neo4j: siNeo4j,
+  Mongodb: siMongodb,
+  Numpy: siNumpy,
+  Weightsandbiases: siWeightsandbiases,
+  Bentoml: siBentoml,
+  Elasticsearch: siElasticsearch,
+  Typescript: siTypescript,
+};
+
+export type IconName = keyof typeof ICONS;
+
+interface Props {
+  name: string;
+  si?: string;
+  mono?: string;
+  class?: string;
+}
+const { name, si, mono, class: className = "" } = Astro.props;
+
+const glyph = si ? ICONS[si] : undefined;
+const monogram = (mono ?? name.slice(0, 4)).toUpperCase();
+---
+
+{
+  glyph ? (
+    <svg
+      viewBox="0 0 24 24"
+      role="img"
+      aria-label={name}
+      class:list={["size-5 shrink-0 fill-current md:size-6", className]}
+    >
+      <path d={glyph.path} />
+    </svg>
+  ) : (
+    <span
+      class:list={[
+        "flex shrink-0 items-center justify-center font-mono font-bold leading-none text-ink-50",
+        className,
+      ]}
+      style="font-size:0.6rem"
+      aria-label={name}
+    >
+      {monogram}
+    </span>
+  )
+}

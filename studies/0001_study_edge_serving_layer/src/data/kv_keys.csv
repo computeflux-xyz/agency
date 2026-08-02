@@ -1,0 +1,13 @@
+key,shape,written_by,read_by,role_en,role_fr
+catalog:version,scalar,publish,every edge read,Cache-busting marker for the whole snapshot,Marqueur d'invalidation de l'instantané entier
+catalog:products:all,collection,publish,listing pages,Denormalised product set,Ensemble produits dénormalisé
+catalog:products:{slug},entity,publish,detail page,One denormalised product,Un produit dénormalisé
+catalog:brands:all,collection,publish,brand directory,Producers with their product types,Producteurs et leurs types de produits
+catalog:categories:all,collection,publish,navigation,Category tree,Arbre de catégories
+catalog:regions:all,collection,publish,facets,Geographic origins,Origines géographiques
+catalog:tastes:all,collection,publish,facets,Tasting tags,Notes de dégustation
+catalog:awards:all,collection,publish,facets,Awards and distinctions,Récompenses et distinctions
+catalog:search,index,publish,client-side search,Prebuilt search index,Index de recherche pré-construit
+catalog:index:slug:{slug},pointer,publish,router,Slug resolution with redirect tombstones,Résolution de slug avec pierres tombales de redirection
+catalog:index:category:{id}:products,index,publish,category page,Product ids in a category,Identifiants produits d'une catégorie
+catalog:index:brand:{id}:products,index,publish,brand page,Product ids for a producer,Identifiants produits d'un producteur

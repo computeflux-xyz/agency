@@ -10,7 +10,8 @@
     "preview": "wrangler dev ./dist/_worker.js/index.js",
     "deploy": "npm run build && wrangler deploy",
     "astro": "astro",
-    "check": "astro check"
+    "check": "npm run check:i18n && astro check",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.0",
@@ -18,12 +19,15 @@
     "@astrojs/sitemap": "^3.4.0",
     "@chenglou/pretext": "^0.0.8",
     "astro": "^5.13.0",
-    "intl-tel-input": "^29.1.2"
+    "intl-tel-input": "^29.1.2",
+    "vivus": "^0.4.6"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@cloudflare/workers-types": "^4.20250620.0",
     "@tailwindcss/vite": "^4.1.0",
+    "@types/vivus": "^0.4.7",
+    "simple-icons": "16.27.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.8.3",
     "wrangler": "^4.20.0"

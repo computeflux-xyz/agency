@@ -1,0 +1,10 @@
+environment,variant,edge_px,purpose_en,purpose_fr
+development,thumbnail,150,Grid and cart line items,Vignettes de grille et lignes de panier
+development,small,480,Mobile product card,Carte produit mobile
+development,medium,768,Tablet product card,Carte produit tablette
+development,large,1200,Product detail hero,Visuel principal de la fiche
+development,desktop,1920,Wide detail and zoom,Fiche large et zoom
+production,thumbnail,150,Grid and cart line items,Vignettes de grille et lignes de panier
+production,mobile,480,Mobile product card,Carte produit mobile
+production,tablet,768,Tablet product card,Carte produit tablette
+production,desktop,1920,Detail hero and zoom,Visuel principal et zoom

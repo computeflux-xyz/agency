@@ -7,20 +7,20 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://computeflux.xyz",
   output: "static",
-  // English is served at the root; French under /fr. `fallbackType: "rewrite"`
-  // generates every /fr/* route from its English counterpart and serves the
-  // English content (at the /fr URL, no redirect) until a French-specific page
-  // or translation exists. So, localization can roll out page by page without
-  // ever leaving a /fr URL 404ing.
+  // French is the reference locale and is served at the root; English under /en.
+  // `fallbackType: "rewrite"` generates every /en/* route from its French
+  // counterpart and serves it at the /en URL (no redirect) until an
+  // English-specific page exists. So localization rolls out page by page
+  // without ever leaving an /en URL 404ing.
   i18n: {
-    defaultLocale: "en",
-    locales: ["en", "fr"],
+    defaultLocale: "fr",
+    locales: ["fr", "en"],
     routing: {
       prefixDefaultLocale: false,
       fallbackType: "rewrite",
     },
     fallback: {
-      fr: "en",
+      en: "fr",
     },
   },
   adapter: cloudflare({
@@ -31,8 +31,8 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.includes("/404"),
       i18n: {
-        defaultLocale: "en",
-        locales: { en: "en", fr: "fr" },
+        defaultLocale: "fr",
+        locales: { fr: "fr", en: "en" },
       },
     }),
   ],

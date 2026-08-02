@@ -1,0 +1,124 @@
+name: publish-content
+
+# Builds and publishes editorial content to site-api. Two source trees feed the
+# same pipeline and the same remote collection:
+#
+#   articles/  — editorial posts        (article.json, type "blog")
+#   studies/   — customer case studies  (study.json,   type "study")
+#
+# Target discovery, the metadata filename and the prune keep-set all come from
+# `article-publisher` rather than being duplicated in shell here, so adding a
+# third tree later is a one-word change to its -roots default.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'A dir (e.g. studies/0000_study_x), a root ("articles" | "studies"), "all", or "changed"'
+        required: true
+        default: 'all'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options: [production, staging]
+
+concurrency:
+  group: publish-content-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CONTENT_ROOTS: 'articles,studies'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Resolve target directories
+        id: targets
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          all=$(go run ./tools/article-publisher -list -roots "$CONTENT_ROOTS")
+          case "$TARGET" in
+            all)
+              dirs="$all"
+              ;;
+            articles|studies)
+              # A whole tree: keep only the discovered dirs under that root.
+              dirs=$(printf '%s\n' "$all" | grep "^${TARGET}/" || true)
+              ;;
+            changed)
+              # Top-two levels of every path touched by the head commit, kept
+              # only where that pair is a real publishable directory.
+              touched=$(git diff --name-only HEAD^ HEAD | awk -F/ 'NF>2 {print $1"/"$2}' | sort -u)
+              dirs=$(comm -12 <(printf '%s\n' "$all" | sort) <(printf '%s\n' "$touched"))
+              ;;
+            *)
+              dirs="$TARGET"
+              ;;
+          esac
+          printf 'Targets:\n%s\n' "${dirs:-<none>}"
+          {
+            echo 'dirs<<EOF'
+            printf '%s\n' "$dirs"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish
+        run: |
+          set -euo pipefail
+          if [ -z "${INGEST_TOKEN:-}" ] || [ -z "${API_BASE_URL:-}" ]; then
+            echo "::error::INGEST_TOKEN secret and API_BASE_URL variable must be set for this environment"
+            exit 1
+          fi
+          while IFS= read -r dir; do
+            [ -z "$dir" ] && continue
+            [ -d "$dir" ] || { echo "::error::$dir not found"; exit 1; }
+            echo "::group::$dir"
+            ( cd "$dir" && npm ci && npm run build )
+            go run ./tools/article-publisher \
+              -dir "$dir" \
+              -api "$API_BASE_URL" \
+              -token "$INGEST_TOKEN" \
+              -actor "${GITHUB_ACTOR}" \
+              -commit "${GITHUB_SHA}" \
+              -ref "${GITHUB_REF_NAME}"
+            echo "::endgroup::"
+          done <<< "${{ steps.targets.outputs.dirs }}"
+
+      # Full-sync: delete remote entries that no longer exist in the repo. Only
+      # in "all" mode, where the local set spans every root — a partial keep-set
+      # would delete live content. The publisher derives the keep-set itself by
+      # walking -roots, and fails loudly on any unreadable metadata file rather
+      # than treating a missing slug as "delete me".
+      - name: Prune removed content
+        if: inputs.target == 'all'
+        run: |
+          set -euo pipefail
+          go run ./tools/article-publisher -prune \
+            -roots "$CONTENT_ROOTS" \
+            -api "$API_BASE_URL" -token "$INGEST_TOKEN" -actor "${GITHUB_ACTOR}"

@@ -28,8 +28,8 @@ export const site: SiteConfig = {
   description:
     "Computeflux is a French engineering studio. We help companies put AI and data systems into production: inference, agents and reliable data pipelines. We provide the AI engineers, data engineers and data architects your project needs.",
   defaultOgImage: "/og/default.png",
-  locale: "en_US",
-  lang: "en",
+  locale: "fr_FR",
+  lang: "fr",
   email: "hello@computeflux.xyz",
   location: "Bordeaux, France · remote worldwide",
   foundingYear: 2026,
@@ -47,7 +47,7 @@ import { DATE_LOCALE, OG_LOCALE, type Locale } from "@i18n/config";
 import { ui } from "@i18n/ui";
 
 export function siteFor(locale: Locale): SiteConfig {
-  const dict = ui[locale] ?? ui.en;
+  const dict = ui[locale] ?? ui.fr;
   return {
     ...site,
     tagline: dict["site.tagline"] ?? site.tagline,
@@ -58,5 +58,5 @@ export function siteFor(locale: Locale): SiteConfig {
 }
 
 export function dateLocale(locale: Locale): string {
-  return DATE_LOCALE[locale] ?? "en-GB";
+  return DATE_LOCALE[locale] ?? "fr-FR";
 }

@@ -3,18 +3,22 @@
 Source for the ObservableHQ articles rendered on [computeflux.xyz](https://computeflux.xyz).
 `services/site` lists and renders them; `services/site-api` owns their metadata
 and the R2 blob manifest. Building + publishing is an **admin task** run by the
-[`publish-articles`](../.github/workflows/publish-articles.yml) GitHub Action.
+[`publish-content`](../.github/workflows/publish-content.yml) GitHub Action.
+
+> **Articles are thoughts; studies are customer stories.** Case studies live in
+> their own tree, [`../studies`](../studies), with the same build and publish
+> machinery but a stricter editorial contract (anonymised client, no invented
+> numbers, explicit provenance callouts). Read that README before writing one.
 
 ## Layout
 
 One directory per article, named:
 
 ```
-<XXXX>_<blog|study>_<snake_case_slug>/
+<XXXX>_blog_<snake_case_slug>/
 ```
 
 - `XXXX` — 4-digit ordering prefix (`0000`, `0001`, …).
-- `blog | study` — an editorial post vs. a customer case study.
 - `<slug>` — the URL slug (kebab-case in the URL, snake_case in the dir name).
 
 Each directory is a standard [Observable Framework](https://observablehq.com/framework)
@@ -68,6 +72,13 @@ go run ./tools/article-publisher \
   -dir articles/0000_blog_apm_at_scale_using_ebpf \
   -api http://localhost:8080 \
   -token "$CONFIG_INGEST_TOKEN"
+```
+
+The publisher discovers targets and derives its prune keep-set by walking both
+content roots, so neither the CI workflow nor a human has to enumerate them:
+
+```bash
+go run ./tools/article-publisher -list     # articles/… and studies/…, one per line
 ```
 
 The publisher never holds R2 credentials: site-api hands back presigned PUT

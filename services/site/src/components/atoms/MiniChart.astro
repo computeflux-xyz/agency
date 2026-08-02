@@ -1,0 +1,89 @@
+---
+/**
+ * MiniChart — tiny, dependency-free SVG charts for the diagnostic cards and the
+ * systems cards. Markup is generated as a raw string and injected with
+ * `set:html` (avoids Astro's strict SVG JSX typing) and works with JS off.
+ */
+interface Bar {
+  label: string;
+  value: number;
+}
+
+type Kind = "bars" | "spark" | "split";
+
+interface Props {
+  kind: Kind;
+  data: number[] | Bar[] | { a: number; b: number; aLabel: string; bLabel: string };
+  accent?: string;
+  good?: string;
+  labelFill?: string;
+  class?: string;
+}
+
+const {
+  kind,
+  data,
+  accent = "var(--color-flux-blue)",
+  good = "var(--color-flux-amber)",
+  labelFill = "var(--color-ink-400)",
+  class: className = "",
+} = Astro.props;
+
+const W = 300;
+const H = 96;
+const MONO = "var(--font-mono)";
+
+let inner = "";
+
+if (kind === "bars") {
+  const bars = (data as Bar[]).map((d) => ({ ...d, value: Math.max(0, d.value) }));
+  const maxBar = Math.max(1, ...bars.map((b) => b.value));
+  const gap = 8;
+  const barW = (W - gap * (bars.length - 1)) / bars.length;
+  const base = H - 8;
+  inner = bars
+    .map((b, i) => {
+      const h = Math.max(3, (b.value / maxBar) * (H - 24));
+      const x = i * (barW + gap);
+      const y = base - h;
+      const bar = `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="2" fill="${accent}" opacity="0.9"/>`;
+      const label = b.label
+        ? `<text x="${x + barW / 2}" y="${base - h - 5}" text-anchor="middle" font-family="${MONO}" font-size="9" fill="${labelFill}">${b.label}</text>`
+        : "";
+      return `<g>${bar}${label}</g>`;
+    })
+    .join("");
+} else if (kind === "spark") {
+  const vals = (data as number[]).map((v) => Math.max(0, v));
+  const max = Math.max(1, ...vals);
+  const n = vals.length;
+  const stepX = n > 1 ? W / (n - 1) : W;
+  const pts = vals
+    .map((v, i) => `${(i * stepX).toFixed(1)},${(H - 6 - (v / max) * (H - 18)).toFixed(1)}`)
+    .join(" ");
+  const lastY = H - 6 - (vals[n - 1] / max) * (H - 18);
+  const lx = ((n - 1) * stepX).toFixed(1);
+  inner = `<polyline points="${pts}" fill="none" stroke="${accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${lx}" cy="${lastY.toFixed(1)}" r="3" fill="${accent}"/>`;
+} else {
+  const s = data as { a: number; b: number; aLabel: string; bLabel: string };
+  const max = Math.max(1, s.a, s.b);
+  const hbar = (v: number) => 28 + Math.min(1, v / max) * (W - 40);
+  inner =
+    `<text x="0" y="12" font-family="${MONO}" font-size="9" fill="${labelFill}">${s.aLabel}</text>` +
+    `<rect x="0" y="14" width="${hbar(s.a).toFixed(1)}" height="10" rx="2" fill="${accent}"/>` +
+    `<rect x="0" y="41" width="${hbar(s.b).toFixed(1)}" height="10" rx="2" fill="${good}"/>` +
+    `<text x="0" y="64" font-family="${MONO}" font-size="9" fill="${labelFill}">${s.bLabel}</text>`;
+}
+---
+
+<svg
+  viewBox={`0 0 ${W} ${H}`}
+  width="100%"
+  height="100%"
+  role="img"
+  aria-label="chart"
+  preserveAspectRatio="none"
+  class={className}
+  style="max-height:120px"
+  set:html={inner}
+></svg>

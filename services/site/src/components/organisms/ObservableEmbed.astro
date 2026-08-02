@@ -18,6 +18,11 @@
  * (window.umami.track) so in-article interactions can be measured even though
  * the frame is a different origin.
  *
+ * `allow-top-navigation-by-user-activation` is granted so a link inside a
+ * framed document (a case study pointing at the next part of its series) moves
+ * the whole page instead of loading the site back into the frame. It only fires
+ * on a real click, and the framed document is our own build.
+ *
  * NOTE: the rail's <li>/<a> are created at runtime from the posted outline, so
  * their styles are declared `:global()`. Astro's scoped styles only attach to
  * elements present in this template, not ones created later in JS.
@@ -37,7 +42,7 @@ const { src, title } = Astro.props;
       title={title}
       loading="lazy"
       scrolling="no"
-      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation"
       referrerpolicy="no-referrer"
       allowfullscreen></iframe>
     <noscript>
@@ -168,8 +173,32 @@ const { src, title } = Astro.props;
       });
     }
 
+    // Tell the frame which origin it is being read from. Prose inside a built
+    // article links to the canonical https://computeflux.xyz — the only address
+    // that is right when the R2 document is opened on its own — and the bridge
+    // rewrites those links to this origin so they also work on localhost and
+    // staging. Sent on load, and again on the frame's first message, because
+    // either one can happen first depending on cache.
+    // A message posted before the frame's listener is attached is simply
+    // dropped, and nothing acknowledges it, so this re-sends on the frame's
+    // first few messages rather than trying to detect readiness. The bridge
+    // ignores a repeat of an origin it already has.
+    let originSends = 0;
+    function sendOrigin() {
+      if (originSends > 4) return;
+      originSends++;
+      frame!.contentWindow?.postMessage(
+        { type: "cf-site-origin", origin: window.location.origin },
+        "*",
+      );
+    }
+
+    frame.addEventListener("load", sendOrigin);
+    sendOrigin();
+
     window.addEventListener("message", (event: MessageEvent) => {
       if (event.source !== frame.contentWindow) return;
+      sendOrigin();
       const data = event.data as { type?: string; height?: number; items?: TocItem[]; name?: string; data?: unknown } | null;
       if (!data || typeof data !== "object") return;
       switch (data.type) {

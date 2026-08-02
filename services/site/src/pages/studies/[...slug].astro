@@ -1,35 +1,10 @@
 ---
-import type { GetStaticPaths } from "astro";
-import { getCollection, render } from "astro:content";
-import ArticleLayout from "@layouts/ArticleLayout.astro";
+// Case-study detail (root locale). Locale-aware logic lives in the shared
+// component. The English route is src/pages/en/studies/[...slug].astro.
+export const prerender = false;
+import StudyDetail from "@organisms/StudyDetail.astro";
 
-export const getStaticPaths = (async () => {
-  const studies = await getCollection("studies", ({ data }) => !data.draft);
-  return studies.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
-  }));
-}) satisfies GetStaticPaths;
-
-const { entry } = Astro.props;
-const { Content } = await render(entry);
-const words = entry.body?.trim().split(/\s+/).length ?? 0;
-const minutes = Math.max(1, Math.round(words / 220));
+const slug = Astro.params.slug ?? "";
 ---
 
-<ArticleLayout
-  kind="study"
-  title={entry.data.title}
-  description={entry.data.description}
-  publishDate={entry.data.publishDate}
-  updatedDate={entry.data.updatedDate}
-  topics={entry.data.topics}
-  author={entry.data.author}
-  cover={entry.data.cover}
-  readingTime={minutes}
-  outcomes={entry.data.outcomes}
-  client={entry.data.client}
-  industry={entry.data.industry}
->
-  <Content />
-</ArticleLayout>
+<StudyDetail slug={slug} />

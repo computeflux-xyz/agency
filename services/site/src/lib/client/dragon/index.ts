@@ -65,7 +65,7 @@ function mkCanvas(id: string, z: number): HTMLCanvasElement {
 }
 
 class DragonSystem {
-  private glCanvas = mkCanvas("flux-dragon", 0);
+  private glCanvas = mkCanvas("flux-dragon", 1);
   private bgCanvas = mkCanvas("flux-dragon-bg", 0);
   private topCanvas = mkCanvas("flux-dragon-top", 40);
   private renderer: Renderer;
@@ -88,11 +88,11 @@ class DragonSystem {
   private dirty = true;
 
   constructor() {
-    // First direct children of <body> so the negative content-lift keeps them
-    // behind page content, with no transformed ancestor to clip them.
-    // Final paint order (all below content z:1 except the top canvas z:40):
-    //   bgCanvas (portal rift, deepest) < glCanvas (dragon + fire) < content
-    //   < topCanvas (surface pass + burn).
+    // First direct children of <body> so no transformed ancestor clips them.
+    // Final paint order — image (underlay z:0) < glCanvas (dragon + fire, z:1)
+    // < page content (z:2) < topCanvas (surface pass + burn, z:40). The dragon
+    // therefore flies IN FRONT of the hero photograph (z:0) but still behind
+    // the text (z:2): it never disappears beneath the picture.
     document.body.insertBefore(this.topCanvas, document.body.firstChild);
     document.body.insertBefore(this.glCanvas, document.body.firstChild);
     document.body.insertBefore(this.bgCanvas, document.body.firstChild);

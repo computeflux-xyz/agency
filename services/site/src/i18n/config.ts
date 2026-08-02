@@ -1,15 +1,17 @@
-export const LOCALES = ["en", "fr"] as const;
+// French first: Computeflux is a French agency, so `fr` is the reference locale
+// and is served unprefixed at the root. English lives under /en.
+export const LOCALES = ["fr", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-export const DEFAULT_LOCALE: Locale = "en";
+export const DEFAULT_LOCALE: Locale = "fr";
 export const LOCALE_LABELS: Record<Locale, string> = {
-  en: "English",
   fr: "Français",
+  en: "English",
 };
 
 export const LOCALE_SHORT: Record<Locale, string> = {
-  en: "EN",
   fr: "FR",
+  en: "EN",
 };
 
 export const OG_LOCALE: Record<Locale, string> = {

@@ -1,0 +1,8 @@
+---
+// English case-study index (/en/studies). Same shared component as the French
+// root route. It resolves the locale from the URL and requests ?lang=en from site-api.
+export const prerender = false;
+import StudiesIndex from "@organisms/StudiesIndex.astro";
+---
+
+<StudiesIndex />

@@ -19,6 +19,10 @@
 //                            services/site ObservableEmbed.astro)
 //                          - exposes window.cfTrack(name, data) so interactions
 //                            can be forwarded to Umami analytics in the parent
+//                          - receives the parent's own origin and rewrites
+//                            canonical site links to it, so a cross-article
+//                            link works on localhost and staging as well as in
+//                            production (see SITE_LINKS below)
 //
 //  Usage: an article's observablehq.config.js becomes just:
 //
@@ -86,11 +90,46 @@ const THEME_STYLE = `
   #observablehq-main .observablehq { max-width: none; }
 </style>`;
 
+/** The canonical site origin. Prose in an article or study links to it
+ *  literally — "https://computeflux.xyz/en/studies/…" — because that is the only
+ *  address that is correct when the built page is read on its own. A relative
+ *  link cannot work: the document is served from object storage, so "/studies/…"
+ *  would resolve against the R2 bucket, not the site.
+ *
+ *  At runtime the parent tells the frame what origin it is actually being read
+ *  from, and every canonical link is rewritten to match. That is what makes the
+ *  same build correct on localhost, on staging and in production. */
+const CANONICAL_ORIGIN = "https://computeflux.xyz";
+
 /** The parent<->iframe bridge. Kept dependency-free and defensive so it runs in
  *  the sandboxed frame regardless of the article's own code. */
 const EMBED_BRIDGE = `
 <script>
   (function () {
+    var CANONICAL = ${JSON.stringify(CANONICAL_ORIGIN)};
+    // Null until the parent introduces itself. Standalone (no parent, or an
+    // older parent that does not send it) leaves the canonical links alone,
+    // which is the correct fallback.
+    var siteOrigin = null;
+
+    // Point every canonical site link at the origin this page is really being
+    // read from, and make it escape the frame. Idempotent: once a link has been
+    // rewritten it no longer starts with CANONICAL, and target is already set.
+    function relink() {
+      var base = siteOrigin || CANONICAL;
+      var anchors = document.getElementsByTagName("a");
+      for (var i = 0; i < anchors.length; i++) {
+        var a = anchors[i];
+        var href = a.getAttribute("href") || "";
+        if (href.indexOf(CANONICAL) === 0) {
+          a.setAttribute("href", base + href.slice(CANONICAL.length));
+        }
+        // A link to the surrounding site has to move the whole page. Without
+        // this the site would load inside the height-to-fit frame. The parent
+        // grants allow-top-navigation-by-user-activation for exactly this.
+        if (a.href.indexOf(base) === 0) a.setAttribute("target", "_top");
+      }
+    }
     function tocItems() {
       // Only real section headings. The ones Observable gives an id + anchor to
       // (Markdown "##" / "###"). This deliberately excludes <h2> used for card
@@ -129,7 +168,19 @@ const EMBED_BRIDGE = `
     }
 
     function postToc() { send("cf-article-toc", { items: tocItems() }); }
-    function post() { postHeight(); postToc(); }
+    function post() { relink(); postHeight(); postToc(); }
+
+    // The parent introduces itself once the frame has loaded. Only the parent
+    // may do so — anything else is ignored.
+    window.addEventListener("message", function (event) {
+      if (event.source !== window.parent) return;
+      var data = event.data;
+      if (!data || data.type !== "cf-site-origin" || typeof data.origin !== "string") return;
+      var next = data.origin.replace(/\\/+$/, "");
+      if (next === siteOrigin) return;
+      siteOrigin = next;
+      relink();
+    });
 
     // Forward article interactions to analytics running in the parent (Umami).
     // Article code can call: cfTrack("slider_changed", { name: "throughput" }).

@@ -1,0 +1,236 @@
+---
+/**
+ * FlowDiagram — a node/edge graph, auto-laid-out by rank.
+ *
+ * WHAT IT IS FOR: replacing a paragraph that describes a path through a system
+ * with the path itself. "Ingestion lands in one queue, one consumer, one
+ * database" is three lines of prose or four boxes and three arrows; the boxes
+ * win, and they force us to be specific about what actually connects to what.
+ *
+ * IT MUST NEVER IMPLY MEASURED DATA. There is no axis, no scale and no numeric
+ * label in here. Box size is uniform by construction (`flowLayout` gives every
+ * node the same height, from the longest label), so nothing in the drawing can
+ * be read as a quantity. If you want to say a stage is slow, say it in the edge
+ * label with a word — never by drawing it bigger.
+ *
+ * CALLERS DECLARE TOPOLOGY, NOT COORDINATES. `nodes` + `edges` go in, ranks come
+ * out: a node sits one column right of its furthest-left predecessor (longest
+ * path, so an arrow can never point backwards by accident). A genuine backward
+ * edge — a retry loop — is detected and routed as a bulge below the drawing.
+ *
+ * COLOUR COMES FROM `SchemaFrame`, never from here. Every stroke and fill reads
+ * an inherited `--dg-*` custom property, so `onDark` is the only thing that
+ * changes between the light canvas and a dark `NotchedPanel`.
+ *
+ * SIZING. `width:100%` with a `min-width`/`max-width` pair derived from the
+ * viewBox: the drawing is fluid between ~0.8 and ~1.5 CSS pixels per viewBox
+ * unit. Below that floor mono labels stop being readable, so a wide graph
+ * scrolls inside `SchemaFrame` instead of shrinking. Above the ceiling a
+ * three-box diagram would inflate to poster type.
+ *
+ * NOT ANIMATED, deliberately: an animated edge reads as live telemetry.
+ */
+import SchemaFrame from "@atoms/SchemaFrame.astro";
+import {
+  flowLayout,
+  FS,
+  FS_SMALL,
+  maxWidthPx,
+  minWidthPx,
+  nextSchemaId,
+  type FlowEdgeInput,
+  type FlowNodeInput,
+  type SchemaTone,
+} from "@lib/schematic";
+
+interface Props {
+  nodes: FlowNodeInput[];
+  edges: FlowEdgeInput[];
+  /**
+   * Alt-style short label, required. Goes in `<title>` and is what a screen
+   * reader announces for the whole figure — a `<path>` tells it nothing.
+   */
+  alt: string;
+  /**
+   * Longer description for `<desc>`. When omitted, a real edge-by-edge
+   * description is derived from `edges`, so the graph is never silent.
+   */
+  desc?: string;
+  direction?: "lr" | "tb";
+  onDark?: boolean;
+  /** Mono caption under the drawing. */
+  caption?: string;
+  legend?: { label: string; tone?: SchemaTone }[];
+  /** Set when the diagram is inside a larger figure that owns the caption. */
+  bare?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  nodes,
+  edges,
+  alt,
+  desc,
+  direction = "lr",
+  onDark = false,
+  caption,
+  legend = [],
+  bare = false,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const uid = nextSchemaId("flow");
+const layout = nodes.length > 0 ? flowLayout(nodes, edges, direction) : null;
+
+/* Stroke / fill / label colour per tone. `muted` is the only tone that changes
+   the *border style* rather than the hue: a dashed outline reads as "outside the
+   change" without spending an accent on it. */
+const stroke: Record<SchemaTone, string> = {
+  default: "var(--dg-line)",
+  problem: "var(--dg-problem)",
+  fix: "var(--dg-fix)",
+  muted: "var(--dg-faint)",
+};
+const fill: Record<SchemaTone, string> = {
+  default: "var(--dg-fill)",
+  problem: "var(--dg-problem-soft)",
+  fix: "var(--dg-fix-soft)",
+  muted: "none",
+};
+const label: Record<SchemaTone, string> = {
+  default: "var(--dg-fg)",
+  problem: "var(--dg-fg)",
+  fix: "var(--dg-fg)",
+  muted: "var(--dg-faint)",
+};
+const tones: SchemaTone[] = ["default", "problem", "fix", "muted"];
+---
+
+{
+  layout && (
+    <SchemaFrame
+      onDark={onDark}
+      caption={bare ? undefined : caption}
+      legend={bare ? [] : legend}
+      class={className}
+      {...rest}
+    >
+      <svg
+        role="img"
+        aria-labelledby={`${uid}-t`}
+        aria-describedby={`${uid}-d`}
+        viewBox={`0 0 ${layout.width} ${layout.height}`}
+        width={layout.width}
+        height={layout.height}
+        fill="none"
+        class="mx-auto block h-auto w-full"
+        style={`min-width:${minWidthPx(layout.width)}px;max-width:${maxWidthPx(layout.width)}px`}
+      >
+        <title id={`${uid}-t`}>{alt}</title>
+        <desc id={`${uid}-d`}>{desc ?? layout.outline}</desc>
+
+        {/* One arrowhead per tone. `markerUnits="strokeWidth"` keeps the head
+            proportional to its edge, and `refX` puts the TIP on the path's end
+            point, which is already the node's face — so the arrow lands on the
+            border instead of overlapping or floating short of it. */}
+        <defs>
+          {tones.map((tone) => (
+            <marker
+              id={`${uid}-arrow-${tone}`}
+              viewBox="0 0 6 6"
+              refX="6"
+              refY="3"
+              markerWidth="5"
+              markerHeight="5"
+              markerUnits="strokeWidth"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0.6 6 3 0 5.4Z" fill={stroke[tone]} />
+            </marker>
+          ))}
+        </defs>
+
+        {/* Edges first: a node box then paints over the last few units of its
+            incoming path, which is what makes the arrow read as touching. */}
+        <g stroke-linecap="round">
+          {layout.edges.map((edge) => (
+            <path
+              d={edge.d}
+              stroke={stroke[edge.tone]}
+              stroke-width={edge.tone === "default" || edge.tone === "muted" ? 1.2 : 1.5}
+              stroke-dasharray={edge.style === "dashed" ? "4 3.5" : undefined}
+              marker-end={`url(#${uid}-arrow-${edge.tone})`}
+            />
+          ))}
+        </g>
+
+        {layout.edges.some((edge) => edge.label) && (
+          <g
+            font-family="var(--font-mono)"
+            font-size={FS_SMALL}
+            text-anchor="middle"
+            dominant-baseline="central"
+            fill="var(--dg-faint)"
+          >
+            {layout.edges.map(
+              (edge) =>
+                edge.label && (
+                  /* `paint-order="stroke"` + a halo stroke in the surface colour
+                     punches the edge out from under its own label, so no
+                     background rect is needed and the label stays transparent
+                     to whatever the panel behind it is. */
+                  <text
+                    x={edge.labelX}
+                    y={edge.labelY}
+                    stroke="var(--dg-halo)"
+                    stroke-width="3.2"
+                    stroke-linejoin="round"
+                    paint-order="stroke"
+                  >
+                    {edge.label}
+                  </text>
+                ),
+            )}
+          </g>
+        )}
+
+        <g>
+          {layout.nodes.map((node) => (
+            <g>
+              <rect
+                x={node.x}
+                y={node.y}
+                width={node.w}
+                height={node.h}
+                rx="5"
+                fill={fill[node.tone]}
+                stroke={stroke[node.tone]}
+                stroke-width={node.tone === "default" || node.tone === "muted" ? 1.2 : 1.6}
+                stroke-dasharray={node.tone === "muted" ? "3.5 3" : undefined}
+              />
+              <text
+                x={node.cx}
+                text-anchor="middle"
+                dominant-baseline="central"
+                font-family="var(--font-mono)"
+                font-size={FS}
+                fill={label[node.tone]}
+              >
+                {node.lines.map((line, i) => (
+                  <tspan
+                    x={node.cx}
+                    y={node.cy - ((node.lines.length - 1) * 12.5) / 2 + i * 12.5}
+                  >
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            </g>
+          ))}
+        </g>
+      </svg>
+    </SchemaFrame>
+  )
+}

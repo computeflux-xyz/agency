@@ -1,0 +1,54 @@
+---
+/**
+ * One service line in the "what we do" editorial list.
+ *
+ * Renders its own `<li>` so the section can stay a real `<ol>`, and wraps the
+ * whole line in a single `<a>` so the entire row is one click target. Grid
+ * placement is fully explicit (`row-start` / `col-start`) rather than relying on
+ * auto-flow, so the two-line mobile layout and the single-line desktop layout
+ * both stay deterministic.
+ */
+import Icon from "@atoms/Icon.astro";
+
+interface Props {
+  index: string;
+  title: string;
+  body: string;
+  href: string;
+  class?: string;
+}
+const { index, title, body, href, class: className = "" } = Astro.props;
+---
+
+<li class:list={["border-b border-[var(--color-ink-line)]", className]} data-reveal>
+  <a
+    href={href}
+    class="group grid grid-cols-[2.25rem_minmax(0,1fr)_1.5rem] items-baseline gap-x-3 gap-y-2 py-7 md:grid-cols-[3.5rem_minmax(0,19rem)_minmax(0,1fr)_1.75rem] md:gap-x-8 md:py-9"
+  >
+    <span
+      class="col-start-1 row-start-1 font-mono text-xs text-ink-400 transition-colors duration-300 group-hover:text-ink-50 group-focus-visible:text-ink-50 motion-reduce:transition-none md:text-sm"
+    >
+      {index}
+    </span>
+
+    <h3
+      class="col-start-2 row-start-1 text-balance text-xl font-semibold tracking-tight text-ink-50 transition-colors duration-300 group-hover:text-flux-blue group-focus-visible:text-flux-blue motion-reduce:transition-none md:text-2xl"
+    >
+      {title}
+    </h3>
+
+    <p
+      class="col-span-2 col-start-2 row-start-2 text-pretty leading-relaxed text-ink-300 md:col-span-1 md:col-start-3 md:row-start-1"
+    >
+      {body}
+    </p>
+
+    <span class="col-start-3 row-start-1 self-start justify-self-end pt-1 md:col-start-4">
+      <Icon
+        name="arrow-up-right"
+        size={18}
+        class="text-ink-400 transition duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-flux-blue group-focus-visible:translate-x-1 group-focus-visible:-translate-y-1 group-focus-visible:text-flux-blue motion-reduce:transform-none motion-reduce:transition-none"
+      />
+    </span>
+  </a>
+</li>

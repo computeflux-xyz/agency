@@ -5,8 +5,10 @@ import PageHero from "@organisms/PageHero.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import Divider from "@atoms/Divider.astro";
 import Icon from "@atoms/Icon.astro";
+import Tag from "@atoms/Tag.astro";
 import Button from "@atoms/Button.astro";
 import { expertiseSlugs, getExpertise, getExpertiseItem } from "@data/expertise";
+import { getSources, TOOLS } from "@data/sovereignty";
 import { breadcrumbSchema } from "@lib/seo";
 import { site } from "@lib/site";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
@@ -24,6 +26,16 @@ if (!item) return Astro.redirect(localizedPath("/expertise", locale));
 
 const origin = Astro.site?.origin ?? site.url;
 const others = getExpertise(locale).filter((e) => e.slug !== item.slug);
+
+const isSovereignty = item.slug === "sovereignty";
+const sources = isSovereignty ? getSources(locale) : [];
+const claims = isSovereignty
+  ? (["c1", "c2", "c3", "c4"] as const).map((key, i) => ({
+      n: String(i + 1).padStart(2, "0"),
+      title: t(`sov.${key}.title`),
+      body: t(`sov.${key}.body`),
+    }))
+  : [];
 
 const jsonLd = [
   {
@@ -71,6 +83,54 @@ const jsonLd = [
       }
     </div>
   </section>
+
+  {isSovereignty && (
+    <section class="container-flux py-12 md:py-16">
+      <Divider label={t("sovPage.steps")} />
+      <div class="grid gap-x-10 gap-y-10 py-12 md:grid-cols-2" data-reveal-stagger="80">
+        {
+          claims.map((claim) => (
+            <div class="flex flex-col gap-3 border-t border-[var(--color-ink-line)] pt-6" data-reveal>
+              <div class="flex items-baseline gap-3.5">
+                <span class="font-mono text-xs text-ink-400" aria-hidden="true">{claim.n}</span>
+                <h3 class="text-balance text-lg font-semibold tracking-tight text-ink-50">{claim.title}</h3>
+              </div>
+              <p class="text-pretty leading-relaxed text-ink-300">{claim.body}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <Divider label={t("sov.stackLabel")} />
+      <div class="flex flex-wrap gap-2 py-8">
+        {TOOLS.map((tool) => (
+          <Tag size="xs">{tool}</Tag>
+        ))}
+      </div>
+
+      <Divider label={t("sov.sourcesLabel")} />
+      <ul class="flex flex-col gap-2 py-8">
+        {
+          sources.map((source) => (
+            <li class="font-mono text-[0.72rem] leading-relaxed text-ink-400">
+              <span class="text-flux-blue" aria-hidden="true">[{source.n}]</span>{" "}
+              <span class="text-ink-300">{source.publisher}</span>
+              {" — "}
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener"
+                class="underline decoration-ink-300/40 underline-offset-2 transition-colors hover:text-flux-blue"
+              >
+                {source.title}
+              </a>
+              {source.year && <span>{` (${source.year})`}</span>}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  )}
 
   <section class="container-flux py-12 md:py-16">
     <Divider label={t("expertise.related")} />

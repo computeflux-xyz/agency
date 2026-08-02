@@ -1,0 +1,99 @@
+---
+/**
+ * "Vos problématiques" — a sticky deck.
+ *
+ * Rather than a page that keeps growing, the six problems are dealt like a desk
+ * of cards: each is `position: sticky` with a slightly larger inset, so as you
+ * scroll the next card slides up over the previous one — the page keeps its
+ * weight, the cards reveal themselves. No JS: it is pure CSS sticky stacking.
+ */
+import Button from "@atoms/Button.astro";
+import Eyebrow from "@atoms/Eyebrow.astro";
+import SectionHeader from "@molecules/SectionHeader.astro";
+import { getProblems } from "@data/problems";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const problems = getProblems(locale);
+
+const accents = ["blue", "magenta", "amber", "blue", "magenta", "amber"];
+const accentBg: Record<string, string> = {
+  blue: "bg-flux-blue",
+  magenta: "bg-flux-magenta",
+  amber: "bg-flux-amber",
+};
+const bookHref = localizedPath("/book", locale);
+---
+
+<section id="problematiques" class="container-flux scroll-mt-24 py-20 md:py-28">
+  <SectionHeader
+    eyebrow={t("vostro.eyebrow")}
+    title={t("vostro.title")}
+    lead={t("vostro.sub")}
+    class="mb-12 md:mb-16"
+  />
+
+  <div class="deck">
+    {
+      problems.map((p, i) => (
+        <div
+          class="deck-card"
+          style={`--i:${i}`}
+          data-reveal
+        >
+          <article class="notched-deck relative flex flex-col gap-4 p-7 md:flex-row md:items-center md:gap-10 md:p-10">
+            <span
+              class:list={[
+                "absolute left-0 top-0 h-full w-1.5",
+                accentBg[accents[i % accents.length]],
+              ]}
+              aria-hidden="true"
+            ></span>
+            <span class="font-mono text-sm text-ink-400" aria-hidden="true">{p.n}</span>
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <span class="inline-flex w-fit items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-wider text-ink-400">
+                {p.tag}
+              </span>
+              <h3 class="text-balance text-xl font-semibold tracking-tight text-ink-50 md:text-2xl">
+                {p.title}
+              </h3>
+              <p class="max-w-2xl text-pretty leading-relaxed text-ink-300">{p.body}</p>
+            </div>
+            <div class="shrink-0">
+              <Button
+                href={p.booking ? bookHref : localizedPath(p.href, locale)}
+                variant="primary"
+                size="sm"
+                arrow
+              >
+                {t("vostro.cta")}
+              </Button>
+            </div>
+          </article>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .deck { position: relative; }
+  .deck-card {
+    position: sticky;
+    top: calc(5.25rem + var(--i) * 1.1rem);
+    margin-bottom: calc(var(--i) * -1.1rem);
+    box-shadow: 0 0 0 1px var(--color-ink-line), 0 10px 24px rgba(32, 31, 30, 0.08);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+  }
+  .deck-card:last-child { margin-bottom: 0; }
+
+  .notched-deck {
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+    border-radius: var(--radius-lg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck-card { top: 5.25rem; margin-bottom: 0; }
+  }
+</style>

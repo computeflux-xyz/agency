@@ -1,0 +1,7 @@
+method,ui_flag,backend,settlement,notes_en,notes_fr
+Card (hosted),enabled,third-party processor,webhook,Minority share of the buyer base in this market.,Part minoritaire de la base d'acheteurs sur ce marché.
+Bank transfer (B2B),enabled,in-house,manual reconciliation,Volume buyers; quote then transfer.,Achats en volume : devis puis virement.
+Mobile money A,behind flag,in-house processor,webhook,C2B single stage. The subject of this study.,C2B single stage. L'objet de cette étude.
+Mobile money B,not wired,none,—,Icon and enum reserved in the UI only.,Icône et énumération réservées côté UI seulement.
+Mobile money C,not wired,none,—,Icon and enum reserved in the UI only.,Icône et énumération réservées côté UI seulement.
+Wallet (global),not wired,none,—,Enum present, no integration.,Énumération présente, aucune intégration.

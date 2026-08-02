@@ -1,0 +1,118 @@
+---
+/**
+ * Homepage field-notes teaser — API-driven and self-erasing.
+ *
+ * Reads at most three blog posts from site-api for the active locale. If
+ * anything stands between us and real rows — no `API_BASE_URL`, a network
+ * failure, an `ApiError`, a malformed payload, or simply zero rows for this
+ * language — the component renders NOTHING: no heading, no empty state, no
+ * placeholder card. There is deliberately no fallback to `astro:content`; the
+ * homepage no longer serves bundled markdown.
+ *
+ * `lang` filters rows on the list endpoint with no fallback, so an empty French
+ * (or English) section is an expected state rather than a bug.
+ *
+ * Depends on the host page being server-rendered (`export const prerender =
+ * false` in src/pages/index.astro): `Astro.locals.runtime.env` does not exist at
+ * build time.
+ */
+import SectionHeader from "@molecules/SectionHeader.astro";
+import ArticleCard from "@molecules/ArticleCard.astro";
+import Button from "@atoms/Button.astro";
+import { ApiError, createApiClient, type ArticleType } from "@lib/api";
+import { getLocale, localizedPath, useTranslations } from "@i18n";
+
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+
+const MAX_ITEMS = 3;
+
+type Card = {
+  href: string;
+  title: string;
+  description: string;
+  topics: string[];
+  date?: string;
+  readingTime?: number;
+  cover: string | null;
+};
+
+const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+const apiBaseUrl = runtimeEnv?.API_BASE_URL ?? import.meta.env.API_BASE_URL;
+
+let cards: Card[] = [];
+
+if (apiBaseUrl) {
+  try {
+    const list = await createApiClient({ baseUrl: apiBaseUrl, lang: locale }).listArticles({
+      types: ["blog"] as ArticleType[],
+      sort: "featured",
+      page: 1,
+      pageSize: MAX_ITEMS,
+    });
+    cards = (Array.isArray(list.items) ? list.items : [])
+      .filter((a) => Boolean(a.slug))
+      .slice(0, MAX_ITEMS)
+      .map((a) => ({
+        href: localizedPath(`/articles/${a.slug}`, locale),
+        title: a.title,
+        description: a.shortdesc,
+        topics: a.topics.map((tp) => tp.name).filter(Boolean),
+        // `datePublished` is an empty string when unset — never hand that to a
+        // date formatter, drop the line instead.
+        date: a.datePublished || undefined,
+        readingTime: a.readingTime > 0 ? a.readingTime : undefined,
+        cover: a.coverImage ?? null,
+      }));
+  } catch (err) {
+    // Expected failures (missing rows, 4xx, cold start against a paused API)
+    // stay quiet; only genuinely unexpected ones are worth the log line.
+    if (!(err instanceof ApiError)) console.error("home articles API error:", err);
+    cards = [];
+  }
+}
+
+const hasCards = cards.length > 0;
+---
+
+{
+  hasCards && (
+    <section class:list={["container-flux py-16 md:py-24", className]}>
+      <div class="mb-14 flex flex-wrap items-end justify-between gap-6">
+        <SectionHeader
+          eyebrow={t("home.writing.eyebrow")}
+          title={t("home.writing.title")}
+          lead={t("home.writing.lead")}
+        />
+        <Button
+          href={localizedPath("/articles", locale)}
+          variant="ghost"
+          arrow
+          class="shrink-0"
+        >
+          {t("home.writing.all")}
+        </Button>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
+        {cards.map((card) => (
+          <ArticleCard
+            href={card.href}
+            title={card.title}
+            description={card.description}
+            kind="article"
+            topics={card.topics}
+            date={card.date}
+            readingTime={card.readingTime}
+            cover={card.cover}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}

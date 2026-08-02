@@ -1,0 +1,54 @@
+---
+
+/**
+ * Interactive mono/uppercase chip used as an ARIA tab (diagnostic selector).
+ *
+ * Static sibling of `Tag.astro`: same mono-uppercase visual family, but this is
+ * a real `<button role="tab">`.
+ *
+ * The selected look is driven off the `aria-selected` ATTRIBUTE, not off the
+ * `selected` prop, because `lib/client/tabs.ts` only ever mutates the attribute
+ * (and `tabindex`) — it never touches classes. Styling the build-time boolean
+ * instead would freeze the highlight on whichever chip rendered first.
+ */
+interface Props {
+  /** Element id, referenced by the panel's `aria-labelledby`. */
+  id: string;
+  /** Id of the `[role="tabpanel"]` this chip controls. */
+  controls: string;
+  /** Server-rendered selected state (exactly one chip per tablist). */
+  selected?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  id,
+  controls,
+  selected = false,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const cls = [
+  "inline-flex select-none items-center gap-2 rounded-[var(--radius-sm)] border px-3.5 py-2 text-left font-mono text-[0.7rem] font-medium uppercase leading-tight tracking-wider transition-colors duration-150",
+  // Unselected resting state…
+  "border-[var(--color-ink-line)] bg-ink-900 text-ink-400 hover:border-ink-50 hover:text-ink-50",
+  // …overridden while the attribute says this tab is the live one.
+  "aria-selected:border-ink-50 aria-selected:bg-ink-50 aria-selected:text-ink-900",
+  className,
+];
+---
+
+<button
+  type="button"
+  role="tab"
+  id={id}
+  aria-controls={controls}
+  aria-selected={selected ? "true" : "false"}
+  tabindex={selected ? 0 : -1}
+  class:list={cls}
+  {...rest}
+>
+  <slot />
+</button>

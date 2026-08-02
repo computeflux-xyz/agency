@@ -1,0 +1,10 @@
+id,bits,source,cost,name_en,name_fr,note_en,note_fr
+country,2.5,edge request metadata,free,Country,Pays,Already attached to every request at the point of presence.,Déjà attaché à chaque requête au point de présence.
+carrier,4.0,edge request metadata,free,Carrier / network,Opérateur réseau,The autonomous system the request arrived on.,Le système autonome par lequel la requête est arrivée.
+pop,3.0,edge request metadata,free,Point of presence,Point de présence,Which edge location served the request.,Quel emplacement edge a servi la requête.
+device_class,2.0,CDN access log,free,Device class,Classe d'appareil,Inferred from which image variant the browser actually fetched.,Déduite de la variante d'image réellement récupérée par le navigateur.
+language,1.5,Accept-Language,free,Language preference,Préférence de langue,Header the browser sends unprompted.,En-tête envoyé spontanément par le navigateur.
+tls,1.8,TLS handshake,free,TLS version and cipher,Version TLS et suite,Terminated at the edge; no client code involved.,Terminée à l'edge ; aucun code client impliqué.
+protocol,0.9,HTTP version,free,HTTP protocol version,Version du protocole HTTP,HTTP/1.1 vs 2 vs 3 separates stacks and proxies.,HTTP/1.1 vs 2 vs 3 sépare piles et proxys.
+ua_platform,2.2,Sec-CH-UA,free,Platform hint,Indice de plateforme,Client hint; absent on browsers that refuse it.,Indice client ; absent des navigateurs qui le refusent.
+rtt_band,2.0,TCP round-trip time,free,Latency band,Bande de latence,"Coarse connection quality, bucketed to four bands.","Qualité de connexion approximative, en quatre bandes."

@@ -10,6 +10,11 @@ interface Props {
   notch?: number;
   shadow?: boolean;
   dotted?: boolean;
+  /** Stretch the panel to the height of its container. Needed inside a grid or
+   *  flex row of equal-height cards: without it the clipped shape keeps its
+   *  content height while the offset shadow (`inset-0` on the stretched root)
+   *  takes the full row height, and the two come apart. */
+  fill?: boolean;
   class?: string;
 }
 
@@ -19,6 +24,7 @@ const {
   notch = 34,
   shadow = true,
   dotted = true,
+  fill = false,
   class: className = "",
 } = Astro.props;
 
@@ -44,7 +50,7 @@ const dotOpacity = custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
     <div class="notch-shape absolute inset-0 translate-x-[7px] translate-y-[9px] bg-ink-50" aria-hidden="true"></div>
   )}
   <div
-    class:list={["notch-shape relative overflow-hidden", custom ? "text-white" : tones[tone]]}
+    class:list={["notch-shape relative overflow-hidden", fill && "h-full", custom ? "text-white" : tones[tone]]}
     style={custom ? `background-color:${bg}` : undefined}
   >
     {dotted && (
@@ -55,7 +61,9 @@ const dotOpacity = custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
       >
       </div>
     )}
-    <div class="relative"><slot /></div>
+    {/* `fill` has to be carried all the way down: a `h-full` child of the slot
+        resolves against THIS wrapper, not against `.notch-shape`. */}
+    <div class:list={["relative", fill && "h-full"]}><slot /></div>
   </div>
 </div>
 

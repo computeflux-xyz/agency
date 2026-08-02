@@ -1,0 +1,153 @@
+---
+/**
+ * SchemaFrame — the chrome around every schematic diagram on the site.
+ *
+ * WHAT IT IS FOR: the four diagram primitives (`FlowDiagram`,
+ * `BeforeAfterSchema`, `StateMachineSchema`, `LayerStack`) all need the same
+ * three things — a `<figure>` with an optional caption, a horizontal escape
+ * hatch for a graph that is genuinely too wide for a phone, and one shared
+ * colour vocabulary that works on the light canvas AND on a dark
+ * `NotchedPanel`. This owns all three so the diagrams themselves contain
+ * nothing but geometry.
+ *
+ * NEVER USE THESE DIAGRAMS TO IMPLY MEASURED DATA. There are no axes, no
+ * scales and no numeric labels anywhere in this family on purpose: they draw
+ * topology, flow and state. If a drawing would only make sense with a number
+ * attached to it, it is the wrong drawing.
+ *
+ * THEMING CONTRACT — the whole reason this component exists.
+ * Astro scopes styles per component, so a `<style>` block here cannot reach an
+ * `<svg>` rendered by a *different* component. CSS custom properties can:
+ * they inherit. So the tokens below are declared on this root element and every
+ * diagram nested inside reads them with `var(--dg-*)`. One theme switch
+ * (`onDark`) therefore recolours arbitrarily deep diagram markup, and no
+ * diagram ever hardcodes a colour.
+ *
+ * The ink scale is INVERTED (`ink-50` is near-black, `ink-950` is white), so
+ * the dark branch is not "the light branch, darker" — it moves to the light end
+ * of the sand scale (`ink-500` / `#fbfbf9`) and lifts `--dg-fix`, because
+ * `flux-blue` at #2f6bff is too dark to read as a stroke on #201f1e.
+ *
+ * Overriding a single token from a caller: Astro's scoped styles are unlayered
+ * and therefore beat Tailwind's `@layer utilities`, so an arbitrary-property
+ * utility needs the important flag —
+ *   <FlowDiagram class="[--dg-fix:var(--color-flux-amber)]!" … />
+ */
+interface Props {
+  /** Recolour for a dark `NotchedPanel` (`tone="dark"` or a custom `bg`). */
+  onDark?: boolean;
+  /** Short caption printed under the drawing, in mono. Callers supply copy. */
+  caption?: string;
+  /**
+   * Legend rows, when the drawing uses more than one accent. Keep to two or
+   * three: a schematic that needs a five-line key is a schematic that failed.
+   */
+  legend?: { label: string; tone?: "default" | "problem" | "fix" | "muted" }[];
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  onDark = false,
+  caption,
+  legend = [],
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+/** Legend swatch colour per tone, resolved through the inherited tokens. */
+const swatch: Record<string, string> = {
+  default: "var(--dg-line)",
+  problem: "var(--dg-problem)",
+  fix: "var(--dg-fix)",
+  muted: "var(--dg-faint)",
+};
+---
+
+<figure
+  class:list={["dg-frame flex flex-col gap-3", className]}
+  data-dg-theme={onDark ? "dark" : "light"}
+  {...rest}
+>
+  {/* The diagrams are fluid (`width:100%`), but each one also carries a
+      `min-width` sized so its smallest mono label never drops below ~9px. A
+      six-rank graph on a 320px phone therefore scrolls rather than becoming
+      unreadable — a deliberate trade, and the only place in this family where
+      horizontal scroll is allowed. */}
+  <div class="dg-scroll -mx-1 overflow-x-auto px-1 py-0.5">
+    <slot />
+  </div>
+
+  {
+    (caption || legend.length > 0) && (
+      <figcaption class="flex flex-wrap items-baseline gap-x-5 gap-y-2 font-mono text-[0.66rem] leading-relaxed tracking-[0.04em] text-[var(--dg-faint)]">
+        {caption && <span class="max-w-prose">{caption}</span>}
+        {legend.length > 0 && (
+          <span class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {legend.map((item) => (
+              <span class="inline-flex items-center gap-1.5">
+                <span
+                  class="inline-block h-[2px] w-4 shrink-0"
+                  style={`background:${swatch[item.tone ?? "default"]}`}
+                  aria-hidden="true"
+                />
+                <span class="uppercase">{item.label}</span>
+              </span>
+            ))}
+          </span>
+        )}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  /* ---- Shared diagram vocabulary -------------------------------------- --
+     --dg-fill        node / state body
+     --dg-fill-2      secondary body (highlighted layer band, alt lane)
+     --dg-line        neutral stroke: edges, node outlines, arrowheads
+     --dg-line-soft   guides and lane rules; never carries meaning on its own
+     --dg-fg          node label — the strongest text in the drawing
+     --dg-faint       annotations, edge labels, captions
+     --dg-halo        the surface the drawing sits on; used as a `paint-order`
+                      stroke so an edge label punches a hole in the edge under
+                      it instead of needing a background rect
+     --dg-problem     the failing topology (magenta, per the palette — never red)
+     --dg-fix         the intervention (blue — never green)
+     --dg-*-soft      tint fills behind an accented node
+  ------------------------------------------------------------------------ */
+  .dg-frame[data-dg-theme="light"] {
+    --dg-fill: var(--color-surface);
+    --dg-fill-2: var(--color-ink-800);
+    --dg-line: var(--color-ink-300);
+    --dg-line-soft: var(--color-ink-line);
+    --dg-fg: var(--color-ink-50);
+    --dg-faint: var(--color-ink-400);
+    --dg-halo: var(--color-bg);
+    --dg-problem: var(--color-flux-magenta);
+    --dg-problem-soft: var(--color-flux-magenta-soft);
+    --dg-fix: var(--color-flux-blue);
+    --dg-fix-soft: var(--color-flux-blue-soft);
+  }
+
+  .dg-frame[data-dg-theme="dark"] {
+    --dg-fill: var(--color-invert-surface);
+    --dg-fill-2: #35342f;
+    --dg-line: var(--color-ink-500);
+    --dg-line-soft: color-mix(in srgb, var(--color-ink-500) 45%, transparent);
+    --dg-fg: #fbfbf9;
+    --dg-faint: var(--color-ink-500);
+    --dg-halo: var(--color-invert-bg);
+    --dg-problem: #f45ee2;
+    --dg-problem-soft: color-mix(in srgb, #f45ee2 20%, transparent);
+    --dg-fix: #7d9dff;
+    --dg-fix-soft: color-mix(in srgb, #7d9dff 20%, transparent);
+  }
+
+  /* Keep the scrollbar from stealing a row of pixels from the drawing on
+     platforms that reserve gutter space. */
+  .dg-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dg-line) transparent;
+  }
+</style>

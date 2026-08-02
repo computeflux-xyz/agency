@@ -1,0 +1,8 @@
+---
+// English articles index (/en/articles). Same shared component as the French
+// root route. It resolves the locale from the URL and requests ?lang=en from site-api.
+export const prerender = false;
+import ArticlesIndex from "@organisms/ArticlesIndex.astro";
+---
+
+<ArticlesIndex />
