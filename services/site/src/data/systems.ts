@@ -9,17 +9,18 @@
  * Copy is French-first; English mirrors it, via getSystems(locale).
  *
  * Each entry carries a solid card `bg` (rendered white/light text on it) and a
- * small `chart` used by the card to visualise what makes the engineering hard —
- * same `atoms/MiniChart` contract as the diagnostic cards.
+ * `sketch`: a stroke-only line drawing (see `atoms/SystemSketch`) of what the
+ * product actually does, sketched with vivus when the card scrolls into view.
+ *
+ * The sketch replaced a pair of bar charts. Their heights implied measurements
+ * we do not have, which is disqualifying in front of a technical buyer. A
+ * drawing asserts structure and nothing else.
  */
 
 import type { Locale } from "@i18n";
 
-export type SystemChart = {
-  kind: "bars" | "spark" | "split";
-  data: number[];
-  labels: string[];
-};
+/** Which drawing `atoms/SystemSketch` renders for this system. */
+export type SystemSketch = "mobile-money" | "on-device-vision";
 
 export type ProductionSystem = {
   slug: string;
@@ -39,13 +40,9 @@ export type ProductionSystem = {
   bg: string;
   /** True when `bg` is light and the card should render dark text. */
   light?: boolean;
-  chart: SystemChart;
-};
-
-const bijouChart = {
-  kind: "bars" as const,
-  data: [46, 92, 100],
-  labels: ["Catalogue", "Paiement Mobile Money", "Couche de service"],
+  sketch: SystemSketch;
+  /** One line under the drawing. Says what the drawing shows, no numbers. */
+  sketchCaption: string;
 };
 
 const systemsFr: ProductionSystem[] = [
@@ -61,8 +58,10 @@ const systemsFr: ProductionSystem[] = [
     hard: "Un processeur de paiement sur mesure cible l'infrastructure Mobile Money, là où les passerelles classiques séchent. La couche de service qui le distribue est puissante : catalogue versionné, images optimisées servies par domaine dédié, et une stack qui tient sous un trafic très inégal.",
     stack: ["Mobile Money", "processeur de paiement sur mesure", "couche de service", "catalogue relationnel"],
     bg: "#14213d",
-    chart: bijouChart,
-  },  {
+    sketch: "mobile-money",
+    sketchCaption: "Le téléphone est le compte. Le paiement passe par l'opérateur, pas par un réseau de cartes.",
+  },
+  {
     slug: "fertiluna",
     name: "FertiLuna",
     logo: "/logos/fertiluna-lockup-680.webp",
@@ -76,11 +75,8 @@ const systemsFr: ProductionSystem[] = [
     stack: ["modèle de vision", "100 % client", "zéro donnée serveur", "open source"],
     bg: "#f4d9ec",
     light: true,
-    chart: {
-      kind: "split",
-      data: [100, 22],
-      labels: ["Données envoyées au serveur", "Traitement local"],
-    },
+    sketch: "on-device-vision",
+    sketchCaption: "La courbe est lue dans le navigateur. Rien ne sort de l'appareil.",
   },
 ];
 
@@ -97,11 +93,8 @@ const systemsEn: ProductionSystem[] = [
     hard: "A custom payment processor targets the Mobile Money rails where the usual gateways fall over. The serving layer around it is powerful: a versioned catalogue, optimised images served from a dedicated domain, and a stack that holds under wildly uneven traffic.",
     stack: ["Mobile Money", "custom payment processor", "serving layer", "relational catalogue"],
     bg: "#14213d",
-    chart: {
-      kind: "bars",
-      data: [46, 92, 100],
-      labels: ["Catalogue", "Mobile Money", "Serving layer"],
-    },
+    sketch: "mobile-money",
+    sketchCaption: "The handset is the account. Payment runs through the carrier, not a card network.",
   },
   {
     slug: "fertiluna",
@@ -117,11 +110,8 @@ const systemsEn: ProductionSystem[] = [
     stack: ["vision model", "runs fully client-side", "no server-side data", "open source"],
     bg: "#f4d9ec",
     light: true,
-    chart: {
-      kind: "split",
-      data: [100, 22],
-      labels: ["Data to server", "Local processing"],
-    },
+    sketch: "on-device-vision",
+    sketchCaption: "The chart is read inside the browser. Nothing leaves the device.",
   },
 ];
 

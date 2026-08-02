@@ -484,6 +484,60 @@ func (s *articleStorage) BeginIngest(
 	return versionID, jobID, nil
 }
 
+// SyncArticleMetadata updates the editorial columns of an existing (slug, lang)
+// and replaces its topic/author links. It deliberately does not touch `status`,
+// `current_version_id` or `published_at`: this runs on the "build unchanged"
+// path, where the live version must stay exactly where it is.
+//
+// A missing row is not an error. It means the caller is publishing a brand-new
+// article, and BeginIngest will create it a moment later.
+func (s *articleStorage) SyncArticleMetadata(
+	ctx context.Context,
+	article *models.Article,
+	topicSlugs, authorSlugs []string,
+) error {
+	err := database.RunInTransactionWithRetry(s.db, ctx, func(tx *gorm.DB) error {
+		var articleID string
+		if err := tx.Model(&dao.Article{}).
+			Where("slug = ? AND lang = ?", article.Slug, string(article.Lang)).
+			Select("id").Scan(&articleID).Error; err != nil {
+			return err
+		}
+
+		if articleID == "" {
+			return nil
+		}
+
+		updates := map[string]any{
+			"type":            string(article.Type),
+			"title":           article.Title,
+			"shortdesc":       article.ShortDesc,
+			"longdesc":        article.LongDesc,
+			"featured":        article.Featured,
+			"cover_image_url": article.CoverImageURL,
+			"reading_minutes": article.ReadingMinutes,
+			"seo_title":       article.SEOTitle,
+			"seo_description": article.SEODescription,
+			"canonical_url":   article.CanonicalURL,
+			"source_dir":      article.SourceDir,
+		}
+		if err := tx.Model(&dao.Article{}).Where("id = ?", articleID).Updates(updates).Error; err != nil {
+			return err
+		}
+
+		if err := s.replaceTopics(tx, articleID, topicSlugs); err != nil {
+			return err
+		}
+
+		return s.replaceAuthors(tx, articleID, authorSlugs)
+	})
+	if err != nil {
+		return mapWriteError(err, "article metadata sync")
+	}
+
+	return nil
+}
+
 func (s *articleStorage) replaceTopics(tx *gorm.DB, articleID string, slugs []string) error {
 	if err := tx.Where("article_id = ?", articleID).Delete(&dao.ArticleTopic{}).Error; err != nil {
 		return err

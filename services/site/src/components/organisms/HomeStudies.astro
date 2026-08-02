@@ -82,7 +82,7 @@ const hasCards = cards.length > 0;
 
 {
   hasCards && (
-    <section class:list={["container-flux py-16 md:py-24", className]}>
+    <section class:list={["container-flux", className]}>
       <div class="mb-14 flex flex-wrap items-end justify-between gap-6">
         <SectionHeader
           eyebrow={t("home.work.eyebrow")}
@@ -91,7 +91,7 @@ const hasCards = cards.length > 0;
         />
         <Button
           href={localizedPath("/studies", locale)}
-          variant="ghost"
+          variant="primary"
           arrow
           class="shrink-0"
         >

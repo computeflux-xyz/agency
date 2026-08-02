@@ -1,75 +1,68 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="First-party signal, without a tracker">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Schematic of many requests collapsing into a few cohorts, then fanning out into the slots of one assembled message">
+  <!--
+    Card cover. Purely visual: no title text, no numbers, no axis. The site
+    renders it at aspect-[16/10] with object-cover, hence the 1200x750 frame.
+    Palette and motifs are the site's own (services/site/src/styles/global.css):
+    sand canvas, dot-grid backdrop, near-black ink, warm hairlines and the
+    flux-blue accent.
+  -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b1020"/>
-      <stop offset="1" stop-color="#161d33"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2f6bff"/>
-      <stop offset="1" stop-color="#8ab0ff"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.80" cy="0.18" r="0.85">
-      <stop offset="0" stop-color="#2f6bff" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#2f6bff" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
-      <circle cx="1.5" cy="1.5" r="1.5" fill="#ffffff" fill-opacity="0.05"/>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#bdb7a8"/>
     </pattern>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#8ab0ff"/>
+    <marker id="tipBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2f6bff"/>
     </marker>
   </defs>
 
-  <rect width="1200" height="600" fill="url(#bg)"/>
-  <rect width="1200" height="600" fill="url(#dots)"/>
-  <rect width="1200" height="600" fill="url(#glow)"/>
+  <rect width="1200" height="750" fill="#f5f4ef"/>
+  <rect width="1200" height="750" fill="url(#dots)"/>
 
-  <!-- Schematic: many requests collapse into a few cohorts, which fan back out
-       into the slots of one assembled message. Structure only, no quantities. -->
-  <g transform="translate(78 428)">
-    <!-- requests -->
-    <g fill="#8ab0ff" opacity="0.9">
-      <circle cx="0" cy="-84" r="6"/><circle cx="0" cy="-42" r="6"/>
-      <circle cx="0" cy="0" r="6"/><circle cx="0" cy="42" r="6"/>
-      <circle cx="0" cy="84" r="6"/>
-    </g>
-    <g stroke="#8ab0ff" stroke-width="1.5" fill="none" opacity="0.55">
-      <path d="M8 -84 C 90 -84, 110 -46, 186 -46"/>
-      <path d="M8 -42 C 90 -42, 110 -46, 186 -46"/>
-      <path d="M8 0 C 90 0, 110 0, 186 0"/>
-      <path d="M8 42 C 90 42, 110 46, 186 46"/>
-      <path d="M8 84 C 90 84, 110 46, 186 46"/>
+  <g transform="translate(0 30)">
+    <!-- Left: individual requests. Many, small, undifferentiated. -->
+    <g fill="#201f1e">
+      <circle cx="112" cy="248" r="8"/>
+      <circle cx="112" cy="316" r="8"/>
+      <circle cx="112" cy="384" r="8"/>
+      <circle cx="112" cy="452" r="8"/>
+      <circle cx="112" cy="520" r="8"/>
     </g>
 
-    <!-- cohorts: the k-anonymity ladder collapses detail on purpose -->
-    <g fill="none" stroke="#8ab0ff" stroke-width="2">
-      <rect x="186" y="-68" width="128" height="44" rx="8"/>
-      <rect x="186" y="-22" width="128" height="44" rx="8"/>
-      <rect x="186" y="24" width="128" height="44" rx="8"/>
-    </g>
-    <g fill="#dfe6ff" font-family="ui-monospace, Menlo, monospace" font-size="14" text-anchor="middle">
-      <text x="250" y="-41">cohort</text>
-      <text x="250" y="5">cohort</text>
-      <text x="250" y="51">cohort</text>
+    <!-- Collapse: five requests into three cohorts. Detail is dropped on
+         purpose, which is the whole privacy argument drawn as a shape. -->
+    <g stroke="#bdb7a8" stroke-width="2" fill="none">
+      <path d="M124 248 C 220 248, 250 282, 336 282"/>
+      <path d="M124 316 C 220 316, 250 282, 336 282"/>
+      <path d="M124 384 C 220 384, 250 384, 336 384"/>
+      <path d="M124 452 C 220 452, 250 486, 336 486"/>
+      <path d="M124 520 C 220 520, 250 486, 336 486"/>
     </g>
 
-    <path d="M322 0 H430" stroke="url(#accent)" stroke-width="4" fill="none" marker-end="url(#ar)"/>
+    <!-- Middle: the cohorts. -->
+    <g fill="none" stroke="#201f1e" stroke-width="2.5">
+      <rect x="336" y="252" width="176" height="60" rx="8"/>
+      <rect x="336" y="354" width="176" height="60" rx="8"/>
+      <rect x="336" y="456" width="176" height="60" rx="8"/>
+    </g>
 
-    <!-- the assembled message: slots, filled per recipient -->
-    <g fill="none" stroke="#8ab0ff" stroke-width="2" opacity="0.9">
-      <rect x="450" y="-96" width="250" height="192" rx="10"/>
+    <path d="M528 384 H628" fill="none" stroke="#2f6bff" stroke-width="6" marker-end="url(#tipBlue)"/>
+
+    <!-- Right: one message, assembled from slots filled per recipient. The
+         hero slot is the filled one. -->
+    <rect x="650" y="212" width="454" height="344" rx="12" fill="none" stroke="#201f1e" stroke-width="2.5"/>
+    <rect x="686" y="248" width="382" height="112" rx="8" fill="#2f6bff" fill-opacity="0.18" stroke="#2f6bff" stroke-width="2.5"/>
+    <g fill="none" stroke="#201f1e" stroke-width="2" opacity="0.75">
+      <rect x="686" y="386" width="116" height="76" rx="6"/>
+      <rect x="819" y="386" width="116" height="76" rx="6"/>
+      <rect x="952" y="386" width="116" height="76" rx="6"/>
+      <rect x="686" y="486" width="382" height="34" rx="6"/>
     </g>
-    <rect x="470" y="-76" width="210" height="60" rx="6" fill="#2f6bff" fill-opacity="0.28" stroke="#8ab0ff" stroke-width="1.5"/>
-    <g fill="none" stroke="#8ab0ff" stroke-width="1.5" opacity="0.8">
-      <rect x="470" y="-4" width="64" height="42" rx="5"/>
-      <rect x="543" y="-4" width="64" height="42" rx="5"/>
-      <rect x="616" y="-4" width="64" height="42" rx="5"/>
-      <rect x="470" y="50" width="210" height="26" rx="5"/>
+
+    <!-- Hairline rules, the site's "technical sheet" motif. -->
+    <g stroke="#dcd7cb" stroke-width="1.5">
+      <path d="M96 128 H1104"/>
+      <path d="M96 640 H1104"/>
     </g>
-    <text x="575" y="-116" fill="#8ab0ff" font-family="ui-monospace, Menlo, monospace" font-size="14" letter-spacing="2" text-anchor="middle">SLOTS, FILLED PER RECIPIENT</text>
+    <rect x="96" y="122" width="52" height="6" rx="3" fill="#2f6bff"/>
   </g>
-
-  <text x="80" y="92" font-family="ui-monospace, Menlo, monospace" font-size="19" letter-spacing="5" fill="#8ab0ff">COMPUTEFLUX · CASE STUDY 3/3</text>
-  <text x="78" y="190" font-family="Georgia, 'Times New Roman', serif" font-size="70" font-weight="700" fill="#f5f4ef">First-party signal,</text>
-  <text x="78" y="262" font-family="Georgia, 'Times New Roman', serif" font-size="70" font-weight="700" fill="#f5f4ef">without a tracker</text>
 </svg>

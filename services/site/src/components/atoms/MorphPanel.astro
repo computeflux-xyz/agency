@@ -1,0 +1,372 @@
+---
+/**
+ * MorphPanel — an opaque "morphic" surface: a rounded rectangle with a bite
+ * taken out of one top corner, every corner rounded (the re-entrant one
+ * concavely), a hairline border and a soft shadow.
+ *
+ * Why it exists: the dragon canvas renders at z-index 1, under the page content
+ * at z-index 2. Section headings were transparent, so the dragon passed between
+ * the glyphs and dropped their contrast. An opaque panel fixes that without
+ * touching the stacking order.
+ *
+ * Why the outline is an SVG path and not CSS
+ * ------------------------------------------
+ * The first version unioned two absolutely-positioned rounded `<span>`s. That
+ * cannot express two things this panel needs:
+ *
+ *   - the **concave corner** where the bite meets the body. A union of two
+ *     rounded rectangles always leaves a hard 90° reflex corner there.
+ *   - a **continuous border**, because each slab would draw its own edge
+ *     straight through the middle of the other.
+ *
+ * `clip-path: polygon()` has no arcs, and `path()` takes absolute coordinates,
+ * so neither survives a fluid width. The shape is therefore one `<path>` whose
+ * `d` is recomputed from a `ResizeObserver` — exact radii at any size, filled
+ * and stroked in a single pass. Corner radii stay in real pixels instead of
+ * turning elliptical as the panel grows.
+ *
+ * Fitting the content
+ * -------------------
+ * A block panel is as wide as its column, but wrapped text is ragged: the last
+ * line of a paragraph can end far short of the cap, leaving a dead strip of
+ * surface down the right-hand side. So after layout the panel measures the
+ * **rendered line boxes** of its own text (via `Range.getClientRects`, which
+ * returns one rect per visual line) and shrinks to the longest one.
+ *
+ * That is deliberately not `width: fit-content`. Two of the section headers sit
+ * in `display: flex` rows, where a fit-content item resolves against an
+ * indefinite available size and collapses to 0, wrapping the heading one
+ * character per line. Measuring sidesteps the flex sizing rules entirely, and
+ * unlike `fit-content` it hugs the longest *wrapped* line rather than the
+ * longest *unwrapped* one.
+ *
+ * This is an atom: a surface, nothing more. `molecules/SectionHeader` is what
+ * composes it with an eyebrow, a title and a lead.
+ */
+type Tone = "canvas" | "surface" | "raised";
+
+interface Props {
+  /** Which top corner the bite is taken from. */
+  cut?: "top-right" | "top-left" | "none";
+  /** Bite width in px. */
+  cutWidth?: number;
+  /** Bite height in px. */
+  cutHeight?: number;
+  /** Outer corner radius in px. */
+  radius?: number;
+  /** Radius of the concave corner where the bite meets the body, in px. */
+  innerRadius?: number;
+  tone?: Tone;
+  shadow?: boolean;
+  /** Inner padding. Pass `false` to lay the slot out yourself. */
+  padded?: boolean;
+  as?: "div" | "header" | "section";
+  class?: string;
+  /** Anything else (data-reveal, aria-*, id…) lands on the root element. */
+  [key: string]: unknown;
+}
+
+const {
+  cut = "top-right",
+  cutWidth = 92,
+  cutHeight = 34,
+  radius = 16,
+  innerRadius = 14,
+  tone = "surface",
+  shadow = true,
+  padded = true,
+  as = "div",
+  class: className = "",
+  ...rest
+}: Props = Astro.props;
+
+const Tag = as;
+
+const tones: Record<Tone, { fill: string; stroke: string }> = {
+  /* The stroke is the same family as the fill, one step darker: present enough
+     to separate the panel from the dotted canvas, quiet enough not to read as
+     a component boundary. */
+  canvas: { fill: "var(--color-bg)", stroke: "var(--color-ink-line)" },
+  surface: { fill: "var(--color-surface)", stroke: "var(--color-ink-line)" },
+  raised: { fill: "var(--color-surface-raised)", stroke: "var(--color-ink-line)" },
+};
+
+const { fill, stroke } = tones[tone];
+---
+
+<Tag
+  {...rest}
+  class:list={["mp", shadow && "mp--shadow", className]}
+  data-mp
+  data-mp-cut={cut}
+  data-mp-cw={cutWidth}
+  data-mp-ch={cutHeight}
+  data-mp-r={radius}
+  data-mp-ir={innerRadius}
+>
+  <svg class="mp__shape" aria-hidden="true" preserveAspectRatio="none" focusable="false">
+    <path data-mp-path fill={fill} stroke={stroke} stroke-width="1" vector-effect="non-scaling-stroke"></path>
+  </svg>
+  <div
+    class:list={["mp__content", padded && "mp__content--padded"]}
+    style={`--mp-ch:${cutHeight}px`}
+  >
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  .mp {
+    position: relative;
+    display: block;
+    width: 100%;
+  }
+
+  /* Applied after the SVG is painted, so it traces the bitten silhouette
+     instead of the root's rectangular box. */
+  .mp--shadow {
+    filter: drop-shadow(0 1px 1px rgba(32, 31, 30, 0.04))
+      drop-shadow(0 8px 18px rgba(32, 31, 30, 0.06));
+  }
+
+  .mp__shape {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: -1;
+    shape-rendering: geometricPrecision;
+  }
+
+  .mp__content {
+    position: relative;
+  }
+  /* Thin padding. The extra top inset only has to clear the bite, and the bite
+     sits in a top corner where the eyebrow line is short, so it is applied as a
+     small allowance rather than the full bite height. */
+  .mp__content--padded {
+    padding: calc(var(--mp-ch) * 0.55 + 0.85rem) clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2vw, 1.35rem);
+  }
+</style>
+
+<script>
+  /**
+   * Draw the panel outline. One path, traced clockwise from the top-left
+   * corner, with the bite in the top-right:
+   *
+   *   top edge → convex turn down → bite's vertical → CONCAVE turn right
+   *   → top edge of the body → convex turn down → right, bottom, left edges
+   *
+   * `sweep = 1` is a convex (outward) corner, `sweep = 0` the concave one. A
+   * top-left bite is the same path mirrored about the vertical axis.
+   */
+  function panelPath(
+    w: number,
+    h: number,
+    cut: string,
+    cw: number,
+    ch: number,
+    r: number,
+    ir: number,
+  ): string {
+    // Never let the radii exceed what the box can hold, or the arcs self-cross.
+    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    if (cut === "none" || cw <= 0 || ch <= 0) {
+      return [
+        `M${rr},0`,
+        `H${w - rr}`,
+        `A${rr},${rr} 0 0 1 ${w},${rr}`,
+        `V${h - rr}`,
+        `A${rr},${rr} 0 0 1 ${w - rr},${h}`,
+        `H${rr}`,
+        `A${rr},${rr} 0 0 1 0,${h - rr}`,
+        `V${rr}`,
+        `A${rr},${rr} 0 0 1 ${rr},0`,
+        "Z",
+      ].join(" ");
+    }
+
+    const cwc = Math.min(cw, w - 2 * rr);
+    const chc = Math.min(ch, h - 2 * rr);
+    const iir = Math.max(0, Math.min(ir, cwc, chc));
+    const x = w - cwc; // vertical edge of the bite
+
+    const d = [
+      `M${rr},0`,
+      `H${x - rr}`,
+      `A${rr},${rr} 0 0 1 ${x},${rr}`, // convex: top edge turns down
+      `V${chc - iir}`,
+      `A${iir},${iir} 0 0 0 ${x + iir},${chc}`, // concave: bite floor
+      `H${w - rr}`,
+      `A${rr},${rr} 0 0 1 ${w},${chc + rr}`, // convex: body's top-right
+      `V${h - rr}`,
+      `A${rr},${rr} 0 0 1 ${w - rr},${h}`,
+      `H${rr}`,
+      `A${rr},${rr} 0 0 1 0,${h - rr}`,
+      `V${rr}`,
+      `A${rr},${rr} 0 0 1 ${rr},0`,
+      "Z",
+    ].join(" ");
+
+    return cut === "top-left" ? mirror(d, w) : d;
+  }
+
+  /** Mirror a path about x = w/2 by flipping every x coordinate and sweep. */
+  function mirror(d: string, w: number): string {
+    return d.replace(/([MHVA])([^MHVAZ]*)/g, (_m, cmd: string, args: string) => {
+      const n = args.trim().split(/[ ,]+/).filter(Boolean).map(Number);
+      if (cmd === "M") return `M${w - n[0]},${n[1]}`;
+      if (cmd === "H") return `H${w - n[0]}`;
+      if (cmd === "V") return `V${n[0]}`;
+      // A rx ry rot large sweep x y  →  flip the sweep and the endpoint
+      return `A${n[0]},${n[1]} ${n[2]} ${n[3]} ${n[4] ? 0 : 1} ${w - n[5]},${n[6]}`;
+    });
+  }
+
+  /**
+   * Shrink the panel to its longest rendered line.
+   *
+   * `Range.getClientRects()` over a text node yields one rectangle per visual
+   * line, so the union of their right edges is the true ink extent — including
+   * the ragged tail of a wrapped paragraph, which no CSS intrinsic sizing
+   * keyword can see.
+   */
+  /**
+   * Right-most edge of anything actually painted inside the panel, relative to
+   * the panel's left edge.
+   *
+   * Text is measured per line box through a Range. Inline non-text content is
+   * measured directly, because a Range over text nodes cannot see it — a
+   * heading whose widest element is an inline logo would otherwise be
+   * under-measured and end up with the panel cutting through it.
+   *
+   * Block-level descendants are skipped on purpose: they stretch to the
+   * container, so including them would always return the full width and defeat
+   * the fit.
+   */
+  function measureInk(el: HTMLElement, content: HTMLElement): number {
+    const left = el.getBoundingClientRect().left;
+    let ink = 0;
+
+    const texts = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let node = texts.nextNode(); node; node = texts.nextNode()) {
+      if (!node.nodeValue || !node.nodeValue.trim()) continue;
+      range.selectNodeContents(node);
+      for (const rect of Array.from(range.getClientRects())) {
+        if (rect.width > 0) ink = Math.max(ink, rect.right - left);
+      }
+    }
+
+    for (const node of Array.from(content.querySelectorAll<HTMLElement>("*"))) {
+      const display = getComputedStyle(node).display;
+      const replaced = /^(IMG|SVG|VIDEO|CANVAS|PICTURE)$/.test(node.tagName.toUpperCase());
+      if (!replaced && !display.startsWith("inline")) continue;
+      const rect = node.getBoundingClientRect();
+      if (rect.width > 0) ink = Math.max(ink, rect.right - left);
+    }
+
+    return ink;
+  }
+
+  function fitPanel(el: HTMLElement): void {
+    const content = el.querySelector<HTMLElement>(".mp__content");
+    if (!content) return;
+
+    // Measure against the natural (capped) width, not the one we last applied.
+    el.style.width = "";
+    el.style.maxWidth = "";
+
+    const padRight = parseFloat(getComputedStyle(content).paddingRight) || 0;
+    const natural = el.offsetWidth;
+    const avail = el.parentElement?.clientWidth ?? natural;
+
+    // Changing the width reflows the text, which changes the ink, so the fit
+    // has to settle rather than run once. Two or three passes is always enough:
+    // each pass can only narrow the box, and a narrower box never un-wraps a
+    // line. The bound keeps a pathological layout from spinning.
+    let width = 0;
+    for (let pass = 0; pass < 3; pass++) {
+      const wanted = Math.max(240, Math.min(avail, Math.ceil(measureInk(el, content) + padRight)));
+      if (wanted === width) break;
+      width = wanted;
+
+      // Ink can exceed the caller's cap when a heading holds something that
+      // refuses to break (an inline logo lockup marked `whitespace-nowrap`).
+      // The panel exists to sit under the text, so it has to outgrow the cap
+      // rather than let the glyphs hang over the edge onto the dragon.
+      el.style.maxWidth = width > natural ? "none" : "";
+      el.style.width = `${width}px`;
+    }
+  }
+
+  function drawPanel(el: HTMLElement) {
+    const svg = el.querySelector<SVGSVGElement>(".mp__shape");
+    const path = el.querySelector<SVGPathElement>("[data-mp-path]");
+    if (!svg || !path) return;
+
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    // A zero box means the panel is not laid out yet (or is hidden). Drawing a
+    // degenerate path would leave a visible artefact once it is.
+    if (w < 2 || h < 2) return;
+
+    const num = (name: string, fallback: number) => Number(el.dataset[name] ?? fallback) || fallback;
+
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    path.setAttribute(
+      "d",
+      panelPath(
+        w,
+        h,
+        el.dataset.mpCut ?? "top-right",
+        num("mpCw", 92),
+        num("mpCh", 34),
+        num("mpR", 16),
+        num("mpIr", 14),
+      ),
+    );
+  }
+
+  function initMorphPanels() {
+    const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-mp]"));
+    if (!panels.length) return;
+
+    // Widths this script applied itself. Without this the observer would see
+    // its own write, re-fit, and oscillate.
+    const applied = new WeakMap<HTMLElement, number>();
+
+    function layout(el: HTMLElement) {
+      if (applied.get(el) !== el.offsetWidth) {
+        fitPanel(el);
+        applied.set(el, el.offsetWidth);
+      }
+
+      drawPanel(el);
+    }
+
+    // The shape depends on the box, and the box depends on the text, which
+    // reflows on viewport resize and on webfont load.
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) layout(entry.target as HTMLElement);
+    });
+
+    panels.forEach((el) => {
+      layout(el);
+      ro.observe(el);
+    });
+
+    // Webfonts land after first paint and change every measurement.
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => panels.forEach((el) => {
+        applied.delete(el);
+        layout(el);
+      }));
+    }
+  }
+
+  initMorphPanels();
+  document.addEventListener("astro:page-load", initMorphPanels);
+</script>

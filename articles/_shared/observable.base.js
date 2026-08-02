@@ -84,9 +84,13 @@ const THEME_STYLE = `
   #observablehq-main canvas { max-width: 100%; height: auto; }
   /* Let prose use the full width of the (parent-sized) iframe rather than
      Observable's default ~640px measure. That cap left a large empty gutter now
-     that the table of contents lives in the parent, on the left. Headings are
-     left out so an article's own hero/centred headings keep their design. */
+     that the table of contents lives in the parent, on the left. Section
+     headings are included: leaving them capped made a long "##" wrap onto two
+     lines while the paragraph under it ran the full width, which reads as a
+     layout bug. The hero is excluded so its own centred, clamped type is
+     untouched. */
   #observablehq-main :is(p, ul, ol, blockquote, table, pre, .katex-display),
+  #observablehq-main :is(h1, h2, h3, h4):not(.hero *),
   #observablehq-main .observablehq { max-width: none; }
 </style>`;
 

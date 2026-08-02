@@ -148,21 +148,12 @@ export const ui = {
     "practices.lead.hl": "go down into the low layers of cloud and bare-metal systems to optimise performance and costs",
     "practices.lead.c": "while keeping the solutions understandable at knowledge handover. No black boxes, no AI hyphen-slop.",
     "practices.learnMore": "Learn more",
-    "practices.1.title": "Data engineering & architecture",
-    "practices.1.body":
-      "We design scalable, reliable systems: ingestion, contracts, modelling and warehousing. A base analytics and training can both stand on, with the quality checks that keep numbers trustworthy.",
-    "practices.2.title": "AI engineering",
-    "practices.2.body":
-      "We don't reach for a large model for everything. Most needs deserve a dedicated machine: recommenders, multi-armed bandits, classifiers, well served and cheap. One thing, done well.",
-    "practices.3.title": "Agentic systems",
-    "practices.3.body":
-      "Bounded loops, verifiable tool calls, explicit fallbacks and trajectory-level evaluation. Agents you can hand a real business process to — and that survive production.",
-    "practices.4.title": "Bare metal & compute",
-    "practices.4.body":
-      "Dedicated servers, GPUs, storage and network, well run. When the load is heavy and steady, hardware beats the cloud — and for sovereignty, your data stays under your control, not a US operator's.",
-    "practices.5.title": "Inference & performance",
-    "practices.5.body":
-      "Quantization, continuous batching, caching, speculative decoding, on vLLM, llama.cpp, SGLang or TensorRT, or a custom inference server when the path is critical. Served where you decide — including self-hosted, for sovereignty. Measured before and after.",
+    // Pyramid layers, base → apex (labels shown on the pyramid levels)
+    "practices.layer.1": "Bare metal & compute",
+    "practices.layer.2": "Data engineering",
+    "practices.layer.3": "AI engineering",
+    "practices.layer.4": "Semantic",
+    "practices.layer.5": "API",
 
     // Home — sovereignty, energy and cost structure
     "sov.eyebrow": "Sovereignty & cost",
@@ -666,21 +657,12 @@ export const ui = {
     "practices.lead.hl": "descendre dans les couches basses des systèmes cloud et bare metal pour optimiser la performance et les coûts",
     "practices.lead.c": "tout en gardant les solutions compréhensibles lors de la passation des connaissances.",
     "practices.learnMore": "En savoir plus",
-    "practices.1.title": "Ingénierie & architecture de données",
-    "practices.1.body":
-      "Nous concevons des systèmes scalables et fiables : ingestion, contrats, modélisation et entrepôt. Une base sur laquelle l'analyse et l'entraînement s'appuient, avec les contrôles de qualité qui rendent les chiffres dignes de confiance.",
-    "practices.2.title": "Ingénierie IA",
-    "practices.2.body":
-      "Nous ne sortons pas le grand modèle pour tout. La plupart des besoins méritent une machine dédiée : recommandations, bandits multi-bras, classifieurs, bien servis et peu coûteux. Une chose, et bien faite.",
-    "practices.3.title": "Systèmes agentiques",
-    "practices.3.body":
-      "Boucles bornées, appels d'outils vérifiables, replis explicites et évaluation de parcours. Des agents à qui on peut confier un vrai processus métier, et qui survivent à la production.",
-    "practices.4.title": "Bare metal & calcul",
-    "practices.4.body":
-      "Serveurs dédiés, GPU, stockage et réseau, bien exploités. Quand la charge est lourde et régulière, le matériel bat le cloud — et pour la souveraineté, vos données restent sous votre contrôle, pas sous celui d'un opérateur américain.",
-    "practices.5.title": "Inférence & performance",
-    "practices.5.body":
-      "Quantification, batching continu, cache, décodage spéculatif, sur vLLM, llama.cpp, SGLang ou TensorRT, ou un serveur d'inférence sur mesure quand le chemin critique l'exige. Servi là où vous décidez, y compris en auto-hébergement, pour la souveraineté. Mesuré avant et après.",
+    // Couches de la pyramide, base → sommet (libellés affichés sur les niveaux)
+    "practices.layer.1": "Bare metal & calcul",
+    "practices.layer.2": "Ingénierie des données",
+    "practices.layer.3": "Ingénierie IA",
+    "practices.layer.4": "Sémantique",
+    "practices.layer.5": "API",
 
     // Home — souveraineté, énergie et structure de coûts
     "sov.eyebrow": "Souveraineté & coûts",

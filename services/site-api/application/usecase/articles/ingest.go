@@ -60,6 +60,18 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 	if existing, err := uc.store.FindCommittedVersionByChecksum(ctx, req.Slug, lang, checksum); err != nil {
 		return resp, err
 	} else if existing != nil {
+		// The built tree is byte-for-byte what is already live, so there is
+		// nothing to upload and no new version to cut. The *editorial* metadata
+		// can still have changed though (a title, a summary, a topic, the cover),
+		// and that lives outside the manifest, so it is synced here. Without this
+		// an editorial-only edit would be silently dropped: the publisher would
+		// report "already published" and the site would keep serving the old
+		// title forever.
+		article := uc.articleFromRequest(req, lang, existing.R2Prefix)
+		if err := uc.store.SyncArticleMetadata(ctx, article, req.Topics, req.Authors); err != nil {
+			return resp, err
+		}
+
 		return contracts.IngestBeginResponse{
 			AlreadyPublished: true,
 			VersionID:        existing.ID,
@@ -131,21 +143,8 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		})
 	}
 
-	article := &models.Article{
-		Slug:           req.Slug,
-		Lang:           lang,
-		Type:           req.Type,
-		Title:          req.Title,
-		ShortDesc:      req.ShortDesc,
-		LongDesc:       req.LongDesc,
-		Featured:       req.Featured,
-		ReadingMinutes: req.ReadingMinutes,
-		CoverImageURL:  coverURL,
-		SEOTitle:       req.SEOTitle,
-		SEODescription: req.SEODescription,
-		CanonicalURL:   req.CanonicalURL,
-		SourceDir:      req.SourceDir,
-	}
+	article := uc.articleFromRequest(req, lang, prefix)
+	article.CoverImageURL = coverURL
 	ver := &models.ArticleVersion{
 		Version:     version,
 		R2Prefix:    prefix,
@@ -178,6 +177,33 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		Uploads:    uploads,
 		Skipped:    skipped,
 	}, nil
+}
+
+// articleFromRequest maps the editorial half of a begin request onto an Article.
+// The cover is resolved against versionPrefix, which is the new version's prefix
+// on the normal path and the already-published version's prefix when the build
+// is unchanged, so the stored cover URL always points at blobs that exist.
+func (uc *IngestUseCase) articleFromRequest(req contracts.IngestBeginRequest, lang models.Lang, versionPrefix string) *models.Article {
+	coverURL := ""
+	if req.CoverPath != "" {
+		coverURL = uc.blobs.PublicURL(path.Join(versionPrefix, req.CoverPath))
+	}
+
+	return &models.Article{
+		Slug:           req.Slug,
+		Lang:           lang,
+		Type:           req.Type,
+		Title:          req.Title,
+		ShortDesc:      req.ShortDesc,
+		LongDesc:       req.LongDesc,
+		Featured:       req.Featured,
+		ReadingMinutes: req.ReadingMinutes,
+		CoverImageURL:  coverURL,
+		SEOTitle:       req.SEOTitle,
+		SEODescription: req.SEODescription,
+		CanonicalURL:   req.CanonicalURL,
+		SourceDir:      req.SourceDir,
+	}
 }
 
 // Commit verifies every declared blob was uploaded, then atomically publishes

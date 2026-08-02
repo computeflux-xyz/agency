@@ -89,20 +89,11 @@ const jsonLd = [
   modifiedTime={updatedDate ? isoDate(updatedDate) : isoDate(publishDate)}
   jsonLd={jsonLd}
 >
+  {/* `cover` is metadata only: it feeds og:image and the JSON-LD above, and it
+      is what ArticleCard renders in listings. It is deliberately NOT drawn at
+      the top of the page — an article opens on its own title, and a study opens
+      on the embedded document's own hero. */}
   <article class="pt-28 md:pt-36">
-    {
-      cover && (
-        <div class="container-flux mb-10 md:mb-14">
-          <div
-            class="article-cover"
-            role="img"
-            aria-label={`${title} cover`}
-            style={`background-image:url(${cover})`}
-          />
-        </div>
-      )
-    }
-
     <header class="container-prose flex flex-col gap-6">
       <nav class="flex items-center gap-2 font-mono text-xs text-ink-400" aria-label="Breadcrumb">
         <a href={sectionRoot} class="transition-colors hover:text-ink-50">{sectionLabel}</a>
@@ -192,19 +183,3 @@ const jsonLd = [
   <CtaSection />
 </PageLayout>
 
-<style>
-  .article-cover {
-    width: 100%;
-    aspect-ratio: 21 / 9;
-    background-size: cover;
-    background-position: center;
-    border-radius: var(--radius-lg, 14px);
-    border: 1px solid var(--color-border);
-    box-shadow: 4px 6px 0 0 var(--color-ink-line);
-  }
-  @media (max-width: 640px) {
-    .article-cover {
-      aspect-ratio: 16 / 9;
-    }
-  }
-</style>

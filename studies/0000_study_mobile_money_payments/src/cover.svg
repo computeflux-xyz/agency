@@ -1,57 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="Payment is the product">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Schematic of a payment state machine with an asynchronous callback returning to an earlier state">
+  <!--
+    Card cover. Purely visual: no title text, no numbers, no axis. The site
+    renders it at aspect-[16/10] with object-cover, hence the 1200x750 frame.
+    Palette and motifs are the site's own (services/site/src/styles/global.css):
+    sand canvas, dot-grid backdrop, near-black ink, warm hairlines and the
+    flux-blue accent.
+  -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b1020"/>
-      <stop offset="1" stop-color="#161d33"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2f6bff"/>
-      <stop offset="1" stop-color="#8ab0ff"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.80" cy="0.16" r="0.85">
-      <stop offset="0" stop-color="#2f6bff" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#2f6bff" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
-      <circle cx="1.5" cy="1.5" r="1.5" fill="#ffffff" fill-opacity="0.05"/>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#bdb7a8"/>
     </pattern>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#8ab0ff"/>
+    <marker id="tip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#201f1e"/>
+    </marker>
+    <marker id="tipBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2f6bff"/>
     </marker>
   </defs>
 
-  <rect width="1200" height="600" fill="url(#bg)"/>
-  <rect width="1200" height="600" fill="url(#dots)"/>
-  <rect width="1200" height="600" fill="url(#glow)"/>
+  <rect width="1200" height="750" fill="#f5f4ef"/>
+  <rect width="1200" height="750" fill="url(#dots)"/>
 
-  <!-- Schematic: the payment state machine. Structure only, no quantities. -->
-  <g transform="translate(78 452)" font-family="ui-monospace, Menlo, monospace" font-size="17">
-    <g stroke="url(#accent)" stroke-width="2.5" fill="none" marker-end="url(#ar)">
-      <path d="M124 0 H210"/>
-      <path d="M338 0 H424"/>
-      <path d="M566 0 H652"/>
+  <g transform="translate(0 40)">
+    <!-- The forward path: four states, chained. -->
+    <g fill="none" stroke="#201f1e" stroke-width="2.5">
+      <rect x="96"  y="345" width="188" height="80" rx="8"/>
+      <rect x="380" y="345" width="188" height="80" rx="8"/>
+      <rect x="664" y="345" width="188" height="80" rx="8"/>
     </g>
-    <!-- webhook return path, the whole reason the machine has a middle state -->
-    <path d="M690 -26 C 690 -96, 350 -96, 350 -30" fill="none" stroke="#8ab0ff"
-          stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ar)" opacity="0.85"/>
-    <text x="452" y="-104" fill="#8ab0ff" font-size="15" letter-spacing="2" text-anchor="middle">WEBHOOK</text>
+    <rect x="948" y="345" width="188" height="80" rx="8" fill="#2f6bff" fill-opacity="0.16" stroke="#2f6bff" stroke-width="2.5"/>
 
-    <g fill="none" stroke="#8ab0ff" stroke-width="2">
-      <rect x="0" y="-26" width="124" height="52" rx="8" opacity="0.85"/>
-      <rect x="210" y="-26" width="128" height="52" rx="8" opacity="0.85"/>
-      <rect x="424" y="-26" width="142" height="52" rx="8" opacity="0.85"/>
+    <g stroke="#201f1e" stroke-width="2.5" fill="none" marker-end="url(#tip)">
+      <path d="M284 385 H372"/>
+      <path d="M568 385 H656"/>
+      <path d="M852 385 H940"/>
     </g>
-    <rect x="652" y="-26" width="124" height="52" rx="8" fill="#2f6bff" fill-opacity="0.22" stroke="#8ab0ff" stroke-width="2"/>
 
-    <g fill="#dfe6ff" text-anchor="middle" font-size="16" letter-spacing="1">
-      <text x="62" y="6">pending</text>
-      <text x="274" y="6">processing</text>
-      <text x="495" y="6">settled</text>
-      <text x="714" y="6">reconciled</text>
+    <!-- The asynchronous callback: the edge that can be lost, so it is the one
+         drawn dashed, in the accent, and looping backwards. -->
+    <path d="M1042 337 C 1042 196, 474 196, 474 337"
+          fill="none" stroke="#2f6bff" stroke-width="3" stroke-dasharray="10 8"
+          marker-end="url(#tipBlue)"/>
+
+    <!-- Reconciliation: the slow sweep that catches what the callback dropped. -->
+    <path d="M1042 433 C 1042 560, 190 560, 190 433"
+          fill="none" stroke="#201f1e" stroke-width="2" stroke-dasharray="3 7"
+          opacity="0.45" marker-end="url(#tip)"/>
+
+    <!-- Hairline rules, the site's "technical sheet" motif. -->
+    <g stroke="#dcd7cb" stroke-width="1.5">
+      <path d="M96 128 H1136"/>
+      <path d="M96 642 H1136"/>
+    </g>
+    <g fill="#2f6bff">
+      <rect x="96" y="122" width="52" height="6" rx="3"/>
     </g>
   </g>
-
-  <text x="80" y="92" font-family="ui-monospace, Menlo, monospace" font-size="19" letter-spacing="5" fill="#8ab0ff">COMPUTEFLUX · CASE STUDY 1/3</text>
-  <text x="78" y="204" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="700" fill="#f5f4ef">Payment is</text>
-  <text x="78" y="284" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="700" fill="#f5f4ef">the product</text>
 </svg>

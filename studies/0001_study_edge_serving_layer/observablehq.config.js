@@ -3,4 +3,4 @@
 // ../_shared/observable.base.js.
 import { defineStudy } from "../_shared/observable.base.js";
 
-export default defineStudy({ title: "The catalogue is a build artifact" });
+export default defineStudy({ title: "Edge e-commerce: The catalogue is a build artifact" });

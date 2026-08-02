@@ -1,5 +1,5 @@
 ---
-title: Signal first-party, sans tracker
+title: "Edge e-commerce: signals first-party, sans tracker"
 toc: false
 ---
 
@@ -12,7 +12,7 @@ const cover = FileAttachment("../cover.svg");
 ```
 
 <div class="hero">
-  <h1>Signal first-party,<br>sans tracker</h1>
+  <h1>Edge e-commerce: Signals first-party,<br>sans tracker</h1>
   <h2>Partie 3 sur 3. Ce qu'une boutique edge sait déjà de son propre trafic, et comment en faire une newsletter qui s'assemble toute seule.</h2>
 </div>
 
@@ -25,29 +25,29 @@ const cover = FileAttachment("../cover.svg");
 
 La [partie 1](https://computeflux.xyz/studies/mobile-money-payment-processor) a construit un processeur de paiement pour un marché sans cartes. La [partie 2](https://computeflux.xyz/studies/edge-serving-layer) a transformé le catalogue en artefact versionné publié vers l'edge.
 
-Ensemble, elles ont créé quelque chose que la plupart des plateformes e-commerce ne réalisent jamais : **une infrastructure de données first-party qui est réellement sous le contrôle de l'opérateur.**
+À elles deux, elles ont produit ce que peu de plateformes e-commerce obtiennent : **une infrastructure de données first-party réellement entre les mains de l'opérateur.**
 
-## Trois conditions prérequises qui rendent cela possible
+## Trois conditions qui rendent tout cela possible
 
-**L'opérateur exploite son propre serveur d'origine.** La boutique n'est pas un export statique derrière le CDN d'un tiers : c'est une application rendue côté serveur qui s'exécute sur un point de présence, sur le domaine de l'opérateur. Chaque requête atteint du code que l'opérateur a écrit. Il s'agit de l'application `bijougabriel-ui` Astro, déployée en tant que Cloudflare Worker.
+**L'opérateur exploite son propre serveur d'origine.** La boutique n'est pas un export statique derrière le CDN d'un tiers : c'est une application rendue côté serveur qui s'exécute sur un point de présence, sur le domaine de l'opérateur. Chaque requête traverse du code que l'opérateur a écrit lui-même. La boutique est une application Astro déployée comme worker edge.
 
-**Chaque requête porte déjà des métadonnées dont la collecte n'a rien coûté.** L'edge termine le TLS, résout le réseau par lequel la requête est arrivée, sait quel point de présence l'a servie et a mesuré le temps d'aller-retour en le faisant. Rien de tout cela ne demande un script sur la page, une bannière de consentement ou un prestataire. C'est simplement ainsi que fonctionne HTTP quand vous contrôlez le serveur.
+**Chaque requête porte déjà des métadonnées dont la collecte n'a rien coûté.** L'edge termine le TLS, résout le réseau par lequel la requête est arrivée, sait quel point de présence l'a servie et a mesuré le temps d'aller-retour en le faisant. Rien de tout cela ne demande un script sur la page, une bannière de consentement ou un prestataire. C'est simplement le fonctionnement normal de HTTP quand on tient le serveur.
 
-**Le catalogue est un instantané publié et adressé par hash.** Tout autre système qui veut savoir ce que la boutique affichait, à quel prix, un jour donné, peut lire exactement les mêmes clés que la boutique a lues — avec la certitude de ne pas regarder une copie divergente. C'est le mécanisme de publication de la partie 2, qui sert maintenant un double usage.
+**Le catalogue est un instantané publié et adressé par hash.** Tout autre système qui veut savoir ce que la boutique affichait, à quel prix, un jour donné, peut lire exactement les mêmes clés que la boutique a lues — avec la certitude de ne pas regarder une copie divergente. C'est le mécanisme de publication de la partie 2, qui rend ici un second service.
 
-La plupart des détaillants achètent un gestionnaire de tags, une plateforme de données client et un outil d'emailing, puis passent un an à réconcilier trois vues du même client. Cette plateforme n'en a qu'une, parce qu'elle n'en a jamais fabriqué une seconde.
+La plupart des détaillants achètent un gestionnaire de tags, une plateforme de données client et un outil d'emailing, puis passent un an à faire concorder trois vues du même client. Ici, il n'y en a qu'une, faute d'en avoir jamais fabriqué une seconde.
 
-## Le cookie est un pointeur, pas une charge utile
+## Le cookie est un pointeur, pas un porteur de données
 
 Nous posons un seul cookie depuis l'origine : opaque, HttpOnly, SameSite=Lax, porté par le domaine apex, contenant un identifiant triable et rien d'autre. Tout ce que l'on sait du visiteur vit côté serveur, indexé par lui, dans le même stockage clé-valeur edge que les sessions utilisent déjà (Cloudflare KV).
 
-Cette combinaison travaille plus qu'il n'y paraît :
+Cette combinaison en fait plus qu'il n'y paraît :
 
-- **HttpOnly signifie que les scripts de la page ne peuvent pas le lire**, ce qui supprime toute la classe de fuites où un script tiers présent sur la page exfiltre l'identifiant. Cela signifie aussi que ce n'est pas un cookie posé en JavaScript : les plafonds de durée de vie agressifs que les navigateurs appliquent à ceux-là ne s'appliquent pas.
+- **HttpOnly signifie que les scripts de la page ne peuvent pas le lire**, ce qui supprime toute la classe de fuites où un script tiers présent sur la page exfiltre l'identifiant. Ce n'est pas non plus un cookie posé en JavaScript : les navigateurs plafonnent sévèrement la durée de vie de ces derniers, et ce plafond ne nous concerne donc pas.
 
-- **Opaque signifie qu'il ne porte aucune information.** Il n'y a rien à décoder, donc le cookie ne peut pas être rejoué en profil par qui l'intercepterait.
+- **Opaque signifie qu'il ne porte aucune information.** Il n'y a rien à décoder, personne ne peut reconstituer un profil à partir du cookie intercepté.
 
-- **Le stockage côté serveur fait de l'effacement une suppression.** Une demande de droit à l'oubli retire un enregistrement. À comparer avec une conception où l'historique du visiteur est étalé dans l'entrepôt d'un prestataire.
+- **Le stockage côté serveur fait de l'effacement une suppression.** Une demande de droit à l'oubli supprime un enregistrement, et c'est tout. Rien à voir avec un montage où l'historique du visiteur est éparpillé dans l'entrepôt d'un prestataire.
 
 ```js
 Inputs.table(cookie, {
@@ -66,7 +66,7 @@ Inputs.table(cookie, {
 
 L'expression « empreinte serveur » désigne d'habitude la version hostile : extraire toute l'entropie possible d'un appareil jusqu'à pouvoir isoler une personne. C'est fragile, cela casse à chaque sortie de navigateur, et sur un marché où les combinés se partagent au sein d'un foyer, c'est aussi éthiquement discutable.
 
-Nous inversons l'objectif. Le rôle de l'empreinte n'est pas d'identifier un visiteur : c'est de placer une requête dans une **cohorte** — une classe réseau-et-appareil assez large pour être anonyme et assez cohérente pour être prédictive. Là où l'empreinte classique maximise l'entropie, celle-ci en dépense volontairement le moins que la garde de confidentialité autorise.
+Nous inversons l'objectif. L'empreinte ne sert pas à identifier un visiteur, mais à le ranger dans une **cohorte** : une classe de réseau et d'appareil assez large pour rester anonyme, assez homogène pour rester prédictive. Une empreinte classique cherche à maximiser l'entropie ; nous en dépensons le strict minimum que la garde de confidentialité autorise.
 
 Les signaux sont ceux que l'edge possède déjà. Aucune sonde, aucun canvas, aucune énumération de polices, aucun script.
 
@@ -79,11 +79,11 @@ Inputs.table(signals, {
 })
 ```
 
-Les valeurs en bits ci-dessus sont des hypothèses, pas des mesures : elles rendent l'échelle ci-dessous calculable. En production, la garde est une population comptée et non une estimation : une esquisse de cardinalité par seau sur une fenêtre glissante, qui coûte quelques kilo-octets et répond à la seule question qui compte : *cette cohorte est-elle assez grande ?*
+Les valeurs en bits ci-dessus sont des hypothèses, pas des mesures : elles servent uniquement à rendre l'échelle ci-dessous calculable. En production, la garde ne repose pas sur une estimation mais sur un comptage : un compteur probabiliste par compartiment, sur une fenêtre glissante. Quelques kilo-octets, et une réponse à la seule question qui compte : *cette cohorte est-elle assez grande ?*
 
 ### L'échelle de k-anonymat
 
-Une cohorte n'est émise que si son seau contient au moins **k** membres. Sinon, le résolveur retire le signal le plus spécifique et redemande, en descendant une échelle fixe jusqu'à obtenir un seau assez grand. Un visiteur sur un réseau inhabituel avec un appareil inhabituel n'obtient pas une cohorte qui l'identifie : il obtient « ce pays, cette classe d'appareil », et le système s'en contente.
+Une cohorte n'est émise que si son compartiment compte au moins **k** membres. Dans le cas contraire, le résolveur abandonne le signal le plus spécifique et redemande, en descendant une échelle fixe jusqu'à tomber sur un compartiment assez peuplé. Un visiteur au réseau et à l'appareil atypiques n'hérite donc pas d'une cohorte qui l'identifie : il obtient « ce pays, cette classe d'appareil », et le système s'en tient là.
 
 ```js
 const audience = view(Inputs.range([1000, 2000000], {value: 120000, step: 1000, label: "Visiteurs distincts dans la fenêtre"}));
@@ -93,7 +93,12 @@ const enabled = view(Inputs.checkbox(signals.map((s) => s.id), {
   label: "Signaux collectés",
   format: (id) => signals.find((s) => s.id === id).name_fr
 }));
+```
 
+```js
+// Bloc séparé à dessein : la valeur d'un `view()` ne réveille que les *autres*
+// cellules. Un calcul dérivé placé dans le même bloc resterait figé sur sa
+// valeur initiale.
 const RUNGS = [
   {id: "full",     label: "Tous les signaux",                  uses: signals.map((s) => s.id)},
   {id: "stable",   label: "Sans latence ni TLS",               uses: ["country", "carrier", "pop", "device_class", "language", "protocol", "ua_platform"]},
@@ -105,21 +110,47 @@ const RUNGS = [
 const lad = ladder({signals, enabled, rungs: RUNGS, audience, k});
 ```
 
-```js
 <div class="grid grid-cols-3">
-  <div class="card"><h2>Barreau retenu</h2><span class="big" style="font-size:1.35rem">${lad.selected.label}</span><span class="muted">${lad.selected.used.length} signaux utilisés sur ${enabled.length} collectés</span></div>
+  <div class="card"><h2>Niveau retenu</h2><span class="big" style="font-size:1.35rem">${lad.selected.label}</span><span class="muted">${lad.selected.used.length} signaux utilisés sur ${enabled.length} collectés</span></div>
   <div class="card"><h2>Taille de cohorte attendue</h2><span class="big" style="color:${lad.selected.passes ? "#2f8f5b" : "#b0501a"}">${fmtInt(lad.selected.population)}</span><span class="muted">${lad.selected.passes ? `dépasse k = ${fmtInt(k)}` : `sous k = ${fmtInt(k)} même au plancher`}</span></div>
-  <div class="card"><h2>Cohortes distinctes</h2><span class="big">${fmtInt(Math.min(lad.selected.buckets, audience / Math.max(1, lad.selected.population)))}</span><span class="muted">au barreau retenu</span></div>
+  <div class="card"><h2>Cohortes distinctes</h2><span class="big">${fmtInt(Math.min(lad.selected.buckets, audience / Math.max(1, lad.selected.population)))}</span><span class="muted">au niveau retenu</span></div>
 </div>
+
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 300,
+  marginLeft: 230,
+  marginRight: 72,
+  x: {label: "Membres attendus par cohorte →", type: "log", grid: true},
+  y: {label: null, domain: lad.rows.map((r) => r.label)},
+  marks: [
+    // A log scale has no zero, so the bars get an explicit baseline. A rung
+    // finer than one member per bucket is clamped to a visible stub and
+    // labelled "<1", which is exactly what it means: that rung singles people
+    // out.
+    Plot.barX(lad.rows, {
+      y: "label",
+      x1: 0.5,
+      x2: (d) => Math.max(d.population, 0.6),
+      fill: (d) => d.id === lad.selected.id ? "#2f6bff" : (d.passes ? "#9bb6e8" : "#d8b48a"),
+      fillOpacity: (d) => d.id === lad.selected.id ? 1 : 0.55
+    }),
+    Plot.ruleX([k], {stroke: "#b0501a", strokeWidth: 2, strokeDasharray: "4,4"}),
+    Plot.text([{label: lad.rows[0].label, x: k}], {x: "x", y: "label", text: [`k = ${fmtInt(k)}`], dy: -22, dx: 4, textAnchor: "start", fill: "#b0501a", fontWeight: 700}),
+    Plot.text(lad.rows, {y: "label", x: (d) => Math.max(d.population, 0.6), text: (d) => d.population < 1 ? "<1" : fmtInt(d.population), dx: 6, textAnchor: "start"}),
+    Plot.ruleX([0.5])
+  ]
+}))
 ```
 
-Déplacez `k` et regardez le barreau retenu descendre l'échelle. Toute la posture de confidentialité tient dans un nombre qu'un opérateur peut défendre en réunion : *aucune cohorte sur laquelle nous agissons n'est plus petite que k*. C'est vérifiable, testable, et cela ne dépend des bonnes intentions de personne.
+Déplacez `k` : le niveau retenu descend l'échelle. Toute la posture de confidentialité tient alors dans un chiffre qu'un dirigeant peut défendre en réunion — *aucune cohorte sur laquelle nous agissons ne compte moins de k membres*. C'est vérifiable, c'est testable, et cela ne repose sur les bonnes intentions de personne.
 
-Deuxième usage du même mécanisme : un robot d'aspiration atterrit dans une cohorte dont le comportement ne ressemble en rien à celui d'un acheteur — rythme d'arrivée, mélange de variantes, forme de session. Les séparer ne coûte ni CAPTCHA ni page de défi, parce que la classification est une propriété de la cohorte et non un test imposé au visiteur.
+Le même mécanisme rend un second service : un robot d'aspiration se retrouve dans une cohorte dont le comportement n'a rien d'un acheteur — rythme d'arrivée, mélange de variantes d'images, forme des sessions. Les écarter ne coûte ni CAPTCHA ni page de vérification, puisque la classification est une propriété de la cohorte et non un test imposé au visiteur.
 
-## La colonne vertébrale d'événements
+## L'ossature événementielle
 
-Un événement compact par requête, émis par le worker edge dans une file. Un consommateur les regroupe et les dépose dans le stockage objet en Parquet, partitionné par jour et par point de présence. L'analyse s'exécute via un moteur de requête embarqué qui lit ces fichiers directement — pas d'entrepôt, pas de cluster, pas de seconde copie.
+Un événement compact par requête, émis par le worker edge dans une file. Un consommateur les regroupe par lots et les dépose dans le stockage objet, au format Parquet, partitionné par jour et par point de présence. L'analyse tourne ensuite sur un moteur de requête embarqué qui lit ces fichiers là où ils sont. Pas d'entrepôt, pas de cluster, pas de seconde copie.
 
 <svg class="schematic" viewBox="0 0 1000 260" role="img" aria-label="Colonne vertébrale d'événements, de l'edge aux segments">
   <defs>
@@ -153,22 +184,22 @@ Un événement compact par requête, émis par le worker edge dans une file. Un 
   </g>
 </svg>
 
-La dernière boîte est celle qui mérite débat. Un segment d'audience est **publié, pas muté** — même discipline que le catalogue en partie 2 : on le construit, on le hashe, on le versionne, on l'écrit, on garde l'historique. Cela achète trois choses qu'un magasin de segments mutables ne donne jamais :
+C'est la dernière boîte qui mérite discussion. Un segment d'audience est **publié, jamais modifié en place** : la même discipline que le catalogue en partie 2. On le construit, on le hashe, on le versionne, on l'écrit, on en garde l'historique. Trois avantages qu'un référentiel de segments modifiable ne procure jamais :
 
 - Une campagne peut nommer la version exacte du segment qu'elle a ciblée
-- Un mauvais segment se rejoue en arrière au lieu d'être réparé
-- Un diff entre deux versions est un artefact réel que quelqu'un peut relire avant l'envoi
+- On revient en arrière sur un mauvais segment plutôt que de le réparer
+- Le diff entre deux versions est un artefact concret, relisible avant l'envoi
 
-## La newsletter est un gabarit troué
+## La newsletter est un gabarit à trous
 
-L'optimisation créative dynamique est un terme publicitaire, et en publicité il désigne d'ordinaire beaucoup de machinerie pour très peu. En email, pour un catalogue qui tourne, c'est presque une évidence.
+« Optimisation créative dynamique » est un terme venu de la publicité, où il désigne le plus souvent beaucoup de machinerie pour peu de résultat. Appliqué à l'email, sur un catalogue qui tourne vite, il devient presque une évidence.
 
-La newsletter n'est pas un document. C'est une mise en page à emplacements, et chaque emplacement est résolu par destinataire au moment du rendu par une politique qui apprend.
+La newsletter n'est pas un document, c'est une mise en page à emplacements. Chaque emplacement est résolu destinataire par destinataire, au moment du rendu, par une politique qui apprend.
 
 ```js
 Inputs.table(slots, {
   columns: ["slot", "candidates", "decided_by", "constraint_fr"],
-  header: {slot: "Emplacement", candidates: "Candidats", decided_by: "Rempli par", constraint_fr: "Contrainte dure"},
+  header: {slot: "Emplacement", candidates: "Candidats", decided_by: "Rempli par", constraint_fr: "Contrainte stricte"},
   width: {constraint_fr: 320},
   rows: 6
 })
@@ -178,91 +209,140 @@ Inputs.table(slots, {
 
 Le moteur de rendu lit les candidats **dans l'instantané de catalogue publié** — les mêmes clés que lit la boutique, à une version épinglée.
 
-Cette seule décision supprime le mode de panne qui rend l'email personnalisé embarrassant :
+Cette seule décision élimine le mode de défaillance qui rend l'email personnalisé gênant :
 
 - Un email ne peut pas montrer un produit que la boutique n'a pas, puisque les deux lisent le même artefact
 - Il ne peut pas montrer le prix du mois dernier, puisque la version est épinglée et enregistrée
-- Quand un destinataire clique, la page où il atterrit est garantie être celle que l'email décrivait
+- Quand un destinataire clique, la page sur laquelle il arrive est forcément celle que l'email décrivait
 
 Le stock est l'exception qui confirme la règle : l'inventaire n'est pas dans l'instantané publié, il est vivant. Le moteur de rendu masque donc tout candidat en rupture au moment du rendu.
 
 ### Pourquoi un bandit et pas un test A/B
 
-Un test A/B exige un jeu de variantes fixe, une population fixe et assez de temps pour atteindre la significativité. Un catalogue de spiritueux ne satisfait aucune de ces conditions : les produits arrivent, s'épuisent et repartent. Une newsletter mensuelle vers une liste de taille moyenne n'accumule pas les observations vite. Le temps que le test conclue, ce qu'il testait a disparu.
+Un test A/B suppose un jeu de variantes figé, une population figée et le temps d'atteindre la significativité statistique. Un catalogue de spiritueux ne remplit aucune de ces trois conditions : les produits arrivent, s'épuisent et disparaissent. Et une newsletter mensuelle envoyée à une liste de taille moyenne accumule les observations lentement. Le temps que le test tranche, ce qu'il testait n'existe plus.
 
 Un bandit n'a pas besoin de conclure. Il réalloue en continu, et il survit à l'apparition et à la disparition de candidats en cours de route.
 
 ```js
+// Les taux sont exprimés en points de pourcentage : Inputs.range associe son
+// curseur à un vrai <input type=number>, et un `format` qui renvoie « 3,0 % »
+// laisse la case vide.
 const arms = view(Inputs.range([2, 12], {value: 6, step: 1, label: "Candidats créatifs dans l'emplacement"}));
-const baseRate = view(Inputs.range([0.005, 0.12], {value: 0.03, step: 0.005, label: "Taux de clic du candidat médian", format: (x) => fmtPct(x, 1)}));
-const spread = view(Inputs.range([0.05, 1.2], {value: 0.6, step: 0.05, label: "Écart, meilleur au pire", format: (x) => fmtPct(x, 0)}));
+const baseRatePct = view(Inputs.range([0.5, 12], {value: 3, step: 0.5, label: "Taux de clic du candidat médian (%)"}));
+const spreadPct = view(Inputs.range([5, 120], {value: 60, step: 5, label: "Écart du meilleur au pire (%)"}));
 const sends = view(Inputs.range([500, 100000], {value: 8000, step: 500, label: "Destinataires par campagne"}));
 const campaigns = view(Inputs.range([2, 40], {value: 12, step: 1, label: "Campagnes"}));
+```
 
-const race = banditRace({arms, baseRate, spread, sends, campaigns, seed: 20260802});
+```js
+const race = banditRace({
+  arms,
+  baseRate: baseRatePct / 100,
+  spread: spreadPct / 100,
+  sends,
+  campaigns,
+  seed: 20260802
+});
 const tidy = race.series.flatMap((d) => [
   {campaign: d.campaign, regret: d.bandit, policy: "Bandit contextuel"},
   {campaign: d.campaign, regret: d.even, policy: "Répartition égale"}
 ]);
 ```
 
-```js
 <div class="grid grid-cols-3">
   <div class="card"><h2>Clics, bandit</h2><span class="big">${fmtInt(race.banditClicks)}</span></div>
   <div class="card"><h2>Clics, répartition égale</h2><span class="big">${fmtInt(race.evenClicks)}</span></div>
   <div class="card"><h2>Écart</h2><span class="big" style="color:${race.lift >= 0 ? "#2f8f5b" : "#b0501a"}">${race.lift >= 0 ? "+" : ""}${fmtPct(race.lift, 1)}</span><span class="muted">sur ${campaigns} campagnes</span></div>
 </div>
+
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 320,
+  marginLeft: 66,
+  x: {label: "Campagne →", grid: true, tickFormat: "d"},
+  y: {label: "↑ Regret cumulé (clics non obtenus)", grid: true, zero: true},
+  color: {legend: true, domain: ["Bandit contextuel", "Répartition égale"]},
+  marks: [
+    Plot.lineY(tidy, {x: "campaign", y: "regret", stroke: "policy", strokeWidth: 2}),
+    Plot.tip(tidy, Plot.pointerX({x: "campaign", y: "regret", stroke: "policy", title: (d) => `${d.policy}\ncampagne ${d.campaign}\n${fmtInt(d.regret)} clics abandonnés`}))
+  ]
+}))
 ```
 
 La ligne de la répartition égale est droite : une politique qui n'apprend jamais paie éternellement le même prix. La ligne du bandit s'infléchit : il paie pour explorer au début, puis cesse de payer.
 
-Baissez le nombre de destinataires ou l'écart entre candidats, et les deux lignes convergent — c'est le résultat honnête. **Un bandit n'est pas de l'intelligence gratuite ; il vaut d'être déployé quand les candidats diffèrent réellement et qu'il y a assez de volume pour s'en apercevoir.** Ce graphique est là pour que ce jugement se fasse avant la construction, pas après.
+Baissez le nombre de destinataires, ou l'écart entre candidats : les deux courbes se rejoignent. C'est le résultat honnête. **Un bandit n'est pas une astuce gratuite. Il se justifie quand les candidats diffèrent vraiment et que le volume permet de le voir.** Ce graphique existe pour que cet arbitrage se fasse avant la construction, pas après.
 
 ### Démarrage à froid, résolu par la forme même du catalogue
 
-Un produit ajouté ce matin n'a pas d'historique, et un classeur qui ne fait confiance qu'aux clics observés soit ne le montrera jamais, soit le sur-promouvra sur trois ouvertures chanceuses.
+Un produit ajouté ce matin n'a pas d'historique. Un algorithme de classement qui ne se fie qu'aux clics observés fera l'une de deux erreurs : ne jamais le montrer, ou le survaloriser sur trois ouvertures chanceuses.
 
-La conception emprunte un a priori au producteur, qui l'emprunte à la catégorie, qui l'emprunte au catalogue. C'est le même repli hiérarchique que l'échelle de k-anonymat, appliqué à un autre problème — un mécanisme, deux usages, ce qui est en général le signe que le mécanisme est le bon.
+Nous empruntons donc un a priori au producteur, qui l'emprunte à sa catégorie, qui l'emprunte au catalogue. C'est le repli hiérarchique de l'échelle de k-anonymat, appliqué à un autre problème. Un mécanisme, deux usages : en général, le signe que le mécanisme est le bon.
 
 ```js
-const brandRate = view(Inputs.range([0.005, 0.12], {value: 0.030, step: 0.001, label: "Taux de clic établi du producteur", format: (x) => fmtPct(x, 1)}));
-const skuTrueRate = view(Inputs.range([0.005, 0.12], {value: 0.055, step: 0.001, label: "Taux de clic réel du produit neuf", format: (x) => fmtPct(x, 1)}));
+const brandRatePct = view(Inputs.range([0.5, 12], {value: 3.0, step: 0.1, label: "Taux de clic établi du producteur (%)"}));
+const skuTrueRatePct = view(Inputs.range([0.5, 12], {value: 5.5, step: 0.1, label: "Taux de clic réel du produit neuf (%)"}));
 const maxSends = view(Inputs.range([200, 20000], {value: 4000, step: 100, label: "Envois observés"}));
+```
 
+```js
+const brandRate = brandRatePct / 100;
+const skuTrueRate = skuTrueRatePct / 100;
 const curves = shrinkage({brandRate, skuTrueRate, maxSends, strengths: [50, 250, 1500], seed: 4711})
   .map((d) => ({...d, series: d.series === "Own clicks only" ? "Clics propres seulement" : d.series.replace("Pooled, prior = ", "Mutualisé, a priori = ")}));
 ```
 
-La courbe « clics propres seulement » est l'estimateur naïf, et à faible volume il est violent : il annoncera volontiers 20 % de taux de clic sur quatre clics. Les courbes mutualisées partent du taux du producteur et convergent vers la vérité à une vitesse que règle la force de l'a priori.
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 330,
+  marginLeft: 66,
+  marginRight: 24,
+  x: {label: "Envois observés pour le produit neuf →", grid: true},
+  y: {label: "↑ Taux de clic estimé", grid: true, tickFormat: "%"},
+  color: {legend: true},
+  marks: [
+    Plot.ruleY([skuTrueRate], {stroke: "#2f8f5b", strokeDasharray: "5,4"}),
+    Plot.text([{x: maxSends, y: skuTrueRate}], {x: "x", y: "y", text: ["taux réel"], dy: -8, textAnchor: "end", fill: "#2f8f5b", fontWeight: 700}),
+    Plot.ruleY([brandRate], {stroke: "#b0501a", strokeDasharray: "5,4"}),
+    Plot.text([{x: maxSends, y: brandRate}], {x: "x", y: "y", text: ["a priori producteur"], dy: 14, textAnchor: "end", fill: "#b0501a", fontWeight: 700}),
+    Plot.lineY(curves, {x: "n", y: "rate", stroke: "series", strokeWidth: 1.8}),
+    Plot.tip(curves, Plot.pointerX({x: "n", y: "rate", stroke: "series", title: (d) => `${d.series}\n${fmtInt(d.n)} envois · ${fmtPct(d.rate)}`}))
+  ]
+}))
+```
 
-Un a priori fort est lent à se laisser convaincre et jamais embarrassant ; un a priori faible est rapide et parfois ridicule. C'est une décision commerciale, pas une décision de modélisation, et elle revient à qui détient la marque.
+La courbe « clics propres seulement » est l'estimateur naïf, et à faible volume il est brutal : il annoncera sans hésiter 20 % de taux de clic sur quatre clics. Les courbes mutualisées, elles, partent du taux du producteur et rejoignent la vérité à une vitesse que règle la force de l'a priori.
+
+Un a priori fort se laisse convaincre lentement, mais ne met jamais dans l'embarras ; un a priori faible réagit vite, et se trompe parfois grossièrement. Le curseur relève d'une décision commerciale, pas d'un choix de modélisation : il revient à qui détient la marque.
 
 ### L'heure d'envoi
 
-La même machinerie de postérieurs, vingt-quatre bras, un par heure locale, tenus par cohorte plutôt que par destinataire. Une cohorte a assez d'observations pour apprendre une heure ; un individu n'en a pas. C'est là que la garde de k-anonymat se paie une seconde fois : l'unité d'apprentissage est déjà l'unité de confidentialité.
+Le même appareillage de lois a posteriori, vingt-quatre bras, un par heure locale, tenus au niveau de la cohorte et non du destinataire. Une cohorte accumule assez d'observations pour apprendre une heure d'envoi ; un individu, non. La garde de k-anonymat se rentabilise ici une seconde fois : l'unité d'apprentissage est déjà l'unité de confidentialité.
 
 ## Garde-fous, parce que c'est de l'email
 
 Un système qui décide quoi mettre devant un client a besoin de limites qui ne s'apprennent pas :
 
 - **Un témoin permanent.** Une part fixe de la liste reçoit toujours la version éditoriale par défaut. Sans lui, « le bandit fonctionne » est une affirmation infalsifiable.
-- **Masquage sur l'inventaire.** Vérifié en direct au rendu, jamais depuis l'instantané.
-- **Plafonnement de fréquence et plancher de diversité.** Un emplacement qui gagne toujours, c'est une newsletter qui devient un seul produit, et une liste qui se désabonne.
-- **Dégradation selon le consentement.** Sans consentement, pas de postérieur individuel ; le destinataire reçoit le meilleur choix marginal de sa cohorte. Le système devient moins bon, pas cassé — et aucune fenêtre de consentement ne conditionne jamais l'envoi.
-- **Un effacement qui efface vraiment.** Supprimer l'enregistrement côté serveur, et poser une pierre tombale sur l'identifiant pour que la prochaine compaction Parquet abandonne ses lignes. Ce motif de pierre tombale est déjà dans le code, dans l'index des slugs de la partie 2.
+- **Masquage sur le stock.** Vérifié en direct au moment du rendu, jamais depuis l'instantané.
+- **Plafond de fréquence et plancher de diversité.** Un emplacement qui gagne toujours finit par transformer la newsletter en fiche produit unique, et la liste en vague de désabonnements.
+- **Dégradation selon le consentement.** Sans consentement, pas de loi a posteriori individuelle : le destinataire reçoit le meilleur choix marginal de sa cohorte. Le système perd en finesse, il ne casse pas. Et aucune fenêtre de consentement ne conditionne l'envoi.
+- **Un effacement qui efface vraiment.** On supprime l'enregistrement côté serveur et on pose un marqueur de suppression sur l'identifiant, pour que la prochaine compaction Parquet laisse tomber ses lignes. Ce motif existe déjà dans le code, dans l'index des slugs de la partie 2.
 
 ## Ce que nous mesurons pour le prouver
 
 Cette partie décrit une conception déployée. Les nombres qui prouvent qu'elle fonctionne sont suivis en production :
 
 1. **Stabilité de cohorte** — la part des cookies récurrents dont la cohorte change d'une session à l'autre. Si elle est élevée, les signaux sont du bruit et l'échelle ne trie rien.
-2. **Pouvoir prédictif de la cohorte** — la variance de taux de clic expliquée par la cohorte, contre un contrôle mélangé. Si une cohorte ne prédit rien, elle ne doit pas servir de contexte.
+2. **Pouvoir prédictif de la cohorte** — la part de variance du taux de clic qu'explique la cohorte, comparée à un témoin tiré au hasard. Une cohorte qui ne prédit rien n'a rien à faire dans le contexte du modèle.
 3. **Regret réalisé contre le témoin** — le seul nombre qui tranche si le bandit a mérité sa complexité.
 4. **Concordance d'instantané** — la part des impressions email dont la page d'atterrissage correspondait à la version de catalogue épinglée. Cela devrait valoir exactement 100 %, et le mesurer est la manière de découvrir que non.
 
-Construire tout cela sans que ces quatre mesures soient instrumentées serait construire sur une supposition. C'est la même discipline que dans le reste de cette étude : le code dit ce qu'il fait, les modèles disent ce qu'ils supposent, et rien entre les deux n'est affirmé.
+Construire tout cela sans ces quatre mesures, c'est bâtir sur une supposition. La discipline est celle du reste de l'étude : le code dit ce qu'il fait, les modèles disent ce qu'ils supposent, et rien entre les deux n'est affirmé.
 
-Le back-office `bijougabriel-admin` donne à l'opérateur une visibilité sur tout cela : distributions de cohortes, performance des bandits, assemblage des newsletters, et la collecte de signaux first-party qui alimente tout le système.
+Le back-office donne à l'opérateur une vue sur l'ensemble : répartition des cohortes, performance des bandits, composition des newsletters, et la collecte de signaux first-party qui alimente le tout.
 
 ---
 

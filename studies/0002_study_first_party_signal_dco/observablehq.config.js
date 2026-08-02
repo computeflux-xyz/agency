@@ -3,4 +3,4 @@
 // ../_shared/observable.base.js.
 import { defineStudy } from "../_shared/observable.base.js";
 
-export default defineStudy({ title: "First-party signal, without a tracker" });
+export default defineStudy({ title: "Edge e-commerce: First-party signal, without a tracker" });

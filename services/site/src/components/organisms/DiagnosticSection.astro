@@ -22,6 +22,7 @@
  */
 import Button from "@atoms/Button.astro";
 import Eyebrow from "@atoms/Eyebrow.astro";
+import MorphPanel from "@atoms/MorphPanel.astro";
 import TechMark from "@atoms/TechMark.astro";
 import DiagnosticDiagram from "@atoms/DiagnosticDiagram.astro";
 import NotchedPanel from "@organisms/NotchedPanel.astro";
@@ -55,10 +56,12 @@ const items = cases.map((c, i) => ({
   data-reveal-stagger="60"
 >
   <div class="diag-layout">
-    <header class="diag-head" data-reveal>
-      <Eyebrow accent="blue">{t("diagHome.eyebrow")}</Eyebrow>
-      <h2 class="diag-title">{t("diagHome.title")}</h2>
-    </header>
+    <MorphPanel as="header" class="diag-head-panel" data-reveal>
+      <div class="diag-head">
+        <Eyebrow accent="blue">{t("diagHome.eyebrow")}</Eyebrow>
+        <h2 class="diag-title">{t("diagHome.title")}</h2>
+      </div>
+    </MorphPanel>
 
     <div class="diag-body">
       {/* Random quadtree (left): a square split into recursive regions. The
@@ -208,6 +211,11 @@ const items = cases.map((c, i) => ({
   .diag-layout {
     display: grid;
     gap: 2.5rem;
+  }
+  /* The panel measures itself down to its text, so centring it needs an auto
+     margin rather than the grid's stretch. */
+  .diag-head-panel {
+    margin-inline: auto;
   }
   .diag-head {
     display: flex;

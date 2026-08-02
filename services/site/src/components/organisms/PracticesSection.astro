@@ -1,108 +1,39 @@
 ---
 /**
- * "Ce que nous faisons" — five service lines as cards.
+ * "Ce que nous faisons" — five service lines as a five-level stack pyramid
+ * wired to a detail card.
  *
- * Each card is a whole-page link to its `/expertise/<slug>` page, shows the
- * domain tooling as a row of monochrome `TechMark` glyphs, and reacts on hover
- * (lift + accent). The section header asserts the end-to-end thesis from the
- * brief. Below the cards sits the merged "-- integrate the Why content --" strip:
- * the six commitments (`why.*`) that used to be their own section, now a compact
- * band so the page doesn't grow another full block.
+ * The pyramid reads from the raw hardware to the served product, base → apex:
+ *
+ *   5 API           — Inference & performance
+ *   4 Semantic      — Agentic systems
+ *   3 AI engineering
+ *   2 Data engineering
+ *   1 Bare metal & compute
+ *
+ * The pyramid sits on the LEFT (five clip-path trapezoids, no numbers). The
+ * active level auto-advances while a progress fill runs along its base; the
+ * practice's accent colours the fill, and a dotted wire connects the active
+ * level to the card on the RIGHT. Hovering the active level or the card pauses
+ * the timer (same contract as DiagnosticSection, minus the quadtree
+ * re-partitioning). The card is a dark NotchedPanel: title, body, the layer's
+ * tools (each with a hover "?" popup explaining why that tool sits on this
+ * layer, ported from the DiagnosticSection tooltip), and a centred yellow CTA.
+ * Below sits the merged "-- integrate the Why content --" strip.
  */
 import Eyebrow from "@atoms/Eyebrow.astro";
-import Highlight from "@atoms/Highlight.astro";
-import Icon from "@atoms/Icon.astro";
+import SectionHeader from "@molecules/SectionHeader.astro";
+import Button from "@atoms/Button.astro";
 import FramedPhoto from "@molecules/FramedPhoto.astro";
 import TechMark from "@atoms/TechMark.astro";
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import { getPractices, type Practice } from "@data/practices";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 
-type Tool = { name: string; si?: string; mono?: string };
-type Practice = {
-  index: string;
-  title: string;
-  body: string;
-  path: string;
-  tools: Tool[];
-  accent: string;
-};
-
-const practices: Practice[] = [
-  {
-    index: "01",
-    title: t("practices.1.title"),
-    body: t("practices.1.body"),
-    path: "/expertise/data-engineering",
-    accent: "data",
-    tools: [
-      { name: "Python", si: "Python" },
-      { name: "Airflow", si: "Apacheairflow" },
-      { name: "ClickHouse", si: "Clickhouse" },
-      { name: "DuckDB", si: "Duckdb" },
-      { name: "Trino", si: "Trino" },
-      { name: "Kafka", si: "Apachekafka" },
-      { name: "Spark", si: "Apachespark" },
-      { name: "Flink", si: "Apacheflink" },
-    ],
-  },
-  {
-    index: "02",
-    title: t("practices.2.title"),
-    body: t("practices.2.body"),
-    path: "/expertise/ai-engineering",
-    accent: "ai",
-    tools: [
-      { name: "PyTorch", si: "Pytorch" },
-      { name: "Hugging Face", si: "Huggingface" },
-      { name: "LangChain", si: "Langchain" },
-      { name: "MLflow", si: "Mlflow" },
-      { name: "ONNX", si: "Onnx" },
-    ],
-  },
-  {
-    index: "03",
-    title: t("practices.3.title"),
-    body: t("practices.3.body"),
-    path: "/expertise/agentic-systems",
-    accent: "agents",
-    tools: [
-      { name: "LangChain", si: "Langchain" },
-      { name: "Ollama", si: "Ollama" },
-      { name: "Hugging Face", si: "Huggingface" },
-      { name: "Docker", si: "Docker" },
-    ],
-  },
-  {
-    index: "04",
-    title: t("practices.4.title"),
-    body: t("practices.4.body"),
-    path: "/expertise/bare-metal",
-    accent: "metal",
-    tools: [
-      { name: "NVIDIA", si: "Nvidia" },
-      { name: "Linux", si: "Linux" },
-      { name: "Kubernetes", si: "Kubernetes" },
-      { name: "Argo", si: "Argo" },
-      { name: "OpenTofu", si: "Opentofu" },
-    ],
-  },
-  {
-    index: "05",
-    title: t("practices.5.title"),
-    body: t("practices.5.body"),
-    path: "/expertise/inference-optimization",
-    accent: "inference",
-    tools: [
-      { name: "vLLM", si: "Vllm" },
-      { name: "Ollama", si: "Ollama" },
-      { name: "NVIDIA", si: "Nvidia" },
-      { name: "ONNX", si: "Onnx" },
-      { name: "TensorFlow", si: "Tensorflow" },
-    ],
-  },
-];
+const practices = getPractices(locale);
 
 /* Timers / docs grid for the merged Why band. */
 const reasons = [
@@ -114,12 +45,54 @@ const reasons = [
   { n: "06", title: t("why.r6.title"), body: t("why.r6.body") },
 ];
 
-const accentHover: Record<string, string> = {
-  data: "group-hover:border-flux-blue",
-  ai: "group-hover:border-flux-magenta",
-  agents: "group-hover:border-flux-magenta",
-  metal: "group-hover:border-flux-amber",
-  inference: "group-hover:border-flux-blue",
+/* Pyramid order, base → apex. Each level binds to the practice it represents;
+   the `layer` label is the short name shown on the trapezoid (no numbers). */
+const layerLabel = (i: number) => t(`practices.layer.${i + 1}`);
+const byAccent: Record<string, Practice> = {};
+for (const p of practices) byAccent[p.accent] = p;
+const levels: Practice[] = [
+  byAccent.metal, // 1 — Bare metal & compute
+  byAccent.data, // 2 — Data engineering
+  byAccent.ai, // 3 — AI engineering
+  byAccent.agents, // 4 — Semantic (card: Agentic systems)
+  byAccent.inference, // 5 — API
+];
+
+/* ---- pyramid geometry: five equal-height trapezoids inside the triangle ----
+   Level `level` (0 = base, widest; 4 = apex, narrowest) spans the container
+   rows [topEdge, botEdge]. The true triangle is inset from the side by
+   (1 - f) / 2 width at height fraction `f`, so every trapezoid's side points
+   are derived from that. `LEVEL_GAP` is a hairline carved out of each shared
+   seam so the slices read as separate steps. */
+const LEVEL_GAP = 0.012;
+function pyrShape(level: number) {
+  const topEdge = (4 - level) / 5;
+  const botEdge = (5 - level) / 5;
+  const top = level === 4 ? topEdge : topEdge + LEVEL_GAP;
+  const bottom = level === 0 ? botEdge : botEdge - LEVEL_GAP;
+  const inset = (f: number) => ((1 - f) / 2) * 100;
+  // Where the clipped trapezoid's RIGHT edge actually is, at the level's
+  // vertical middle — used to pin the dotted wire to the visible shape.
+  const mid = (top + bottom) / 2;
+  return {
+    top: top * 100,
+    height: (bottom - top) * 100,
+    clip: `polygon(${inset(top)}% 0%, ${inset(bottom)}% 100%, ${100 - inset(bottom)}% 100%, ${100 - inset(top)}% 0%)`,
+    mid: mid * 100,
+    right: ((1 + mid) / 2) * 100,
+  };
+}
+
+/* The active level fills with the practice's accent; text flips accordingly. */
+const accentVar: Record<string, string> = {
+  data: "var(--color-flux-blue)",
+  ai: "var(--color-flux-magenta)",
+  agents: "var(--color-flux-magenta)",
+  metal: "var(--color-flux-amber)",
+  inference: "var(--color-flux-blue)",
+};
+const accentTextVar: Record<string, string> = {
+  metal: "#201f1e", // amber fill → dark ink, like the NotchedPanel amber tone
 };
 const accentDot: Record<string, string> = {
   data: "bg-flux-blue",
@@ -130,62 +103,131 @@ const accentDot: Record<string, string> = {
 };
 ---
 
-<section id="practices" class="container-flux scroll-mt-24 py-20 md:py-28">
-  <header class="mb-12 flex max-w-3xl flex-col gap-4 md:mb-16" data-reveal>
-    <Eyebrow accent="blue">{t("practices.eyebrow")}</Eyebrow>
-    <h2 class="text-balance text-3xl font-semibold leading-[1.05] sm:text-4xl md:text-[2.75rem]">
-      {t("practices.title")}
-    </h2>
-    <p class="max-w-2xl text-pretty text-base leading-relaxed text-ink-300 md:text-lg" data-reveal>
+<section id="practices" class="container-flux scroll-mt-24" data-practices-section>
+  <SectionHeader
+    eyebrow={t("practices.eyebrow")}
+    title={t("practices.title")}
+    accent="blue"
+    class="mb-12 md:mb-16"
+  >
+    <Fragment slot="lead">
       <strong class="font-semibold text-ink-50">{t("practices.lead.a")}</strong>{" "}
-      {t("practices.lead.b")} <Highlight grade="mark">{t("practices.lead.hl")}</Highlight>{" "}
+      {t("practices.lead.b")} {t("practices.lead.hl")}{" "}
       {t("practices.lead.c")}
-    </p>
-  </header>
+    </Fragment>
+  </SectionHeader>
 
-  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="90">
-    {
-      practices.map((practice) => (
-        <a
-          href={localizedPath(practice.path, locale)}
-          class:list={[
-            "group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-ink-line)] bg-ink-900 p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-ink-900/70 md:p-7",
-            accentHover[practice.accent],
-          ]}
-          data-reveal
-        >
-          <div class="flex items-baseline justify-between gap-3">
-            <span class="font-mono text-xs text-ink-400">{practice.index}</span>
-            <span class:list={["size-1.5 rounded-full", accentDot[practice.accent]]} aria-hidden="true" />
-          </div>
+  <div class="pyr-grid">
+    {/* The pyramid (left): a surface square split into five trapezoid levels in
+        the atomic-design order. The offset ink silhouette behind it is the
+        NotchedPanel shadow, repeated 7px / 9px away. */}
+    <div class="pyr-aspect" data-reveal>
+      <div class="pyr-shadow" aria-hidden="true">
+        {
+          levels.map((_, i) => {
+            const s = pyrShape(i);
+            return (
+              <span
+                class="pyr-shadow-lvl"
+                style={`top:${s.top}%;height:${s.height}%;clip-path:${s.clip}`}
+              ></span>
+            );
+          })
+        }
+      </div>
 
-          <h3 class="text-balance text-xl font-semibold tracking-tight text-ink-50 transition-colors group-hover:text-flux-blue">
-            {practice.title}
-          </h3>
-
-          <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{practice.body}</p>
-
-          <div class="mt-auto flex flex-wrap gap-1.5 pt-1">
-            {
-              practice.tools.map((tool) => (
-                <span
-                  class="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-900 px-2.5 text-ink-300 transition-colors duration-300 group-hover:border-[var(--color-border-strong)]"
-                  title={tool.name}
-                >
-                  <TechMark name={tool.name} si={tool.si} mono={tool.mono} class="size-4" />
-                  <span class="text-[0.72rem] font-medium leading-none">{tool.name}</span>
+      <div class="pyr-fig" role="tablist" aria-label={t("practices.title")} data-pyr-tabs>
+        {
+          levels.map((lv, i) => {
+            const s = pyrShape(i);
+            return (
+              <button
+                type="button"
+                role="tab"
+                id={`pyr-tab-${i + 1}`}
+                aria-controls={`pyr-panel-${i + 1}`}
+                aria-selected={i === 0 ? "true" : "false"}
+                tabindex={i === 0 ? 0 : -1}
+                class="pyr-lvl"
+                title={lv.title}
+                style={`top:${s.top}%;height:${s.height}%;clip-path:${s.clip};--pyr-accent:${accentVar[lv.accent]};--pyr-text:${accentTextVar[lv.accent] ?? "#ffffff"}`}
+                data-pyr-level
+                data-pyr-mid={s.mid}
+                data-pyr-right={s.right}
+              >
+                <span class="pyr-lvl-dot" aria-hidden="true"></span>
+                <span class="pyr-lvl-name">{layerLabel(i)}</span>
+                <span class="pyr-fill" data-pyr-fill aria-hidden="true">
+                  <span class="pyr-fill-bar"></span>
                 </span>
-              ))
-            }
-          </div>
+              </button>
+            );
+          })
+        }
+      </div>
+    </div>
 
-          <span class="inline-flex items-center gap-2 pt-2 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-400 transition-colors group-hover:text-flux-blue">
-            {t("practices.learnMore")}
-            <Icon name="arrow" size={14} class="transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
-        </a>
-      ))
-    }
+    {/* Active card (right): the same dark blue panel as DiagnosticSection and
+        CtaSection, one tabpanel per practice, one visible at a time. Tools
+        explain themselves in a hover popup. */}
+    <div class="pyr-panel-area" data-pyr-panel-area data-reveal>
+      <NotchedPanel bg="#157493">
+        <div class="pyr-panel-stack">
+          {
+            levels.map((lv, i) => (
+              <div
+                role="tabpanel"
+                id={`pyr-panel-${i + 1}`}
+                aria-labelledby={`pyr-tab-${i + 1}`}
+                class:list={["pyr-panel", i === 0 && "is-active"]}
+                data-pyr-panel
+              >
+                <header class="pyr-panel-head">
+                  <span class="pyr-panel-index">{lv.index}</span>
+                  <span class:list={["pyr-panel-dot", accentDot[lv.accent]]} aria-hidden="true"></span>
+                  <span class="pyr-panel-layer">{layerLabel(i)}</span>
+                </header>
+
+                <h3 class="pyr-panel-title">{lv.title}</h3>
+
+                <p class="pyr-panel-body text-pretty">{lv.body}</p>
+
+                <div class="pyr-panel-tools">
+                  {
+                    lv.tools.map((tool) => (
+                      <span
+                        class="pyr-tool"
+                        data-pyr-tool
+                        title={tool.name}
+                      >
+                        <TechMark name={tool.name} si={tool.si} class="size-4" />
+                        <span class="pyr-tool-name">{tool.name}</span>
+                        <span class="pyr-tool-reason" hidden>{tool.reason}</span>
+                      </span>
+                    ))
+                  }
+                </div>
+
+                <footer class="pyr-panel-cta">
+                  <Button href={localizedPath(lv.path, locale)} variant="primary" size="sm" arrow>
+                    {t("practices.learnMore")}
+                  </Button>
+                </footer>
+              </div>
+            ))
+          }
+        </div>
+      </NotchedPanel>
+    </div>
+
+    {/* Dotted wire: joins the active level's right edge to the card. The path is
+        redrawn by the client script on every selection change and resize; CSS
+        marches the dashes so the wire reads as a live connection. */}
+    <svg class="pyr-link" data-pyr-link aria-hidden="true" focusable="false">
+      <path data-pyr-line class="pyr-link-line" d="" />
+      <circle data-pyr-node class="pyr-link-node" r="3.5" />
+      <circle data-pyr-node class="pyr-link-node" r="3.5" />
+    </svg>
   </div>
 
   {/* Merged "why Computeflux" band. */}
@@ -229,3 +271,574 @@ const accentDot: Record<string, string> = {
     </div>
   </div>
 </section>
+
+<style>
+  /* ---- overall two-column layout: pyramid (left) + card (right) ---- */
+  .pyr-grid {
+    position: relative;
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .pyr-grid {
+      grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+      column-gap: clamp(2rem, 5vw, 4rem);
+    }
+  }
+
+  /* ---- the pyramid square, and its offset NotchedPanel-style shadow ---- */
+  .pyr-aspect {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+    height: clamp(24rem, 62vh, 32rem);
+  }
+  .pyr-fig {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  /* the NotchedPanel offset shadow: the pyramid silhouette, 7px right / 9px
+     down, in near-ink */
+  .pyr-shadow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    transform: translate(7px, 9px);
+  }
+  .pyr-shadow-lvl {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background: var(--color-invert-bg);
+  }
+
+  /* ---- one trapezoid level ---- */
+  .pyr-lvl {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding-inline: 0.6rem;
+    border: none;
+    background: var(--color-surface-raised);
+    color: var(--color-ink-300);
+    text-align: center;
+    cursor: pointer;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.6s,
+      background 0.3s,
+      color 0.3s;
+  }
+  .pyr-fig.is-ready .pyr-lvl { opacity: 1; }
+  .pyr-lvl:hover {
+    z-index: 2;
+    background: var(--color-ink-800);
+    color: var(--color-ink-50);
+  }
+  /* the active level fills with the practice's accent */
+  .pyr-lvl[aria-selected="true"] {
+    background: var(--pyr-accent);
+    color: var(--pyr-text);
+  }
+
+  .pyr-lvl-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--pyr-accent);
+  }
+  .pyr-lvl[aria-selected="true"] .pyr-lvl-dot { background: var(--pyr-text); }
+
+  .pyr-lvl-name {
+    font-family: var(--font-display);
+    font-size: clamp(0.78rem, 1.4vw, 1.02rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+  .pyr-lvl[aria-selected="true"] .pyr-lvl-name {
+    font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+    font-weight: 700;
+  }
+
+  /* timer fill along the base of the ACTIVE level's trapezoid */
+  .pyr-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.16);
+    display: none;
+  }
+  .pyr-lvl[aria-selected="true"] .pyr-fill { display: block; }
+  .pyr-fill-bar {
+    display: block;
+    height: 100%;
+    background: var(--color-invert-bg);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pyr-lvl { opacity: 1; }
+    .pyr-fill-bar { transition: none !important; }
+  }
+
+  /* ---- active card: dark blue NotchedPanel, one tabpanel visible ---- */
+  .pyr-panel-stack { display: grid; }
+  .pyr-panel {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.5rem;
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 10px;
+    transition:
+      opacity 0.4s var(--ease-out-expo),
+      translate 0.4s var(--ease-out-expo),
+      visibility 0.4s;
+  }
+  .pyr-panel.is-active {
+    visibility: visible;
+    opacity: 1;
+    translate: none;
+  }
+  @media (min-width: 640px) {
+    .pyr-panel { padding: 1.75rem; }
+  }
+  @media (min-width: 1024px) {
+    .pyr-panel { padding: 2.25rem 2.5rem; }
+  }
+
+  .pyr-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .pyr-panel-index {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .pyr-panel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+  }
+  .pyr-panel-layer {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .pyr-panel-title {
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    color: #fbfbf9;
+  }
+  .pyr-panel-body {
+    font-size: clamp(0.82rem, 1vw, 0.92rem);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  /* ---- tool chips, with the hover "?" popup ---- */
+  .pyr-panel-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: auto;
+  }
+  .pyr-tool {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2rem;
+    padding: 0 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-ink-50) 24%, transparent);
+    background: color-mix(in srgb, var(--color-ink-50) 9%, transparent);
+    color: rgba(255, 255, 255, 0.92);
+    cursor: help;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      border-color 0.2s,
+      transform 0.2s var(--ease-out-expo);
+  }
+  .pyr-tool:hover {
+    background: var(--color-ink-50);
+    color: var(--color-surface);
+    border-color: var(--color-ink-50);
+    transform: translateY(-2px);
+  }
+  .pyr-tool-name {
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .pyr-tool-q {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 9999px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    line-height: 1;
+    background: color-mix(in srgb, var(--color-ink-50) 30%, transparent);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .pyr-tool:hover .pyr-tool-q {
+    background: var(--color-surface);
+    color: var(--color-ink-50);
+  }
+
+  /* CTA — the yellow "book a call" button, centred */
+  .pyr-panel-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pyr-panel { translate: none !important; transition: none !important; }
+  }
+
+  /* ---- the dotted wire between active level and card ---- */
+  .pyr-link {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+    overflow: visible;
+    /* accent is set in JS from the active level's --pyr-accent */
+    --pyr-accent: var(--color-invert-bg);
+  }
+  .pyr-link-line {
+    fill: none;
+    stroke: var(--pyr-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0.1 8;
+    animation: pyr-dot-march 1.1s linear infinite;
+  }
+  .pyr-link-node {
+    fill: var(--pyr-accent);
+  }
+  @keyframes pyr-dot-march {
+    to { stroke-dashoffset: -8.1; }
+  }
+  /* stacked layout: no wire to draw between two rows */
+  @media (max-width: 1023px) {
+    .pyr-link { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pyr-link-line { animation: none; }
+  }
+</style>
+
+<style is:global>
+  /* Tool popup (appended to <body>, same look as the DiagnosticSection one). */
+  .pyr-tooltip {
+    position: fixed;
+    z-index: 60;
+    max-width: min(18rem, calc(100vw - 2rem));
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-invert-bg);
+    color: var(--color-ink-900);
+    box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    opacity: 0;
+    translate: 0 4px;
+    transition: opacity 0.18s, translate 0.18s var(--ease-out-expo);
+  }
+  .pyr-tooltip.is-visible {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .pyr-tooltip-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-flux-amber);
+  }
+  .pyr-tooltip-reason {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--color-ink-800);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pyr-tooltip { transition: none !important; }
+  }
+</style>
+
+<script>
+  const DURATION = 8000;
+
+  function initPractices(rootEl: HTMLElement) {
+    if (rootEl.dataset.pyrReady === "1") return;
+    rootEl.dataset.pyrReady = "1";
+
+    const tablist = rootEl.querySelector<HTMLElement>("[data-pyr-tabs]");
+    const levels = Array.from(rootEl.querySelectorAll<HTMLElement>("[data-pyr-level]"));
+    const panels = Array.from(rootEl.querySelectorAll<HTMLElement>("[data-pyr-panel]"));
+    const panelArea = rootEl.querySelector<HTMLElement>("[data-pyr-panel-area]");
+    const linkEl = rootEl.querySelector<SVGSVGElement>("[data-pyr-link]");
+    const linkLine = linkEl?.querySelector<SVGPathElement>("[data-pyr-line]");
+    const linkNodes = linkEl ? Array.from(linkEl.querySelectorAll<SVGCircleElement>("[data-pyr-node]")) : [];
+    if (!tablist || !levels.length || !linkEl || !linkLine) return;
+    const tabs: HTMLElement = tablist;
+
+    const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wide = window.matchMedia("(min-width: 64rem)");
+
+    // ---- tool popups: "why this tool sits on this pyramid layer" ----
+    let tooltipEl: HTMLElement | null = document.querySelector<HTMLElement>(".pyr-tooltip");
+    const ensureTooltip = (): HTMLElement => {
+      if (tooltipEl && document.body.contains(tooltipEl)) return tooltipEl;
+      tooltipEl = document.createElement("div");
+      tooltipEl.className = "pyr-tooltip";
+      tooltipEl.setAttribute("role", "tooltip");
+      tooltipEl.innerHTML =
+        '<span class="pyr-tooltip-name"></span>' + '<span class="pyr-tooltip-reason"></span>';
+      document.body.appendChild(tooltipEl);
+      return tooltipEl;
+    };
+    const tooltip = ensureTooltip();
+    const tipName = tooltip.querySelector<HTMLElement>(".pyr-tooltip-name");
+    const tipReason = tooltip.querySelector<HTMLElement>(".pyr-tooltip-reason");
+
+    const positionTooltip = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      const tw = tooltip.offsetWidth;
+      const th = tooltip.offsetHeight;
+      let x = r.left + r.width / 2 - tw / 2;
+      x = Math.max(10, Math.min(x, window.innerWidth - tw - 10));
+      let y = r.top - th - 10;
+      if (y < 10) y = r.bottom + 10;
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+    };
+
+    const showTip = (el: HTMLElement) => {
+      if (!tipName || !tipReason) return;
+      tipName.textContent = el.querySelector<HTMLElement>(".pyr-tool-name")?.textContent?.trim() ?? "";
+      tipReason.textContent = el.querySelector<HTMLElement>(".pyr-tool-reason")?.textContent?.trim() ?? "";
+      tooltip.classList.add("is-visible");
+      positionTooltip(el);
+    };
+    const hideTip = () => tooltip.classList.remove("is-visible");
+
+    rootEl.querySelectorAll<HTMLElement>("[data-pyr-tool]").forEach((el) => {
+      el.addEventListener("pointerenter", () => showTip(el));
+      el.addEventListener("pointerleave", hideTip);
+      el.addEventListener("pointermove", () => {
+        if (tooltip.classList.contains("is-visible")) positionTooltip(el);
+      });
+    });
+
+    let idx = 0;
+    // The gauge runs only when the section is on screen and neither the active
+    // level nor the card is hovered (same contract as DiagnosticSection).
+    let onScreen = true;
+    let hovered = false;
+    const timerOn = () => !isCoarse && !reduce && onScreen && !hovered;
+    let progress = 0;
+
+    const bars = levels.map((lvl) => lvl.querySelector<HTMLElement>("[data-pyr-fill] .pyr-fill-bar"));
+
+    function updateFill() {
+      bars.forEach((bar, i) => {
+        if (!bar) return;
+        bar.style.transform = `scaleX(${i === idx ? progress : 0})`;
+      });
+    }
+
+    /* Redraw the dotted wire from the active level's (clipped) right edge to
+       the card's left edge, in the active practice's accent. */
+    function placeLink() {
+      if (!linkEl || !linkLine || !panelArea) return;
+      if (!wide.matches) {
+        linkEl.style.opacity = "0";
+        return;
+      }
+      const current = levels[idx];
+      const fr = tabs.getBoundingClientRect();
+      const ar = panelArea.getBoundingClientRect();
+      const sr = linkEl.getBoundingClientRect();
+      const mid = Number(current.dataset.pyrMid ?? 50) / 100;
+      const right = Number(current.dataset.pyrRight ?? 100) / 100;
+      const x1 = fr.left + fr.width * right - sr.left;
+      const y1 = fr.top + fr.height * mid - sr.top;
+      const x2 = ar.left - sr.left;
+      const y2 = ar.top + ar.height / 2 - sr.top;
+      linkLine.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+      linkNodes.forEach((n, i) => {
+        n.setAttribute("cx", String(i === 0 ? x1 : x2));
+        n.setAttribute("cy", String(i === 0 ? y1 : y2));
+      });
+      const accent = current.style.getPropertyValue("--pyr-accent");
+      if (accent) linkEl.style.setProperty("--pyr-accent", accent);
+      linkEl.style.removeProperty("opacity");
+    }
+
+    function announce(index: number, focus: boolean) {
+      levels.forEach((c, i) => {
+        const sel = i === index;
+        c.setAttribute("aria-selected", String(sel));
+        c.setAttribute("tabindex", sel ? "0" : "-1");
+        panels[i]?.classList.toggle("is-active", sel);
+      });
+      if (focus) levels[index]?.focus();
+    }
+
+    const open = (index: number, focus: boolean) => {
+      idx = index;
+      progress = 0;
+      announce(idx, focus);
+      placeLink();
+      updateFill();
+
+      // Reconcile the hover-pause: selection may have changed under a
+      // stationary pointer, so check where the pointer actually is.
+      if (lastPointer.x >= 0) {
+        const el = document.elementFromPoint(lastPointer.x, lastPointer.y);
+        const lvl = el instanceof Element ? el.closest<HTMLElement>("[data-pyr-level]") : null;
+        const nowOver = lvl ? lvl === levels[idx] : Boolean(el?.closest("[data-pyr-panel-area]"));
+        if (nowOver !== overActive) {
+          overActive = nowOver;
+          if (nowOver) pause();
+          else resume();
+        }
+      }
+    };
+    const select = (index: number, focus = false) => {
+      if (index === idx) return;
+      open(index, focus);
+    };
+
+    // Fade the trapezoids in once they are painted.
+    requestAnimationFrame(() => tablist.classList.add("is-ready"));
+
+    let last = performance.now();
+    function tick(now: number) {
+      const dt = Math.min(now - last, 200); // clamp: tab was in the background
+      last = now;
+      if (timerOn()) {
+        progress += dt / DURATION;
+        if (progress >= 1) open((idx + 1) % levels.length, false);
+        updateFill();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    levels.forEach((c, i) => {
+      c.addEventListener("click", () => { select(i, false); });
+    });
+    tablist.addEventListener("keydown", (e) => {
+      let next: number;
+      switch (e.key) {
+        case "ArrowRight": next = (idx + 1) % levels.length; break;
+        case "ArrowLeft": next = (idx - 1 + levels.length) % levels.length; break;
+        case "Home": next = 0; break;
+        case "End": next = levels.length - 1; break;
+        default: return;
+      }
+      e.preventDefault();
+      select(next, true);
+    });
+
+    /* Pause the gauge while the pointer rests on the ACTIVE level or on the
+       card. `pointerover` bubbles, so one listener on the section covers both. */
+    const pause = () => { hovered = true; };
+    const resume = () => { hovered = false; last = performance.now(); };
+
+    let overActive = false;
+    let lastPointer = { x: -1, y: -1 };
+    const onPauseHover = (e: PointerEvent) => {
+      lastPointer.x = e.clientX;
+      lastPointer.y = e.clientY;
+      const el = e.target instanceof Element ? e.target : null;
+      if (!el) return;
+      const lvl = el.closest<HTMLElement>("[data-pyr-level]");
+      const nowOver = lvl ? lvl === levels[idx] : Boolean(el.closest("[data-pyr-panel-area]"));
+      if (nowOver === overActive) return;
+      overActive = nowOver;
+      if (nowOver) pause();
+      else resume();
+    };
+    if (!isCoarse) rootEl.addEventListener("pointerover", onPauseHover);
+
+    if (panelArea && !isCoarse) {
+      panelArea.addEventListener("touchstart", pause, { passive: true });
+      panelArea.addEventListener("touchend", resume, { passive: true });
+    }
+
+    window.addEventListener("resize", placeLink);
+
+    announce(0, false);
+    placeLink();
+    updateFill();
+    requestAnimationFrame(tick);
+
+    // The timer only runs while the section is in view.
+    if ("IntersectionObserver" in window) {
+      onScreen = false;
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const was = onScreen;
+            onScreen = entry.isIntersecting;
+            if (onScreen && !was) {
+              progress = 0;
+              last = performance.now();
+              updateFill();
+            }
+          }
+        },
+        { threshold: 0.2 },
+      );
+      io.observe(rootEl);
+    }
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-practices-section]");
+  if (root) initPractices(root);
+  document.addEventListener("astro:after-swap", () => {
+    const el = document.querySelector<HTMLElement>("[data-practices-section]");
+    if (el) initPractices(el);
+  });
+</script>

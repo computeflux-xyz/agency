@@ -3,4 +3,4 @@
 // ../_shared/observable.base.js.
 import { defineStudy } from "../_shared/observable.base.js";
 
-export default defineStudy({ title: "Payment is the product" });
+export default defineStudy({ title: "Edge e-commerce: Payment is the product" });

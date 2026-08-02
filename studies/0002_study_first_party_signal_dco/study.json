@@ -1,14 +1,21 @@
 {
   "slug": "first-party-signal-dco-newsletter",
   "type": "study",
-  "topics": ["data-engineering", "ai-engineering", "edge-computing", "privacy"],
-  "authors": ["gabriel-mougard"],
+  "topics": [
+    "data-engineering",
+    "ai-engineering",
+    "edge-computing",
+    "privacy"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
   "featured": true,
   "cover": "cover.svg",
   "locales": {
     "en": {
       "entry": "index.html",
-      "title": "First-party signal, without a tracker",
+      "title": "Edge e-commerce: First-party signal, without a tracker",
       "shortdesc": "Part 3 of 3. A design, not a delivery: turning an edge storefront's own request stream into k-anonymous cohorts, and cohorts into a newsletter that assembles itself per recipient.",
       "longdesc": "The closing part of a three-part study. Running your own storefront at the edge produces something most retailers have to buy: a first-party cookie set by your own origin, and a request stream you already own. This part designs what to do with it — server-side cohort assignment under a k-anonymity guard, an event spine that lands in object storage as Parquet, and a dynamic creative optimization newsletter whose slots are filled per recipient by contextual bandits reading the same published catalogue the shop reads. Cold start is handled by pooling posteriors up the catalogue hierarchy.",
       "readingMinutes": 14,
@@ -17,7 +24,7 @@
     },
     "fr": {
       "entry": "fr/index.html",
-      "title": "Signal first-party, sans tracker",
+      "title": "E-commerce edge : signal first-party, sans tracker",
       "shortdesc": "Partie 3 sur 3. Une conception, pas une livraison : transformer le flux de requêtes d'une boutique edge en cohortes k-anonymes, et ces cohortes en une newsletter qui s'assemble par destinataire.",
       "longdesc": "Dernière partie d'une étude en trois volets. Exploiter sa propre boutique à l'edge produit ce que la plupart des détaillants doivent acheter : un cookie first-party posé par sa propre origine, et un flux de requêtes que l'on possède déjà. Cette partie conçoit ce qu'il faut en faire — affectation de cohortes côté serveur sous garde de k-anonymat, une colonne vertébrale d'événements qui atterrit en Parquet dans le stockage objet, et une newsletter à optimisation créative dynamique dont les emplacements sont remplis par destinataire par des bandits contextuels lisant le même catalogue publié que la boutique. Le démarrage à froid est traité en mutualisant les postérieurs le long de la hiérarchie du catalogue.",
       "readingMinutes": 14,

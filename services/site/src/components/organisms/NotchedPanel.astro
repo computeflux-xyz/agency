@@ -4,9 +4,12 @@ type Tone = "dark" | "surface" | "blue" | "magenta" | "amber" | "green";
 
 interface Props {
   tone?: Tone;
-  /** Solid background color (e.g. "#157493"). Overrides `tone`; renders white
-   *  text and a light-white dotted grid so it reads on a dark fill. */
+  /** Solid background color (e.g. "#157493"). Overrides `tone`. Assumed dark:
+   *  renders white text and a light-white dotted grid. Set `light` when the
+   *  fill is pale. */
   bg?: string;
+  /** The custom `bg` is a light colour, so render dark text and dark dots. */
+  light?: boolean;
   notch?: number;
   shadow?: boolean;
   dotted?: boolean;
@@ -21,6 +24,7 @@ interface Props {
 const {
   tone = "dark",
   bg,
+  light = false,
   notch = 34,
   shadow = true,
   dotted = true,
@@ -38,11 +42,14 @@ const tones: Record<Tone, string> = {
 };
 
 const custom = typeof bg === "string" && bg.length > 0;
+const customLight = custom && light;
 
-// Light-white dots for a custom (dark) fill or any non-surface tone; dark dots
-// only on the light `surface` tone.
-const dotVar = !custom && tone === "surface" ? "var(--svg-dot)" : "var(--svg-dot-light)";
-const dotOpacity = custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
+// Dark dots on any pale surface (the `surface` tone, or a custom light fill);
+// light-white dots on every dark fill.
+const onLight = customLight || (!custom && tone === "surface");
+const dotVar = onLight ? "var(--svg-dot)" : "var(--svg-dot-light)";
+const dotOpacity = customLight ? "0.5" : custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
+const customText = customLight ? "text-ink-50" : "text-white";
 ---
 
 <div class:list={["notch-root relative", className]} style={`--n: clamp(16px, 3.2vw, ${notch}px)`}>
@@ -50,7 +57,7 @@ const dotOpacity = custom ? "0.18" : tone === "surface" ? "0.6" : "0.14";
     <div class="notch-shape absolute inset-0 translate-x-[7px] translate-y-[9px] bg-ink-50" aria-hidden="true"></div>
   )}
   <div
-    class:list={["notch-shape relative overflow-hidden", fill && "h-full", custom ? "text-white" : tones[tone]]}
+    class:list={["notch-shape relative overflow-hidden", fill && "h-full", custom ? customText : tones[tone]]}
     style={custom ? `background-color:${bg}` : undefined}
   >
     {dotted && (

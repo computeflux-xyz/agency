@@ -1,5 +1,5 @@
 ---
-title: First-party signal, without a tracker
+title: "Edge e-commerce: First-party signals, without a tracker"
 toc: false
 ---
 
@@ -12,7 +12,7 @@ const cover = FileAttachment("cover.svg");
 ```
 
 <div class="hero">
-  <h1>First-party signal,<br>without a tracker</h1>
+  <h1>Edge e-commerce: First-party signal,<br>without a tracker</h1>
   <h2>Part 3 of 3. What an edge storefront already knows about its own traffic, and how to turn it into a newsletter that assembles itself.</h2>
 </div>
 
@@ -30,11 +30,11 @@ Between them, they created something most e-commerce platforms never achieve: **
 
 ## Three preconditions that make this possible
 
-**The operator runs its own origin server.** The storefront isn't a static export behind someone else's CDN — it's a server-side rendered application executing at a point of presence, on the operator's own domain. Every request reaches code the operator wrote. This is the `bijougabriel-ui` Astro application, deployed as a Cloudflare Worker.
+**The operator runs its own origin server.** The storefront isn't a static export behind someone else's CDN. It's a server-side rendered application executing at a point of presence, on the operator's own domain. Every request reaches code the operator wrote. The storefront is an Astro application deployed as an edge worker.
 
 **Every request already carries metadata that costs nothing to collect.** The edge terminates TLS, resolves the network the request arrived on, knows which point of presence served it, and measured the round-trip time doing so. None of this requires a script on the page, a consent banner, or a vendor. It's just how HTTP works when you control the server.
 
-**The catalogue is a published, content-hashed snapshot.** Any other system that wants to know what the shop was showing, at what price, on a given day, can read the exact same keys the shop read — and can be certain it's not looking at a divergent copy. This is the publish mechanism from Part 2, now serving double duty.
+**The catalogue is a published, content-hashed snapshot.** Any other system that wants to know what the shop was showing, at what price, on a given day, can read the exact same keys the shop read, and can be certain it's not looking at a divergent copy. This is the publish mechanism from Part 2, now serving double duty.
 
 Most retailers buy a tag manager, a customer data platform, and an email tool, then spend a year reconciling three views of the same customer. This platform has one view, because it never made a second one.
 
@@ -67,7 +67,7 @@ Inputs.table(cookie, {
 
 "Server fingerprinting" usually means the hostile version: squeeze every bit of entropy out of a device until you can single a person out. That's fragile, it breaks on every browser release, and in a market where households share handsets, it's also ethically wrong.
 
-We invert the objective. The fingerprint's job isn't to identify a visitor. It's to place a request into a **cohort** — a network-and-device class large enough to be anonymous and coherent enough to be predictive. Where classic fingerprinting maximises entropy, we deliberately spend as little of it as the privacy guard allows.
+We invert the objective. The fingerprint's job isn't to identify a visitor. It's to place a request into a **cohort**: a network-and-device class large enough to be anonymous and coherent enough to be predictive. Where classic fingerprinting maximises entropy, we deliberately spend as little of it as the privacy guard allows.
 
 The signals are the ones the edge already has. No probe, no canvas, no font enumeration, no script.
 
@@ -80,11 +80,11 @@ Inputs.table(signals, {
 })
 ```
 
-The bit values above are assumptions, not measurements — they're what makes the ladder below computable. In production, the guard is a counted population, not an estimate: a cardinality sketch per bucket over a trailing window, which costs a few kilobytes and answers the only question that matters: *is this cohort large enough?*
+The bit values above are assumptions, not measurements. They are what makes the ladder below computable. In production, the guard is a counted population, not an estimate: a cardinality sketch per bucket over a trailing window, which costs a few kilobytes and answers the only question that matters: *is this cohort large enough?*
 
 ### The k-anonymity ladder
 
-A cohort is emitted only if its bucket holds at least **k** members. If it doesn't, the resolver drops the most specific signal and asks again, walking down a fixed ladder until a bucket is large enough. A visitor on an unusual network with an unusual device doesn't get a uniquely identifying cohort — they get "this country, this device class," and the system is content with that.
+A cohort is emitted only if its bucket holds at least **k** members. If it doesn't, the resolver drops the most specific signal and asks again, walking down a fixed ladder until a bucket is large enough. A visitor on an unusual network with an unusual device doesn't get a uniquely identifying cohort. They get "this country, this device class," and the system is content with that.
 
 ```js
 const audience = view(Inputs.range([1000, 2000000], {value: 120000, step: 1000, label: "Distinct visitors in the window"}));
@@ -94,7 +94,12 @@ const enabled = view(Inputs.checkbox(signals.map((s) => s.id), {
   label: "Signals collected",
   format: (id) => signals.find((s) => s.id === id).name_en
 }));
+```
 
+```js
+// Kept in its own block on purpose: a `view()` value only re-triggers cells
+// *other* than the one that declared it, so anything derived from a slider has
+// to live in a separate block or it freezes at its initial value.
 const RUNGS = [
   {id: "full",     label: "Every signal",                     uses: signals.map((s) => s.id)},
   {id: "stable",   label: "Drop latency and TLS",             uses: ["country", "carrier", "pop", "device_class", "language", "protocol", "ua_platform"]},
@@ -106,21 +111,47 @@ const RUNGS = [
 const lad = ladder({signals, enabled, rungs: RUNGS, audience, k});
 ```
 
-```js
 <div class="grid grid-cols-3">
   <div class="card"><h2>Rung selected</h2><span class="big" style="font-size:1.35rem">${lad.selected.label}</span><span class="muted">${lad.selected.used.length} of ${enabled.length} collected signals used</span></div>
   <div class="card"><h2>Expected cohort size</h2><span class="big" style="color:${lad.selected.passes ? "#2f8f5b" : "#b0501a"}">${fmtInt(lad.selected.population)}</span><span class="muted">${lad.selected.passes ? `clears k = ${fmtInt(k)}` : `below k = ${fmtInt(k)} even at the floor`}</span></div>
   <div class="card"><h2>Distinct cohorts</h2><span class="big">${fmtInt(Math.min(lad.selected.buckets, audience / Math.max(1, lad.selected.population)))}</span><span class="muted">at the selected rung</span></div>
 </div>
+
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 300,
+  marginLeft: 210,
+  marginRight: 72,
+  x: {label: "Expected members per cohort →", type: "log", grid: true},
+  y: {label: null, domain: lad.rows.map((r) => r.label)},
+  marks: [
+    // A log scale has no zero, so the bars get an explicit baseline. A rung
+    // finer than one member per bucket is clamped to a visible stub and
+    // labelled "<1", which is exactly what it means: that rung singles people
+    // out.
+    Plot.barX(lad.rows, {
+      y: "label",
+      x1: 0.5,
+      x2: (d) => Math.max(d.population, 0.6),
+      fill: (d) => d.id === lad.selected.id ? "#2f6bff" : (d.passes ? "#9bb6e8" : "#d8b48a"),
+      fillOpacity: (d) => d.id === lad.selected.id ? 1 : 0.55
+    }),
+    Plot.ruleX([k], {stroke: "#b0501a", strokeWidth: 2, strokeDasharray: "4,4"}),
+    Plot.text([{label: lad.rows[0].label, x: k}], {x: "x", y: "label", text: [`k = ${fmtInt(k)}`], dy: -22, dx: 4, textAnchor: "start", fill: "#b0501a", fontWeight: 700}),
+    Plot.text(lad.rows, {y: "label", x: (d) => Math.max(d.population, 0.6), text: (d) => d.population < 1 ? "<1" : fmtInt(d.population), dx: 6, textAnchor: "start"}),
+    Plot.ruleX([0.5])
+  ]
+}))
 ```
 
 Move `k` and watch the selected rung slide down the ladder. This is the whole privacy posture expressed as one number an operator can be asked to defend in a meeting: *no cohort we act on is smaller than k*. It's enforceable, testable, and it doesn't depend on anybody's good intentions.
 
-Second use of the same mechanism: a scraper or a bot lands in a cohort whose behaviour looks nothing like a buyer's — arrival pattern, variant mix, session shape. Separating them costs no CAPTCHA and no challenge page, because the classification is a property of the cohort, not a test imposed on the visitor.
+Second use of the same mechanism: a scraper or a bot lands in a cohort whose behaviour looks nothing like a buyer's: arrival pattern, variant mix, session shape. Separating them costs no CAPTCHA and no challenge page, because the classification is a property of the cohort, not a test imposed on the visitor.
 
 ## The event spine
 
-One compact event per request, emitted by the edge worker into a queue. A consumer batches them and lands them in object storage as Parquet, partitioned by day and point of presence. Analysis runs as an embedded query engine reading those files directly — no warehouse, no cluster, no second copy.
+One compact event per request, emitted by the edge worker into a queue. A consumer batches them and lands them in object storage as Parquet, partitioned by day and point of presence. Analysis runs as an embedded query engine reading those files directly: no warehouse, no cluster, no second copy.
 
 <svg class="schematic" viewBox="0 0 1000 260" role="img" aria-label="Event spine from edge to segments">
   <defs>
@@ -150,11 +181,11 @@ One compact event per request, emitted by the edge worker into a queue. A consum
     <path d="M922 94 C 922 34, 83 34, 83 90" fill="none" stroke="currentColor"
           stroke-width="1.4" stroke-dasharray="6 5" marker-end="url(#s1)" opacity="0.7"/>
     <text x="500" y="24" text-anchor="middle" font-size="11" opacity="0.7">segments are read back at the edge exactly like the catalogue is</text>
-    <text x="500" y="216" text-anchor="middle" font-size="11.5" opacity="0.75">the loop closes on the operator's own infrastructure — no vendor sits on any edge of this diagram</text>
+    <text x="500" y="216" text-anchor="middle" font-size="11.5" opacity="0.75">the loop closes on the operator's own infrastructure · no vendor sits on any edge of this diagram</text>
   </g>
 </svg>
 
-The last box is the part worth arguing about. An audience segment is **published, not mutated** — same discipline as the catalogue in Part 2: build it, hash it, version it, write it, keep the history. That buys three things a mutable segment store never gives you:
+The last box is the part worth arguing about. An audience segment is **published, not mutated**, the same discipline as the catalogue in Part 2: build it, hash it, version it, write it, keep the history. That buys three things a mutable segment store never gives you:
 
 - A campaign can name the exact segment version it targeted
 - A bad segment can be rolled back rather than repaired
@@ -177,7 +208,7 @@ Inputs.table(slots, {
 
 ### The detail that makes it safe
 
-The renderer reads candidates **from the published catalogue snapshot** — the same keys the storefront reads, at a pinned version.
+The renderer reads candidates **from the published catalogue snapshot**: the same keys the storefront reads, at a pinned version.
 
 That single decision removes the failure mode that makes personalised email embarrassing:
 
@@ -194,46 +225,94 @@ An A/B test needs a fixed set of variants, a fixed population, and enough time t
 A bandit doesn't need to conclude. It reallocates continuously, and it survives candidates appearing and disappearing mid-flight.
 
 ```js
+// Rates are ranged in whole percent. Inputs.range pairs its slider with a real
+// <input type=number>, so a `format` returning "3.0%" leaves that box blank.
 const arms = view(Inputs.range([2, 12], {value: 6, step: 1, label: "Creative candidates in the slot"}));
-const baseRate = view(Inputs.range([0.005, 0.12], {value: 0.03, step: 0.005, label: "Median candidate click rate", format: (x) => fmtPct(x, 1)}));
-const spread = view(Inputs.range([0.05, 1.2], {value: 0.6, step: 0.05, label: "Spread, best to worst", format: (x) => fmtPct(x, 0)}));
+const baseRatePct = view(Inputs.range([0.5, 12], {value: 3, step: 0.5, label: "Median candidate click rate (%)"}));
+const spreadPct = view(Inputs.range([5, 120], {value: 60, step: 5, label: "Spread, best to worst (%)"}));
 const sends = view(Inputs.range([500, 100000], {value: 8000, step: 500, label: "Recipients per campaign"}));
 const campaigns = view(Inputs.range([2, 40], {value: 12, step: 1, label: "Campaigns"}));
+```
 
-const race = banditRace({arms, baseRate, spread, sends, campaigns, seed: 20260802});
+```js
+const race = banditRace({
+  arms,
+  baseRate: baseRatePct / 100,
+  spread: spreadPct / 100,
+  sends,
+  campaigns,
+  seed: 20260802
+});
 const tidy = race.series.flatMap((d) => [
   {campaign: d.campaign, regret: d.bandit, policy: "Contextual bandit"},
   {campaign: d.campaign, regret: d.even, policy: "Even split"}
 ]);
 ```
 
-```js
 <div class="grid grid-cols-3">
   <div class="card"><h2>Clicks, bandit</h2><span class="big">${fmtInt(race.banditClicks)}</span></div>
   <div class="card"><h2>Clicks, even split</h2><span class="big">${fmtInt(race.evenClicks)}</span></div>
   <div class="card"><h2>Difference</h2><span class="big" style="color:${race.lift >= 0 ? "#2f8f5b" : "#b0501a"}">${race.lift >= 0 ? "+" : ""}${fmtPct(race.lift, 1)}</span><span class="muted">over ${campaigns} campaigns</span></div>
 </div>
+
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 320,
+  marginLeft: 66,
+  x: {label: "Campaign →", grid: true, tickFormat: "d"},
+  y: {label: "↑ Cumulative regret (clicks not earned)", grid: true, zero: true},
+  color: {legend: true, domain: ["Contextual bandit", "Even split"]},
+  marks: [
+    Plot.lineY(tidy, {x: "campaign", y: "regret", stroke: "policy", strokeWidth: 2}),
+    Plot.tip(tidy, Plot.pointerX({x: "campaign", y: "regret", stroke: "policy", title: (d) => `${d.policy}\ncampaign ${d.campaign}\n${fmtInt(d.regret)} clicks foregone`}))
+  ]
+}))
 ```
 
 The even-split line is straight, because a policy that never learns pays the same price forever. The bandit line bends: it pays to explore early, then stops paying.
 
-Push the recipient count down or the spread down and the two lines converge — which is the honest result. **A bandit isn't free cleverness; it's worth deploying when candidates genuinely differ and there's enough volume to notice.** The chart is here so that judgement can be made before the build, not after.
+Push the recipient count down or the spread down and the two lines converge, which is the honest result. **A bandit isn't free cleverness; it's worth deploying when candidates genuinely differ and there's enough volume to notice.** The chart is here so that judgement can be made before the build, not after.
 
 ### Cold start, solved by the catalogue's own shape
 
 A product added this morning has no history, and a ranker that trusts only observed clicks will either never show it or over-promote it on three lucky opens.
 
-We borrow a prior from the producer, which borrows from the category, which borrows from the catalogue. It's the same hierarchical fallback as the k-anonymity ladder, applied to a different problem — one mechanism, two uses, which is usually the sign the mechanism is right.
+We borrow a prior from the producer, which borrows from the category, which borrows from the catalogue. It's the same hierarchical fallback as the k-anonymity ladder, applied to a different problem. One mechanism, two uses, which is usually the sign the mechanism is right.
 
 ```js
-const brandRate = view(Inputs.range([0.005, 0.12], {value: 0.030, step: 0.001, label: "Producer's established click rate", format: (x) => fmtPct(x, 1)}));
-const skuTrueRate = view(Inputs.range([0.005, 0.12], {value: 0.055, step: 0.001, label: "New product's true click rate", format: (x) => fmtPct(x, 1)}));
+const brandRatePct = view(Inputs.range([0.5, 12], {value: 3.0, step: 0.1, label: "Producer's established click rate (%)"}));
+const skuTrueRatePct = view(Inputs.range([0.5, 12], {value: 5.5, step: 0.1, label: "New product's true click rate (%)"}));
 const maxSends = view(Inputs.range([200, 20000], {value: 4000, step: 100, label: "Sends observed"}));
+```
 
+```js
+const brandRate = brandRatePct / 100;
+const skuTrueRate = skuTrueRatePct / 100;
 const curves = shrinkage({brandRate, skuTrueRate, maxSends, strengths: [50, 250, 1500], seed: 4711});
 ```
 
-The "own clicks only" line is the naive estimator, and at low volume it's violent — it will happily claim a 20% click rate off four clicks. The pooled lines start at the producer's rate and converge on the truth at a speed the prior strength controls.
+```js
+resize((width) => Plot.plot({
+  width,
+  height: 330,
+  marginLeft: 66,
+  marginRight: 24,
+  x: {label: "Sends observed for the new product →", grid: true},
+  y: {label: "↑ Estimated click rate", grid: true, tickFormat: "%"},
+  color: {legend: true},
+  marks: [
+    Plot.ruleY([skuTrueRate], {stroke: "#2f8f5b", strokeDasharray: "5,4"}),
+    Plot.text([{x: maxSends, y: skuTrueRate}], {x: "x", y: "y", text: ["true rate"], dy: -8, textAnchor: "end", fill: "#2f8f5b", fontWeight: 700}),
+    Plot.ruleY([brandRate], {stroke: "#b0501a", strokeDasharray: "5,4"}),
+    Plot.text([{x: maxSends, y: brandRate}], {x: "x", y: "y", text: ["producer prior"], dy: 14, textAnchor: "end", fill: "#b0501a", fontWeight: 700}),
+    Plot.lineY(curves, {x: "n", y: "rate", stroke: "series", strokeWidth: 1.8}),
+    Plot.tip(curves, Plot.pointerX({x: "n", y: "rate", stroke: "series", title: (d) => `${d.series}\n${fmtInt(d.n)} sends · ${fmtPct(d.rate)}`}))
+  ]
+}))
+```
+
+The "own clicks only" line is the naive estimator, and at low volume it's violent: it will happily claim a 20% click rate off four clicks. The pooled lines start at the producer's rate and converge on the truth at a speed the prior strength controls.
 
 A strong prior is slow to be convinced and never embarrassing; a weak one is quick and occasionally silly. That's a business decision, not a modelling one, and it should be set by whoever owns the brand.
 
@@ -248,21 +327,21 @@ A system that decides what to put in front of a customer needs limits that aren'
 - **A permanent holdout.** A fixed share of the list always receives the editorial default. Without it, "the bandit is working" is an unfalsifiable claim.
 - **Inventory masking.** Checked live at render, never from the snapshot.
 - **Frequency capping and a diversity floor.** A slot that always wins is a newsletter that becomes one product, and a list that unsubscribes.
-- **Consent-aware degradation.** Without consent there's no per-person posterior; the recipient is served the cohort's marginal best. The system gets worse, not broken — and no consent dialogue ever gates the send.
+- **Consent-aware degradation.** Without consent there's no per-person posterior; the recipient is served the cohort's marginal best. The system gets worse, not broken, and no consent dialogue ever gates the send.
 - **Erasure that actually erases.** Delete the server-side record, and tombstone the identifier so the next Parquet compaction drops its rows. The tombstone pattern is already in the codebase, in the slug index from Part 2.
 
 ## What we measure before believing any of it
 
 This part describes a deployed design. The numbers that prove it works are tracked in production:
 
-1. **Cohort stability** — the share of returning cookies whose cohort changes between sessions. If it's high, the signals are noise and the ladder is sorting nothing.
-2. **Cohort predictiveness** — click-rate variance explained by cohort against a shuffled control. If a cohort predicts nothing, it shouldn't be a context.
-3. **Realised regret against the holdout** — the only number that settles whether the bandit earned its complexity.
-4. **Snapshot agreement** — the share of email impressions whose landing page matched the pinned catalogue version. This should be exactly 100%, and measuring it is how you find out it isn't.
+1. **Cohort stability**: the share of returning cookies whose cohort changes between sessions. If it's high, the signals are noise and the ladder is sorting nothing.
+2. **Cohort predictiveness**: click-rate variance explained by cohort against a shuffled control. If a cohort predicts nothing, it shouldn't be a context.
+3. **Realised regret against the holdout**: the only number that settles whether the bandit earned its complexity.
+4. **Snapshot agreement**: the share of email impressions whose landing page matched the pinned catalogue version. This should be exactly 100%, and measuring it is how you find out it isn't.
 
 Building any of this without those four being instrumented would be building on a guess. That's the same discipline as the rest of this study: the code says what it does, the models say what they assume, and nothing in between gets asserted.
 
-The backoffice at `bijougabriel-admin` provides the operator visibility into all of it: cohort distributions, bandit performance, newsletter assembly, and the first-party signal collection that powers the whole system.
+The back-office provides the operator visibility into all of it: cohort distributions, bandit performance, newsletter assembly, and the first-party signal collection that powers the whole system.
 
 ---
 

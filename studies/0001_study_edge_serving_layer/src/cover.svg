@@ -1,68 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="The catalogue is a build artifact">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Schematic of a relational source of truth published as a denormalised snapshot">
+  <!--
+    Card cover. Purely visual: no title text, no numbers, no axis. The site
+    renders it at aspect-[16/10] with object-cover, hence the 1200x750 frame.
+    Palette and motifs are the site's own (services/site/src/styles/global.css):
+    sand canvas, dot-grid backdrop, near-black ink, warm hairlines and the
+    flux-blue accent.
+  -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b1020"/>
-      <stop offset="1" stop-color="#161d33"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2f6bff"/>
-      <stop offset="1" stop-color="#8ab0ff"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.82" cy="0.20" r="0.85">
-      <stop offset="0" stop-color="#2f6bff" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#2f6bff" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
-      <circle cx="1.5" cy="1.5" r="1.5" fill="#ffffff" fill-opacity="0.05"/>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#bdb7a8"/>
     </pattern>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#8ab0ff"/>
+    <marker id="tipBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2f6bff"/>
     </marker>
   </defs>
 
-  <rect width="1200" height="600" fill="url(#bg)"/>
-  <rect width="1200" height="600" fill="url(#dots)"/>
-  <rect width="1200" height="600" fill="url(#glow)"/>
+  <rect width="1200" height="750" fill="#f5f4ef"/>
+  <rect width="1200" height="750" fill="url(#dots)"/>
 
-  <!-- Schematic: source of truth on the left, published snapshot on the right,
-       one directed publish edge between them. Structure only, no quantities. -->
-  <g transform="translate(78 404)" font-family="ui-monospace, Menlo, monospace">
-    <g fill="none" stroke="#8ab0ff" stroke-width="2" opacity="0.85">
-      <rect x="0" y="-70" width="286" height="140" rx="12"/>
-      <rect x="562" y="-70" width="286" height="140" rx="12"/>
+  <g transform="translate(0 30)">
+    <!-- Left: the relational source of truth. One connected graph. -->
+    <rect x="96" y="270" width="356" height="230" rx="12" fill="none" stroke="#201f1e" stroke-width="2.5"/>
+    <g stroke="#201f1e" stroke-width="2.2">
+      <path d="M180 360 H274 M274 360 H368 M274 360 V430"/>
     </g>
-
-    <!-- core: a relational graph -->
-    <g stroke="#8ab0ff" stroke-width="1.8" opacity="0.9">
-      <path d="M70 -18 H143 M143 -18 H216 M143 -18 V28"/>
-    </g>
-    <g fill="#8ab0ff">
-      <circle cx="70" cy="-18" r="8"/><circle cx="143" cy="-18" r="8"/>
-      <circle cx="216" cy="-18" r="8"/><circle cx="143" cy="28" r="8"/>
+    <g fill="#201f1e">
+      <circle cx="180" cy="360" r="10"/>
+      <circle cx="274" cy="360" r="10"/>
+      <circle cx="368" cy="360" r="10"/>
+      <circle cx="274" cy="430" r="10"/>
     </g>
 
-    <!-- published snapshot: independent, denormalised keys -->
-    <g fill="#8ab0ff" opacity="0.95">
-      <circle cx="632" cy="-24" r="8"/><circle cx="705" cy="-24" r="8"/>
-      <circle cx="778" cy="-24" r="8"/>
-      <circle cx="668" cy="24" r="8"/><circle cx="742" cy="24" r="8"/>
+    <!-- Right: the published snapshot. Same information, denormalised into
+         independent keys, so the edges are faint rather than structural. -->
+    <rect x="748" y="270" width="356" height="230" rx="12" fill="none" stroke="#201f1e" stroke-width="2.5"/>
+    <g stroke="#bdb7a8" stroke-width="1.6" stroke-dasharray="5 5">
+      <path d="M830 348 L878 442 M926 348 L878 442 M926 348 L1022 442 M1022 348 L1022 442"/>
     </g>
-    <g stroke="#8ab0ff" stroke-width="1.4" stroke-dasharray="4 4" opacity="0.5">
-      <path d="M632 -24 L668 24 M705 -24 L668 24 M705 -24 L742 24 M778 -24 L742 24"/>
+    <g fill="#2f6bff">
+      <circle cx="830" cy="348" r="9"/>
+      <circle cx="926" cy="348" r="9"/>
+      <circle cx="1022" cy="348" r="9"/>
+      <circle cx="878" cy="442" r="9"/>
+      <circle cx="1022" cy="442" r="9"/>
     </g>
 
-    <!-- the single publish edge -->
-    <path d="M292 0 H556" stroke="url(#accent)" stroke-width="5" fill="none" marker-end="url(#ar)"/>
-    <text x="424" y="-16" fill="#dfe6ff" font-size="17" letter-spacing="3" text-anchor="middle">PUBLISH</text>
-    <text x="424" y="30" fill="#8ab0ff" font-size="14" letter-spacing="1" text-anchor="middle">content hash · version</text>
+    <!-- The single publish edge. One explicit action, not a trigger per row. -->
+    <path d="M460 385 H738" fill="none" stroke="#2f6bff" stroke-width="6" marker-end="url(#tipBlue)"/>
 
-    <g fill="#8ab0ff" font-size="15" letter-spacing="2">
-      <text x="0" y="-88">SOURCE OF TRUTH</text>
-      <text x="562" y="-88">PUBLISHED SNAPSHOT</text>
+    <!-- Hairline rules, the site's "technical sheet" motif. -->
+    <g stroke="#dcd7cb" stroke-width="1.5">
+      <path d="M96 150 H1104"/>
+      <path d="M96 620 H1104"/>
     </g>
+    <rect x="96" y="144" width="52" height="6" rx="3" fill="#2f6bff"/>
   </g>
-
-  <text x="80" y="92" font-family="ui-monospace, Menlo, monospace" font-size="19" letter-spacing="5" fill="#8ab0ff">COMPUTEFLUX · CASE STUDY 2/3</text>
-  <text x="78" y="190" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#f5f4ef">The catalogue is</text>
-  <text x="78" y="262" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#f5f4ef">a build artifact</text>
 </svg>

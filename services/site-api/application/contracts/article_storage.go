@@ -62,6 +62,15 @@ type ArticleWriteStorage interface {
 	// ingest job in one transaction, and returns the persisted version id and
 	// job id.
 	BeginIngest(ctx context.Context, article *models.Article, version *models.ArticleVersion, topicSlugs, authorSlugs []string, job IngestJobInput) (versionID string, jobID string, err error)
+	// SyncArticleMetadata updates only the editorial fields (title, summaries,
+	// cover, topics, authors, SEO) of an existing (slug, lang), leaving the
+	// publication pointer and version history untouched.
+	//
+	// This is what makes an editorial-only change publishable. A re-publish of an
+	// unchanged build short-circuits on the manifest checksum and uploads
+	// nothing, so without this an edit to a title in article.json/study.json
+	// would never reach the database.
+	SyncArticleMetadata(ctx context.Context, article *models.Article, topicSlugs, authorSlugs []string) error
 	// GetDraftVersion loads a draft version (with its planned manifest) and its
 	// parent article by version id.
 	GetDraftVersion(ctx context.Context, versionID string) (*models.ArticleVersion, *models.Article, error)

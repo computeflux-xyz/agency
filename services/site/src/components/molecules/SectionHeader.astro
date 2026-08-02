@@ -1,12 +1,32 @@
 ---
+/**
+ * SectionHeader — eyebrow + title + lead, laid on a `MorphPanel`.
+ *
+ * The panel is not decoration. The dragon canvas runs behind the page content,
+ * and a transparent heading let it pass between the glyphs and eat their
+ * contrast. Sitting the text on an opaque surface fixes that where it matters,
+ * rather than by reordering the stacking context.
+ *
+ * Pass `panel={false}` for a header that already sits on a solid card, where a
+ * second surface would read as a box inside a box.
+ *
+ * Title and lead accept either the string props or named slots, so a section
+ * that needs `<Highlight>` inside its heading can still use this molecule
+ * instead of hand-rolling the markup.
+ */
 import Eyebrow from "@atoms/Eyebrow.astro";
+import MorphPanel from "@atoms/MorphPanel.astro";
 
 interface Props {
   eyebrow?: string;
-  title: string;
+  title?: string;
   lead?: string;
   align?: "left" | "center";
   accent?: "blue" | "magenta" | "amber" | "muted";
+  /** Lay the header on an opaque MorphPanel. */
+  panel?: boolean;
+  /** Which corner the panel's bite is taken from. */
+  cut?: "top-right" | "top-left" | "none";
   class?: string;
 }
 const {
@@ -15,27 +35,53 @@ const {
   lead,
   align = "left",
   accent = "blue",
+  panel = true,
+  cut = "top-right",
   class: className = "",
 } = Astro.props;
+
+const hasTitleSlot = Astro.slots.has("title");
+const hasLeadSlot = Astro.slots.has("lead");
 ---
 
-<header
+<MorphPanel
+  as="header"
+  cut={panel ? cut : "none"}
+  shadow={panel}
+  padded={panel}
+  tone="surface"
   class:list={[
-    "flex flex-col gap-4",
-    align === "center" ? "items-center text-center max-w-2xl mx-auto" : "max-w-3xl",
+    align === "center" ? "max-w-2xl mx-auto" : "max-w-3xl",
+    /* With no panel the atom still supplies the box; only the fill goes away. */
+    !panel && "mp--bare",
     className,
   ]}
   data-reveal
 >
-  {eyebrow && <Eyebrow accent={accent}>{eyebrow}</Eyebrow>}
-  <h2 class="text-balance text-3xl font-semibold leading-[1.05] sm:text-4xl md:text-[2.75rem]">
-    {title}
-  </h2>
-  {
-    lead && (
-      <p class="max-w-2xl text-pretty text-base leading-relaxed text-ink-300 md:text-lg">
-        {lead}
-      </p>
-    )
+  <div class:list={["flex flex-col gap-4", align === "center" && "items-center text-center"]}>
+    {eyebrow && <Eyebrow accent={accent}>{eyebrow}</Eyebrow>}
+
+    <h2 class="text-balance text-3xl font-semibold leading-[1.05] sm:text-4xl md:text-[2.75rem]">
+      {hasTitleSlot ? <slot name="title" /> : title}
+    </h2>
+
+    {/* The lead carries no width cap of its own. The panel is already capped by
+        the caller, and a second, narrower column inside it only guarantees an
+        empty gutter down the right-hand side. `text-balance` evens the line
+        lengths, which leaves the measured fit less ragged edge to trim. */}
+    {
+      (hasLeadSlot || lead) && (
+        <p class="text-balance text-base leading-relaxed text-ink-300 md:text-lg">
+          {hasLeadSlot ? <slot name="lead" /> : lead}
+        </p>
+      )
+    }
+  </div>
+</MorphPanel>
+
+<style is:global>
+  /* `panel={false}`: keep the box and the layout, drop the drawn surface. */
+  .mp--bare > .mp__shape {
+    display: none;
   }
-</header>
+</style>

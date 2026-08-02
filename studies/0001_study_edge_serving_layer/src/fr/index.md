@@ -1,5 +1,5 @@
 ---
-title: Le catalogue est un artefact de build
+title: "Edge e-commerce: le catalogue est un artefact de build"
 toc: false
 ---
 
@@ -11,8 +11,8 @@ const cover = FileAttachment("../cover.svg");
 ```
 
 <div class="hero">
-  <h1>Le catalogue est<br>un artefact de build</h1>
-  <h2>Partie 2 sur 3. Échanger vingt-huit triggers de base de données contre un bouton « publier » — et le back-office qui le rend possible.</h2>
+  <h1>Edge e-commerce: Le catalogue est<br>un artefact de build</h1>
+  <h2>Partie 2 sur 3. Vingt-huit triggers de base de données échangés contre un seul bouton « publier » — et le back-office qui rend la chose possible.</h2>
 </div>
 
 <div class="client-strip">
@@ -22,13 +22,13 @@ const cover = FileAttachment("../cover.svg");
   <div class="field"><span class="k">Cette partie</span><span class="v">La couche de desserte et le contrôle opérateur</span></div>
 </div>
 
-La [partie 1](https://computeflux.xyz/studies/mobile-money-payment-processor) traitait du processeur de paiement — la raison pour laquelle cette plateforme peut accepter de l'argent sur un marché où les formulaires de carte ne fonctionnent pas. Cette partie traite de l'autre moitié de l'histoire : **mettre un catalogue de photographies de produits lourdes devant un acheteur sur données mobiles, à des milliers de kilomètres de la base de données.** Et donner à l'entreprise un contrôle complet sur le quand et le comment.
+La [partie 1](https://computeflux.xyz/studies/mobile-money-payment-processor) portait sur le processeur de paiement : c'est lui qui permet à la plateforme d'encaisser sur un marché où les formulaires de carte bancaire ne servent à rien. Cette partie couvre l'autre moitié du problème : **afficher un catalogue de photographies lourdes chez un acheteur en données mobiles, à des milliers de kilomètres de la base de données.** Et laisser à l'entreprise la maîtrise complète du moment et de la manière.
 
 ## Une règle qui a tout changé
 
 **Le rendu d'une page n'interroge jamais la base relationnelle.**
 
-Ça ressemble à une décision de cache. Ce n'en est pas une. C'est une **décision de propriété**, et elle scinde le système en trois zones qui ne partagent jamais une responsabilité :
+On croirait une question de cache. Ce n'en est pas une. C'est une **question de propriété**, et elle découpe le système en trois zones qui ne se partagent jamais une responsabilité :
 
 <svg class="schematic" viewBox="0 0 1000 250" role="img" aria-label="Trois zones : rédaction, média, publié">
   <defs>
@@ -68,33 +68,33 @@ La [partie 1](https://computeflux.xyz/studies/mobile-money-payment-processor) tr
     </g>
   </g>
 </svg>
-<p class="schematic-caption">La zone publiée ne contient rien qui ne puisse être régénéré. C'est ce qui rend sûr de la jeter.</p>
+<p class="schematic-caption">La zone publiée ne contient rien qui ne puisse être régénéré. C'est ce qui permet de la jeter sans risque.</p>
 
-L'instantané edge n'est pas un cache qui pourrait être périmé : c'est une **sortie de build**, au même titre qu'un binaire compilé. Il porte une version, il est produit par une action explicite, et il peut être reconstruit depuis la source de vérité à tout moment.
+L'instantané edge n'est pas un cache susceptible d'être périmé : c'est un **produit de build**, au même titre qu'un binaire compilé. Il porte une version. Il est produit par une action explicite. Il se reconstruit à tout moment depuis la source de vérité.
 
-Cette architecture existe à cause d'une vérité simple : **sur les marchés émergents, chaque octet compte.** Les données mobiles sont chères. La latence tue les conversions. Et une requête de base de données de Kinshasa vers Francfort est les deux à la fois.
+Cette architecture découle d'un constat simple : **sur les marchés émergents, chaque octet compte.** Les données mobiles coûtent cher. La latence fait chuter les conversions. Une requête de base de données entre Kinshasa et Francfort cumule les deux.
 
-## Le pipeline média : de la photographie fournisseur au CDN mondial
+## Le pipeline média : de la photo fournisseur au CDN mondial
 
-Les originaux atterrissent dans un bucket compatible S3 (Hetzner en production, MinIO en dev), plafonnés à 50 Mo, en JPEG, PNG, WebP, GIF et AVIF. Un déclencheur de base de données met un job en file. Un pool de workers le réclame, télécharge l'original, le redimensionne avec libvips via les liaisons Go (`govips`), puis téléverse chaque variante dans le bucket CDN (Cloudflare R2) avec `Cache-Control: public, max-age=31536000, immutable`.
+Les originaux arrivent dans un bucket compatible S3 (Hetzner en production, MinIO en développement), plafonnés à 50 Mo, en JPEG, PNG, WebP, GIF ou AVIF. Un trigger de base de données met un job en file. Un worker du pool s'attribue ce job, télécharge l'original, le redimensionne avec libvips via les bindings Go (`govips`), puis dépose chaque variante dans le bucket CDN (Cloudflare R2) avec `Cache-Control: public, max-age=31536000, immutable`.
 
-Deux détails rendent ce pipeline de niveau production :
+Deux détails rendent ce pipeline solide en production :
 
-**Clés versionnées et cache immuable.** Une variante n'est jamais écrasée. Un nouveau rendu reçoit un nouveau préfixe de version (`v42/products/...`), donc il n'y a pas d'invalidation de cache à orchestrer côté CDN et pas de fenêtre pendant laquelle deux utilisateurs voient des images différentes sous la même URL. Le coût, c'est du stockage — c'est-à-dire la chose la moins chère du système.
+**Clés versionnées, cache immuable.** Une variante n'est jamais écrasée : un nouveau rendu reçoit un nouveau préfixe de version (`v42/products/...`). Il n'y a donc aucune invalidation de cache à orchestrer côté CDN, et aucune fenêtre pendant laquelle deux visiteurs voient deux images différentes sous la même URL. Le prix à payer, c'est du stockage — la ressource la moins chère du système.
 
-**L'aller-retour de sanitisation.** La photographie fournisseur réelle contient des fichiers malformés sur lesquels libvips échouera. Décoder en PNG puis ré-encoder avant redimensionnement convertit une classe d'échecs durs en succès plus lents. C'est le genre de décision qui n'existe que dans un code ayant rencontré de vraies entrées — celles qui viennent de vrais fournisseurs à Kinshasa, pas de photos stock d'Unsplash.
+**Le détour par une passe d'assainissement.** Les photos que fournissent réellement les fournisseurs contiennent des fichiers malformés, sur lesquels libvips échoue. On les décode en PNG et on les ré-encode avant de redimensionner : toute une classe d'échecs bloquants devient une classe de succès un peu plus lents. Ce genre de décision ne se prend pas sur le papier. Elle vient d'un code qui a vu passer de vraies images, celles des fournisseurs de Kinshasa et non des banques d'images.
 
-### Réclamer du travail sans convoi de verrous
+### Prendre un job sans *lock convoy*
 
-Les jobs vivent dans une table Postgres. Les workers les réclament par une instruction atomique unique — `SELECT ... WHERE status='pending' ORDER BY priority DESC, scheduled_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED` — ce qui permet à un nombre quelconque de workers de tirer en parallèle sans se bloquer.
+Les jobs vivent dans une table Postgres. Un worker s'attribue le sien avec une seule instruction atomique — `SELECT ... WHERE status='pending' ORDER BY priority DESC, scheduled_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED` — ce qui laisse autant de workers que l'on veut consommer la file en parallèle, sans qu'ils se bloquent entre eux.
 
-Les échecs sont rejoués en backoff exponentiel (plafonné à trois tentatives). Les jobs détenus par un worker planté repassent en attente via un balayage des verrous périmés.
+Les échecs sont rejoués avec un backoff exponentiel, plafonné à trois tentatives. Un balayage des verrous périmés remet en attente les jobs restés aux mains d'un worker qui a planté.
 
-Aucun broker de file n'a été introduit. La base était déjà là, déjà transactionnelle, déjà sauvegardée. `SKIP LOCKED` est exactement la primitive dont une file de travail a besoin. Un système de moins à exploiter, superviser et restaurer à 3h du matin.
+Aucun broker de messages n'a été ajouté. La base était déjà là, déjà transactionnelle, déjà sauvegardée. `SKIP LOCKED` est précisément la primitive dont une file de travail a besoin. Cela fait un système de moins à exploiter, superviser et restaurer à 3 h du matin.
 
-### L'échelle de variantes : développement vs production
+### L'échelle des variantes : développement contre production
 
-Deux familles de variantes existent, une par environnement, et elles ne correspondent pas. Le développement produit cinq largeurs ; la production en produit quatre, nommées d'après des appareils plutôt que des tailles.
+Deux familles de variantes coexistent, une par environnement, et elles ne se correspondent pas. Le développement produit cinq largeurs ; la production en produit quatre, nommées d'après des appareils plutôt que d'après des tailles.
 
 ```js
 Inputs.table(variants, {
@@ -104,21 +104,21 @@ Inputs.table(variants, {
 })
 ```
 
-Cette divergence est un constat réel. Une variante qui existe en développement et pas en production est une URL qui résout en local et renvoie 404 en ligne. C'est peu coûteux à corriger — une liste de configuration, promue — et exactement le genre de chose qu'une revue de code fait apparaître et qu'une démonstration cache.
+Cette divergence est un vrai défaut. Une variante définie en développement mais absente en production, c'est une URL qui résout en local et renvoie un 404 en ligne. La correction ne coûte presque rien : une liste de configuration à promouvoir. C'est typiquement ce qu'une revue de code met au jour et qu'une démonstration laisse passer.
 
-## La publication : où les opérateurs prennent le contrôle
+## La publication : là où les opérateurs reprennent la main
 
-La première version de cette plateforme synchronisait l'edge de la manière évidente : des déclencheurs de base de données se déclenchaient à chaque changement de ligne et mettaient en file une tâche de synchronisation par clé affectée.
+La première version de cette plateforme synchronisait l'edge de la manière la plus évidente : des triggers de base de données se déclenchaient à chaque changement de ligne et mettaient en file une tâche de synchronisation par clé concernée.
 
-Ce mécanisme représentait **28 déclencheurs et 18 fonctions.** Il a été supprimé par une migration unique dont le nom dit ce qu'elle a fait : `remove_kv_sync_triggers_add_catalog_publishes`. Les écritures edge ne sont désormais produites que par une action de publication explicite, groupées par des écritures multi-clés, et réconciliées contre un hash de contenu stocké par entité.
+Ce mécanisme pesait **28 triggers et 18 fonctions.** Une seule migration l'a supprimé, et son nom dit exactement ce qu'elle fait : `remove_kv_sync_triggers_add_catalog_publishes`. Les écritures edge ne proviennent plus que d'une action de publication explicite. Elles sont groupées en écritures multi-clés et réconciliées avec un hash de contenu stocké par entité.
 
-Pourquoi ? Parce que le déclencheur par ligne échoue pour une raison qui n'a rien à voir avec la correction et tout à voir avec le fan-out. Une modification de produit n'est pas une écriture edge. La clé du produit change, mais aussi chaque collection et chaque index auxquels il appartient : l'ensemble des produits, l'index de sa catégorie, l'index de son producteur, l'index de recherche. Un rédacteur qui corrige cinq fautes dans un après-midi génère des écritures proportionnelles à la *forme du catalogue*, pas à la taille de la modification.
+Pourquoi ? Parce que le trigger par ligne échoue pour une raison qui ne tient pas à la correction, mais au fan-out. Modifier un produit ne produit pas une écriture edge, mais plusieurs. La clé du produit change, et avec elle chaque collection et chaque index où il apparaît : l'ensemble des produits, l'index de sa catégorie, celui de sa marque, l'index de recherche. Un rédacteur qui corrige cinq coquilles en un après-midi génère un volume d'écritures proportionnel à la *forme du catalogue*, pas à la taille de ses modifications.
 
-### Publier se comporte comme un commit
+### La publication se comporte comme un commit
 
-L'application `bijougabriel-admin` transforme la publication en un flux de travail de type Git que les opérateurs comprennent déjà :
+L'application `back-office` transforme la publication en un workflow de type Git, que les opérateurs connaissent déjà :
 
-<div class="verified">La prévisualisation calcule le hash de contenu de chaque entité active, le compare au hash stocké et renvoie un diff — ajoutés, modifiés, supprimés, plus des avertissements. La publication enregistre une ligne dans une table de publications, construit toutes les structures edge, les écrit par lots, met à jour les hashes stockés, écrit le marqueur de version et archive le résultat avec ses décomptes, sa durée et une note en texte libre. L'historique liste chaque publication passée avec sa version, son diff et son auteur.</div>
+<div class="verified">La prévisualisation calcule le hash de contenu de chaque entité active, le compare au hash stocké et renvoie un diff : ajouts, mises à jour, suppressions, plus les avertissements. La publication, elle, écrit une ligne dans la table des publications, construit toutes les structures edge, les écrit par lots, met à jour les hashes stockés, écrit le marqueur de version, puis archive le résultat avec ses décomptes, sa durée et une note en texte libre. L'historique liste toutes les publications passées, avec leur version, leur diff et leur auteur.</div>
 
 <svg class="schematic" viewBox="0 0 1000 220" role="img" aria-label="Prévisualiser, publier, historique">
   <defs>
@@ -146,17 +146,17 @@ L'application `bijougabriel-admin` transforme la publication en un flux de trava
     </g>
     <path d="M880 70 C 880 20, 120 20, 120 66" fill="none" stroke="currentColor"
           stroke-width="1.4" stroke-dasharray="6 5" marker-end="url(#p1)" opacity="0.7"/>
-    <text x="500" y="34" text-anchor="middle" font-size="11" opacity="0.7">une version publiée est une chose que l'on peut désigner</text>
+    <text x="500" y="34" text-anchor="middle" font-size="11" opacity="0.7">une version publiée, on peut la désigner</text>
   </g>
 </svg>
 
-Le vocabulaire est délibéré. Un opérateur qui a utilisé un gestionnaire de versions sait ce que prévisualiser, publier et historique veulent dire. Le diff rend le rayon d'action d'un changement visible *avant* qu'il n'atteigne un acheteur.
+Le vocabulaire est choisi. Un opérateur qui a déjà utilisé un gestionnaire de versions sait ce que veulent dire prévisualiser, publier et historique. Le diff rend visible la portée d'un changement *avant* qu'il n'atteigne un acheteur.
 
-À comparer avec un déclencheur, où le changement est déjà en ligne au moment où quelqu'un aurait pu le regarder.
+Avec un trigger, à l'inverse, le changement est déjà en ligne au moment où quelqu'un aurait pu le relire.
 
 ### Ce que contient l'instantané
 
-La carte des clés ci-dessous est lue dans le publieur et dans le lecteur edge. Un changement de slug laisse une pierre tombale dans l'index des slugs, qui résout vers une redirection : une ancienne URL produit partagée sur une messagerie ne devient pas un 404.
+La carte des clés ci-dessous se lit dans le publieur comme dans le lecteur edge. Un changement de slug laisse une pierre tombale dans l'index des slugs, qui résout vers une redirection : une ancienne URL de produit partagée sur WhatsApp ne devient pas un 404.
 
 ```js
 Inputs.table(kvKeys, {
@@ -167,41 +167,41 @@ Inputs.table(kvKeys, {
 })
 ```
 
-À la lecture, le worker edge charge ces clés en parallèle et dénormalise les références — producteur, régions, notes de dégustation, récompenses — en objets imbriqués, avec un repli par préfixe de nom pour les enregistrements dont les identifiants ont dérivé.
+À la lecture, le worker edge charge ces clés en parallèle et dénormalise les références — producteur, régions, notes de dégustation, récompenses — en objets imbriqués, avec un repli sur le préfixe de nom pour les enregistrements dont les identifiants ont dérivé.
 
-**La boutique ne fait jamais de jointure.** La jointure a déjà eu lieu au moment de la publication.
+**La boutique ne fait jamais de jointure.** La jointure a déjà eu lieu à la publication.
 
 ## Le back-office : le contrôle opérateur sur la couche de desserte
 
-L'application `bijougabriel-admin`, construite avec React, Vite et Ant Design, est là où l'entreprise contrôle toute la couche de desserte. Elle fournit :
+L'application `back-office`, écrite avec React, Vite et Ant Design, est le poste de commande depuis lequel l'entreprise pilote toute la couche de desserte. On y trouve :
 
-- **Gestion du catalogue** (`CatalogManagement.tsx`) : Le flux de travail de publication de type Git avec prévisualisation, diff et historique. Les opérateurs voient exactement ce qui va changer avant que ce ne soit en ligne.
-- **Tableau de bord média** : Vue en temps réel des jobs de traitement d'images, avec capacités de nouvelle tentative et d'annulation. Suivi des originaux en cours de traitement, des variantes générées et des échecs.
-- **État de synchronisation** : Surveillance des jobs en arrière-plan qui alimentent le pipeline média et la publication du catalogue. Le `syncJobStorage` et le pool de workers sont entièrement observables.
-- **Inspecteur KV** : Accès en lecture directe au catalogue publié dans Cloudflare KV. Vérification que la dernière publication est bien arrivée à l'edge.
-- **Historique des versions** : Trace d'audit complète de chaque publication, avec horodatages, auteur, notes de commit et statistiques sur ce qui a changé.
+- **Gestion du catalogue** (`CatalogManagement.tsx`) : le workflow de publication de type Git, avec prévisualisation, diff et historique. L'opérateur voit exactement ce qui va changer avant la mise en ligne.
+- **Tableau de bord média** : l'état en temps réel des jobs de traitement d'images, avec relance et annulation. On suit quels originaux sont en cours, quelles variantes ont été générées et lesquelles ont échoué.
+- **État de synchronisation** : la supervision des jobs de fond qui alimentent le pipeline média et la publication du catalogue. `syncJobStorage` et le pool de workers sont entièrement observables.
+- **Inspecteur KV** : la lecture directe du catalogue publié dans Cloudflare KV, pour vérifier que la dernière publication est bien arrivée à l'edge.
+- **Historique des versions** : la piste d'audit complète de chaque publication — horodatage, auteur, note de commit et statistiques de ce qui a changé.
 
-Ce n'est pas simplement une interface CRUD. C'est un **plan de contrôle** pour la couche de desserte, conçu pour les opérateurs qui doivent comprendre et gérer un système desservant des clients à travers l'Afrique centrale.
+Ce n'est pas une simple interface CRUD. C'est un **plan de contrôle** de la couche de desserte, pensé pour des opérateurs qui doivent comprendre et piloter un système qui sert des clients dans toute l'Afrique centrale.
 
-## Ce que cela achète, en clair
+## Ce que l'on y gagne, concrètement
 
-- **Une fiche produit est une lecture de clé** sur un point de présence proche de l'acheteur, pas un aller-retour vers une base sur un autre continent. Sur des marchés où les données mobiles coûtent cher, ce n'est pas un plus — c'est essentiel.
+- **Une fiche produit devient une lecture de clé** sur un point de présence proche de l'acheteur, et non un aller-retour vers une base située sur un autre continent. Là où les données mobiles coûtent réellement de l'argent, ce n'est pas un agrément : c'est une condition.
 
-- **Les rédacteurs voient l'ensemble exact des changements** qu'une publication va produire avant qu'elle ne les produise, et peuvent désigner la version qui a introduit une régression. Plus de "mais ça marchait en staging" — car staging et production utilisent le même mécanisme de publication.
+- **Les rédacteurs voient l'ensemble exact des changements** qu'une publication va produire, avant qu'elle ne les produise ; et ils peuvent désigner la version qui a introduit une régression. Fini le « mais ça marchait en staging » : staging et production passent par le même mécanisme de publication.
 
-- **Le volume d'écritures edge est découplé de l'activité éditoriale** : un import de masse ne se traduit pas en facture ni en limitation de débit. L'entreprise peut faire 100 changements dans une journée sans s'inquiéter des coûts Cloudflare.
+- **Le volume d'écritures edge est découplé de l'activité éditoriale.** Un import en masse ne se traduit ni en facture ni en limitation de débit. L'entreprise peut faire 100 modifications dans la journée sans surveiller ses coûts Cloudflare.
 
-- **La zone publiée entière peut être supprimée et reconstruite** depuis la source relationnelle, ce qui fait de la reprise une procédure et non un incident. Si quelque chose ne va pas, vous pouvez toujours republier depuis zéro.
+- **Toute la zone publiée peut être supprimée puis reconstruite** depuis la source relationnelle. La reprise devient une procédure au lieu d'un incident : en cas de problème, il reste toujours la republication complète.
 
 ## La suite
 
-Exploiter sa propre boutique à l'edge a une conséquence que cette plateforme a pleinement embrassée. Chaque requête traverse déjà un serveur que l'opérateur contrôle, sur son propre domaine, porteur de son propre cookie first-party — et ce serveur sait déjà quel instantané de catalogue il a servi.
+Héberger sa propre boutique à l'edge a une conséquence que cette plateforme assume pleinement. Chaque requête passe déjà par un serveur que l'opérateur contrôle, sur son propre domaine, porteur de son propre cookie first-party. Et ce serveur sait déjà quel instantané de catalogue il a servi.
 
-[**Partie 3 — Signal first-party, sans tracker**](https://computeflux.xyz/studies/first-party-signal-dco-newsletter) transforme ce flux de requêtes en cohortes k-anonymes calculées côté serveur, et ces cohortes en une newsletter qui s'assemble par destinataire à partir du même catalogue publié que lit la boutique.
+La [**partie 3 — Edge e-commerce: Signal first-party, sans tracker**](https://computeflux.xyz/studies/first-party-signal-dco-newsletter) transforme ce flux de requêtes en cohortes k-anonymes calculées côté serveur, puis ces cohortes en une newsletter qui s'assemble destinataire par destinataire à partir du catalogue publié que lit la boutique.
 
 ---
 
-<div class="small muted">Les chiffres signalés comme modélisés sont produits par les curseurs ci-dessus et décrivent la forme d'un problème, pas le trafic de cet opérateur. Les comportements signalés comme lus dans le code ont été vérifiés à la source. Le client, la plateforme et ses domaines sont volontairement tus.</div>
+<div class="small muted">Les chiffres présentés ici comme des modèles sont calculés à partir des paramètres ci-dessus : ils décrivent la forme d'un problème, pas le trafic de cet opérateur. Les comportements présentés comme lus dans le code ont été vérifiés à la source. Le client, la plateforme et ses domaines sont volontairement passés sous silence.</div>
 
 <style>
 :root { --cb-verified: "Lu dans le code livré"; --cb-modelled: "Un modèle, pas une mesure"; --cb-proposed: "Proposé, pas déployé"; }

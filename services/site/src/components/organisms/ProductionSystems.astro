@@ -3,15 +3,28 @@
  * "Nos propres systèmes" — dogfooding, not social proof.
  *
  * Two product cards on contrasting solid backgrounds. Each carries the single
- * hard engineering decision behind it, a `MiniChart` that visualises the shape
- * of that difficulty, and two accent CTAs ("Voir le site" / "Code source") in
+ * hard engineering decision behind it, a `SystemSketch` line drawing of what the
+ * product actually does, and two accent CTAs ("Voir le site" / "Code source") in
  * the same amber family as the rest of the site. Cards are equal height; the
  * footer link row is pinned to the bottom with `mt-auto`.
+ *
+ * The frame is `NotchedPanel`, same as every other chamfered card on the site:
+ * it owns the clip-path, the offset hard shadow, the dotted overlay and the
+ * equal-height `fill` behaviour. FertiLuna's pale fill is why the panel grew a
+ * `light` prop — a custom `bg` used to assume a dark colour and force white
+ * text.
+ *
+ * One layout detail is deliberate: the logo/kind header and the CTA footer are
+ * centred, so the two cards read as a matched pair despite one logo being a wide
+ * lockup and the other compact. The prose between them stays left-aligned,
+ * because centred body copy is hard to read.
  */
 import Button from "@atoms/Button.astro";
 import Eyebrow from "@atoms/Eyebrow.astro";
 import Highlight from "@atoms/Highlight.astro";
-import MiniChart from "@atoms/MiniChart.astro";
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import SectionHeader from "@molecules/SectionHeader.astro";
+import SystemSketch from "@atoms/SystemSketch.astro";
 import Tag from "@atoms/Tag.astro";
 import { getSystems } from "@data/systems";
 import { getLocale, useTranslations } from "@i18n";
@@ -22,43 +35,34 @@ const systems = getSystems(locale);
 
 /* Light lockups are wide (1200×421); coloured lockups moderate (680×152). */
 const logoCls: Record<"mark" | "lockup", string> = {
-  lockup: "h-9 w-auto object-contain object-left md:h-10",
-  mark: "size-11 object-contain object-left",
+  lockup: "h-9 w-auto object-contain object-center md:h-10",
+  mark: "size-11 object-contain object-center",
 };
 ---
 
 <section id="systems" class="container-flux scroll-mt-24 py-20 md:py-28">
-  <header class="mb-12 flex max-w-3xl flex-col gap-4 md:mb-16" data-reveal>
-    <Eyebrow accent="amber">{t("systems.eyebrow")}</Eyebrow>
-    <h2 class="text-balance text-3xl font-semibold leading-[1.05] sm:text-4xl md:text-[2.75rem]">
+  <SectionHeader eyebrow={t("systems.eyebrow")} accent="amber" class="mb-12 md:mb-16">
+    <Fragment slot="title">
       {t("systems.title.a")} <Highlight>{t("systems.title.hl")}</Highlight>.
-    </h2>
-    <p class="max-w-2xl text-pretty text-base leading-relaxed text-ink-300 md:text-lg">
+    </Fragment>
+    <Fragment slot="lead">
       <Highlight logo>{t("systems.subtitle.hl")}</Highlight> {t("systems.subtitle.rest")}
-    </p>
-  </header>
+    </Fragment>
+  </SectionHeader>
 
   <ul class="grid gap-6 md:grid-cols-2 md:gap-7" data-reveal-stagger="120">
     {
       systems.map((s) => (
         <li class="h-full" data-reveal>
-          <div
-            class="sys-card relative flex h-full flex-col gap-6 overflow-hidden p-7 md:p-9"
-            style={`--n: clamp(16px, 3.2vw, 34px);background-color:${s.bg}`}
-          >
-            <div
-              class="pointer-events-none absolute inset-0"
-              style={"background-image:var(--svg-dot-light);opacity:0.12"}
-              aria-hidden="true"
-            ></div>
-
+          <NotchedPanel bg={s.bg} light={s.light} fill class="h-full">
+          <div class="flex h-full flex-col gap-6 p-7 md:p-9">
             <div
               class:list={[
                 "relative flex flex-col gap-5",
                 s.light ? "text-ink-50" : "text-[#fbfbf9]",
               ]}
             >
-              <header class="flex flex-col gap-4">
+              <header class="flex flex-col items-center gap-4 text-center">
                 <img
                   src={s.logo}
                   alt={s.logoAlt}
@@ -82,15 +86,10 @@ const logoCls: Record<"mark" | "lockup", string> = {
                 {s.what}
               </p>
 
-              <MiniChart
-                kind={s.chart.kind}
-                data={s.chart.kind === "split"
-                  ? { a: s.chart.data[0], b: s.chart.data[1], aLabel: s.chart.labels[0], bLabel: s.chart.labels[1] }
-                  : s.chart.data}
-                accent={s.light ? "var(--color-flux-magenta)" : "var(--color-flux-amber)"}
-                good={s.light ? "var(--color-flux-blue)" : "var(--color-flux-amber)"}
-                labelFill={s.light ? "var(--color-ink-400)" : "var(--color-ink-500)"}
-                class="sys-chart"
+              <SystemSketch
+                name={s.sketch}
+                caption={s.sketchCaption}
+                class:list={[s.light ? "text-ink-200" : "text-ink-600"]}
               />
 
               <div class:list={["flex flex-col gap-2.5 border-t pt-6", s.light ? "border-ink-300/40" : "border-ink-300/25"]}>
@@ -115,7 +114,7 @@ const logoCls: Record<"mark" | "lockup", string> = {
               </ul>
             </div>
 
-            <footer class:list={["relative mt-auto flex flex-wrap items-center gap-3 pt-2"]}>
+            <footer class:list={["relative mt-auto flex flex-wrap items-center justify-center gap-3 pt-2"]}>
               <Button href={s.url} target="_blank" rel="noopener" variant="primary" size="sm" arrow class:list={[s.light ? "" : ""]}>
                 {t("systems.visit")}
               </Button>
@@ -126,13 +125,52 @@ const logoCls: Record<"mark" | "lockup", string> = {
               )}
             </footer>
           </div>
+          </NotchedPanel>
         </li>
       ))
     }
   </ul>
 </section>
 
-<style>
-  .sys-card { clip-path: polygon(var(--n) 0, calc(100% - var(--n)) 0, calc(100% - var(--n)) var(--n), 100% var(--n), 100% calc(100% - var(--n)), calc(100% - var(--n)) calc(100% - var(--n)), calc(100% - var(--n)) 100%, var(--n) 100%, var(--n) calc(100% - var(--n)), 0 calc(100% - var(--n)), 0 var(--n), var(--n) var(--n)); }
-  .sys-chart { height: 96px; }
-</style>
+<script>
+  import Vivus from "vivus";
+
+  /**
+   * Sketch each system drawing once, when its card first scrolls into view.
+   * Same options as the diagnostic diagrams: `oneByOne` draws path after path,
+   * in the order the markup emits them, so the picture builds left to right.
+   */
+  function initSystemSketches() {
+    const svgs = Array.from(document.querySelectorAll<SVGSVGElement>("#systems [data-sys-sketch]"));
+    if (!svgs.length) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const seen = new WeakSet<SVGSVGElement>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const svg = entry.target as SVGSVGElement;
+          if (!entry.isIntersecting || seen.has(svg)) continue;
+          seen.add(svg);
+          io.unobserve(svg);
+          // vivus needs an id to key its internal state.
+          if (!svg.id) svg.id = `sys-sketch-${Math.random().toString(36).slice(2, 9)}`;
+          new Vivus(svg as unknown as HTMLElement, {
+            type: "oneByOne",
+            duration: 160,
+            start: "autostart",
+            animTimingFunction: Vivus.LINEAR,
+            pathTimingFunction: Vivus.EASE_OUT,
+          });
+        }
+      },
+      { threshold: 0.35 },
+    );
+
+    svgs.forEach((svg) => io.observe(svg));
+  }
+
+  initSystemSketches();
+  document.addEventListener("astro:page-load", initSystemSketches);
+</script>

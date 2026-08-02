@@ -1,0 +1,122 @@
+---
+/**
+ * SystemSketch — a stroke-only line drawing of what a system in `@data/systems`
+ * actually does, sketched with vivus when the card scrolls into view.
+ *
+ * Constraints that shape every path here:
+ *
+ *  - **Stroke only, no fills.** vivus animates `stroke-dashoffset`, so a filled
+ *    shape would simply pop in. Everything is an outline.
+ *  - **One idea per path, emitted in reading order** (left to right), so
+ *    `oneByOne` draws the story rather than a random scatter of shapes.
+ *  - **`currentColor`.** The two cards sit on opposite backgrounds (deep navy /
+ *    pale pink) and inherit their own text colour, so the sketch never needs a
+ *    per-card palette.
+ *  - **Nothing quantitative.** These replaced a pair of bar charts whose heights
+ *    implied measurements we do not have. A drawing asserts structure only.
+ *
+ * Without JS, or under `prefers-reduced-motion`, the drawing is simply static.
+ */
+interface Props {
+  /** Which drawing to render; matches `ProductionSystem.sketch`. */
+  name: "mobile-money" | "on-device-vision";
+  /** One line under the drawing, already localised. */
+  caption: string;
+  class?: string;
+}
+
+const { name, caption, class: className = "" } = Astro.props;
+---
+
+<figure class:list={["sys-sketch", className]}>
+  <svg
+    data-sys-sketch
+    class="sys-sketch__svg"
+    viewBox="0 0 480 150"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    role="img"
+    aria-label={caption}
+  >
+    {
+      name === "mobile-money" && (
+        <>
+          {/* A handset is the account. */}
+          <path d="M30 34h28a6 6 0 0 1 6 6v60a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6z" />
+          <path d="M30 50h28" />
+          <path d="M38 96h12" />
+          {/* …reaching the carrier, not a card network. */}
+          <path d="M76 70h42M110 64l8 6-8 6" />
+          <path d="M150 106V44M138 106h24" />
+          <path d="M158 42a22 22 0 0 1 0 26" />
+          <path d="M167 34a32 32 0 0 1 0 42" />
+          {/* …then our own processor… */}
+          <path d="M186 70h40M218 64l8 6-8 6" />
+          <path d="M240 38h72v64h-72z" />
+          <path d="M240 60h72M240 80h72" />
+          {/* …serving a catalogue from the edge. */}
+          <path d="M326 70h38M356 64l8 6-8 6" />
+          <path d="M384 40h32v28h-32zM428 40h32v28h-32zM384 80h32v28h-32zM428 80h32v28h-32z" />
+        </>
+      )
+    }
+    {
+      name === "on-device-vision" && (
+        <>
+          {/* The device boundary: the drawing's whole argument. */}
+          <path class="sys-sketch__bound" d="M12 16h324v122H12z" />
+          {/* A browser window, and the chart inside it. */}
+          <path d="M28 32h292v90H28z" />
+          <path d="M28 50h292" />
+          <path d="M40 41h6M52 41h6M64 41h6" />
+          <path d="M44 112V64M44 112h258" />
+          <path d="M56 104c26-4 44 0 62-12s38-16 56-30 44-6 68-2" />
+          {/* The points the model recovers from the picture. */}
+          <path d="M114 88l6 6M120 88l-6 6" />
+          <path d="M172 62l6 6M178 62l-6 6" />
+          <path d="M240 58l6 6M246 58l-6 6" />
+          {/* Nothing is uploaded. The path out is drawn, then struck through. */}
+          <path d="M352 78h50M394 72l8 6-8 6" />
+          <path d="M420 96a16 16 0 0 1 3-31 20 20 0 0 1 38 5 13 13 0 0 1-3 26z" />
+          <path class="sys-sketch__cut" d="M356 54l52 48M408 54l-52 48" />
+        </>
+      )
+    }
+  </svg>
+  <figcaption class="sys-sketch__caption">{caption}</figcaption>
+</figure>
+
+<style>
+  .sys-sketch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin: 0;
+  }
+  .sys-sketch__svg {
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+  }
+  /* The device boundary reads as "a limit", so it is dashed rather than solid.
+     vivus still sketches it: the dash pattern is applied on top of the draw. */
+  .sys-sketch__bound {
+    stroke-dasharray: 7 6;
+    opacity: 0.55;
+  }
+  /* The struck-out upload is the punchline, so it is drawn last and heavier. */
+  .sys-sketch__cut {
+    stroke-width: 2.6;
+  }
+  .sys-sketch__caption {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    text-align: center;
+    opacity: 0.7;
+  }
+</style>

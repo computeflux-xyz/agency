@@ -1,14 +1,20 @@
 {
   "slug": "mobile-money-payment-processor",
   "type": "study",
-  "topics": ["payments", "distributed-systems", "platform-engineering"],
-  "authors": ["gabriel-mougard"],
+  "topics": [
+    "payments",
+    "distributed-systems",
+    "platform-engineering"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
   "featured": true,
   "cover": "cover.svg",
   "locales": {
     "en": {
       "entry": "index.html",
-      "title": "Payment is the product",
+      "title": "Edge e-commerce: Payment is the product",
       "shortdesc": "Part 1 of 3. What it takes to charge a customer who does not own a card: a mobile-money processor built from scratch, with RSA sessions, idempotency and asynchronous settlement.",
       "longdesc": "A luxury-spirits retailer selling into Central Africa could not put a card form at the end of its checkout, because most of its buyers do not have a card. This first part of a three-part study covers the payment processor that had to be written instead: an RSA-encrypted mobile-money client with rotating sessions, an idempotency contract that survives customer retries, an asynchronous webhook settlement path and the reconciliation loop that catches what the webhook loses.",
       "readingMinutes": 11,
@@ -17,7 +23,7 @@
     },
     "fr": {
       "entry": "fr/index.html",
-      "title": "Le paiement est le produit",
+      "title": "E-commerce edge : le paiement est le produit",
       "shortdesc": "Partie 1 sur 3. Ce qu'il faut pour encaisser un client qui n'a pas de carte : un processeur de paiement mobile écrit de zéro, sessions RSA, idempotence et règlement asynchrone.",
       "longdesc": "Un détaillant de spiritueux de luxe vendant en Afrique centrale ne pouvait pas terminer son tunnel d'achat par un formulaire de carte bancaire : la majorité de ses acheteurs n'en ont pas. Cette première partie d'une étude en trois volets décrit le processeur de paiement qu'il a fallu écrire à la place : un client mobile money chiffré en RSA avec rotation de session, un contrat d'idempotence qui résiste aux nouvelles tentatives du client, un règlement asynchrone par webhook et la boucle de réconciliation qui rattrape ce que le webhook perd.",
       "readingMinutes": 11,

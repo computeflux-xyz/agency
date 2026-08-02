@@ -1,5 +1,5 @@
 ---
-title: The catalogue is a build artifact
+title: "Edge e-commerce: the catalogue is a build artifact"
 toc: false
 ---
 
@@ -11,8 +11,8 @@ const cover = FileAttachment("cover.svg");
 ```
 
 <div class="hero">
-  <h1>The catalogue is<br>a build artifact</h1>
-  <h2>Part 2 of 3. Trading twenty-eight database triggers for one publish button — and the backoffice that makes it possible.</h2>
+  <h1>Edge e-commerce: The catalogue is<br>a build artifact</h1>
+  <h2>Part 2 of 3. Trading twenty-eight database triggers for one publish button, and the backoffice that makes it possible.</h2>
 </div>
 
 <div class="client-strip">
@@ -22,7 +22,7 @@ const cover = FileAttachment("cover.svg");
   <div class="field"><span class="k">This part</span><span class="v">The serving layer & operator control</span></div>
 </div>
 
-[Part 1](https://computeflux.xyz/en/studies/mobile-money-payment-processor) covered the payment processor — the reason this platform can accept money in a market where card forms don't work. This part covers the other half of the story: **getting a catalog of heavy product photography in front of a buyer on mobile data, thousands of kilometers from the database.** And giving the business complete control over when and how that happens.
+[Part 1](https://computeflux.xyz/en/studies/mobile-money-payment-processor) covered the payment processor: the reason this platform can accept money in a market where card forms don't work. This part covers the other half of the story: **getting a catalog of heavy product photography in front of a buyer on mobile data, thousands of kilometers from the database.** And giving the business complete control over when and how that happens.
 
 ## One rule that changed everything
 
@@ -70,7 +70,7 @@ That sounds like a caching decision. It's not. It's an **ownership decision**, a
 </svg>
 <p class="schematic-caption">The published zone holds nothing that cannot be regenerated. That's what makes it safe to throw away.</p>
 
-The edge snapshot isn't a cache that might be stale — it's a **build output**, the way a compiled binary is a build output. It has a version. It's produced by an explicit action. It can be rebuilt from the source of truth at any time.
+The edge snapshot isn't a cache that might be stale. It's a **build output**, the way a compiled binary is a build output. It has a version. It's produced by an explicit action. It can be rebuilt from the source of truth at any time.
 
 This architecture exists because of a simple truth: **in emerging markets, every byte counts.** Mobile data is expensive. Latency kills conversions. And a database query from Kinshasa to Frankfurt is both.
 
@@ -80,13 +80,13 @@ Originals land in an S3-compatible bucket (Hetzner in production, MinIO in dev),
 
 Two details make this pipeline production-grade:
 
-**Versioned keys plus immutable caching.** A variant is never overwritten. A new render gets a new version prefix (`v42/products/...`), so there's no cache invalidation to orchestrate at the CDN and no window where two users see different images under the same URL. The cost is storage — which is the cheapest thing in the system.
+**Versioned keys plus immutable caching.** A variant is never overwritten. A new render gets a new version prefix (`v42/products/...`), so there's no cache invalidation to orchestrate at the CDN and no window where two users see different images under the same URL. The cost is storage, the cheapest thing in the system.
 
-**The sanitisation round-trip.** Real supplier photography contains malformed files that libvips will fail on. Decoding to PNG and re-encoding before resize converts a class of hard failures into slower successes. This is the kind of decision that only exists in a codebase that has met real inputs — the kind that come from actual suppliers in Kinshasa, not stock photos from Unsplash.
+**The sanitisation round-trip.** Real supplier photography contains malformed files that libvips will fail on. Decoding to PNG and re-encoding before resize converts a class of hard failures into slower successes. This is the kind of decision that only exists in a codebase that has met real inputs, the kind that come from actual suppliers in Kinshasa, not stock photos from Unsplash.
 
 ### Claiming work without a lock convoy
 
-Jobs live in a Postgres table. Workers claim them with a single atomic statement — `SELECT ... WHERE status='pending' ORDER BY priority DESC, scheduled_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED` — which lets any number of workers pull concurrently without blocking each other.
+Jobs live in a Postgres table. Workers claim them with a single atomic statement, `SELECT ... WHERE status='pending' ORDER BY priority DESC, scheduled_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED`, which lets any number of workers pull concurrently without blocking each other.
 
 Failures retry with exponential backoff (capped at three attempts). Jobs held by a crashed worker are returned to pending by a stale-lock sweep.
 
@@ -104,7 +104,7 @@ Inputs.table(variants, {
 })
 ```
 
-That divergence is a real finding. A variant name that exists in development but not production is a URL that resolves locally and 404s live. It's cheap to fix — one config list, promoted — and exactly the kind of thing a codebase review surfaces that a demo doesn't.
+That divergence is a real finding. A variant name that exists in development but not production is a URL that resolves locally and 404s live. It's cheap to fix (one config list, promoted) and exactly the kind of thing a codebase review surfaces that a demo doesn't.
 
 ## The publish: where operators take control
 
@@ -116,9 +116,9 @@ Why? Because trigger-per-row fails for a reason that has nothing to do with corr
 
 ### Publish behaves like a commit
 
-The `bijougabriel-admin` backoffice turns publishing into a Git-like workflow that operators already understand:
+The back-office turns publishing into a Git-like workflow that operators already understand:
 
-<div class="verified">Preview computes the content hash of every active entity, compares it to the stored hash, and returns a diff — added, updated, removed, plus warnings. Publish records a row in a publishes table, builds every edge structure, writes them in batches, updates the stored hashes, writes the version marker, and archives the outcome with counts, duration, and a free-text note. History lists every past publish with its version, its diff, and its author.</div>
+<div class="verified">Preview computes the content hash of every active entity, compares it to the stored hash, and returns a diff: added, updated, removed, plus warnings. Publish records a row in a publishes table, builds every edge structure, writes them in batches, updates the stored hashes, writes the version marker, and archives the outcome with counts, duration, and a free-text note. History lists every past publish with its version, its diff, and its author.</div>
 
 <svg class="schematic" viewBox="0 0 1000 220" role="img" aria-label="Preview, publish, history">
   <defs>
@@ -167,13 +167,13 @@ Inputs.table(kvKeys, {
 })
 ```
 
-At read time, the edge worker loads these in parallel and denormalises the references — producer, regions, tasting tags, awards — into nested objects, with a name-prefix fallback for records whose IDs have drifted.
+At read time, the edge worker loads these in parallel and denormalises the references (producer, regions, tasting tags, awards) into nested objects, with a name-prefix fallback for records whose IDs have drifted.
 
 **The storefront never joins.** The join already happened at publish time.
 
 ## The backoffice: operator control over the serving layer
 
-The `bijougabriel-admin` application is where the business controls the entire serving layer. Built with React, Vite, and Ant Design, it provides:
+The back-office is where the business controls the entire serving layer. Built with React, Vite, and Ant Design, it provides:
 
 - **Catalog Management** (`CatalogManagement.tsx`): The Git-like publish workflow with preview, diff, and history. Operators see exactly what will change before it goes live.
 - **Media Dashboard**: Real-time view of image processing jobs, with retry and cancel capabilities. Track which originals are being processed, which variants have been generated, and which have failed.
@@ -185,9 +185,9 @@ This isn't just a CRUD interface. It's a **control plane** for the serving layer
 
 ## What this buys, in plain terms
 
-- **A product page is a key lookup** at a point of presence near the buyer, not a round-trip to a database on another continent. In markets where mobile data costs real money, this isn't a nice-to-have — it's essential.
+- **A product page is a key lookup** at a point of presence near the buyer, not a round-trip to a database on another continent. In markets where mobile data costs real money, this isn't a nice-to-have. It's essential.
 
-- **Editors see the exact set of changes** a publish will make before it makes them, and can point at the version that introduced a regression. No more "but it worked in staging" — because staging and production use the same publish mechanism.
+- **Editors see the exact set of changes** a publish will make before it makes them, and can point at the version that introduced a regression. No more "but it worked in staging", because staging and production use the same publish mechanism.
 
 - **Edge write volume is decoupled from editing activity**, so a bulk import doesn't translate into a bill or a rate limit. The business can make 100 changes in a day without worrying about Cloudflare costs.
 
@@ -195,9 +195,9 @@ This isn't just a CRUD interface. It's a **control plane** for the serving layer
 
 ## Where this goes next
 
-Running your own storefront at the edge has a consequence this platform has fully embraced. Every request already passes through a server the operator controls, on its own domain, holding its own first-party cookie — and that server already knows which catalogue snapshot it served.
+Running your own storefront at the edge has a consequence this platform has fully embraced. Every request already passes through a server the operator controls, on its own domain, holding its own first-party cookie, and that server already knows which catalogue snapshot it served.
 
-[**Part 3 — First-party signal, without a tracker**](https://computeflux.xyz/en/studies/first-party-signal-dco-newsletter) turns that request stream into k-anonymous cohorts computed server-side, and turns those cohorts into a newsletter that assembles itself per recipient from the same published catalogue the shop reads.
+[**Part 3: Edge e-commerce: First-party signal, without a tracker**](https://computeflux.xyz/en/studies/first-party-signal-dco-newsletter) turns that request stream into k-anonymous cohorts computed server-side, and turns those cohorts into a newsletter that assembles itself per recipient from the same published catalogue the shop reads.
 
 ---
 
