@@ -26,7 +26,7 @@ const accentBg: Record<string, string> = {
 const bookHref = localizedPath("/book", locale);
 ---
 
-<section id="problematiques" class="container-flux scroll-mt-24 py-20 md:py-28">
+<section id="problematiques" class="container-flux scroll-mt-24">
   <SectionHeader
     eyebrow={t("vostro.eyebrow")}
     title={t("vostro.title")}
@@ -78,22 +78,58 @@ const bookHref = localizedPath("/book", locale);
 </section>
 
 <style>
-  .deck { position: relative; }
+  /* The `.deck-card` is a pure layout wrapper: it owns only the sticky
+     positioning that deals the cards. All surface/border/shadow live on the
+     clipped `.notched-deck` below — a filter here would create a containing
+     block and break the sticky stack. */
+  .deck {
+    position: relative;
+    /* Tracks the header, which is `h-16` (64px) until `md` and `4.5rem` (72px)
+       after. A flat 5.25rem left the pinned deck floating 20px below the bar it
+       is supposed to tuck under on every phone. */
+    --deck-top: 4.75rem;
+    --deck-step: 1.1rem;
+    /* The deck is the sticky containing block, so its bottom edge is where the
+       cards let go. Without a tail the last card reaches its offset at the exact
+       moment its bottom hits that edge — it pins for zero scroll and the
+       assembled deck is never actually seen. This holds it for a beat. */
+    padding-bottom: clamp(4rem, 18vh, 10rem);
+  }
+
+  /* Each card pins one step lower than the one before, so a pinned card leaves a
+     sliver of its predecessor showing — that is the deck.
+
+     Deliberately no negative margins here. Sticky containment clamps an element
+     by its MARGIN box, so a negative bottom margin buys it exactly that much
+     travel past the deck's bottom edge. With a per-index margin every card
+     overshot by a different amount and the second-to-last one parked below the
+     last, poking out from under the stack. Uniform heights and strictly
+     increasing offsets make the stack correct by construction instead. */
   .deck-card {
     position: sticky;
-    top: calc(5.25rem + var(--i) * 1.1rem);
-    margin-bottom: calc(var(--i) * -1.1rem);
-    box-shadow: 0 0 0 1px var(--color-ink-line), 0 10px 24px rgba(32, 31, 30, 0.08);
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
+    top: calc(var(--deck-top) + var(--i) * var(--deck-step));
   }
-  .deck-card:last-child { margin-bottom: 0; }
 
+  /* Chamfered technical card (Tenstorrent motif, same as `.notched`): the
+     background, the hairline and the shadow all sit on the clipped element so
+     the silhouette stays coherent. The hairline is four 0.5px corner offsets
+     that trace the chamfer; the last layer is the article cards' signature
+     hard ink offset — drawn with drop-shadow (not box-shadow, which a
+     clip-path would cut away) so it follows the notch instead of a plain box. */
   .notched-deck {
+    background: var(--color-surface);
     clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
-    border-radius: var(--radius-lg);
+    filter:
+      drop-shadow(-0.5px -0.5px 0 var(--color-ink-line))
+      drop-shadow(0.5px -0.5px 0 var(--color-ink-line))
+      drop-shadow(-0.5px 0.5px 0 var(--color-ink-line))
+      drop-shadow(0.5px 0.5px 0 var(--color-ink-line))
+      drop-shadow(4px 6px 0 var(--color-ink-50));
+  }
+  @media (min-width: 768px) {
+    .deck { --deck-top: 5.25rem; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .deck-card { top: 5.25rem; margin-bottom: 0; }
+    .deck-card { top: var(--deck-top); }
   }
 </style>

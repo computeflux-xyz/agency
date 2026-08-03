@@ -1,0 +1,205 @@
+---
+/**
+ * Collapsible — clamps a block of prose on small screens and adds a toggle.
+ *
+ * Why it exists: several landing sections carry paragraphs written for a desk
+ * (the `hard` copy on a ProductionSystems card runs 210–285 characters, the
+ * hero's intro ~250). At 390px those become ten to fourteen stacked lines, and
+ * on the hero they push the CTAs a screen and a half down. Clamping the
+ * preview keeps every word — nothing is cut from the page — while restoring a
+ * scannable rhythm and lifting the buttons back toward the fold.
+ *
+ * Progressive enhancement, deliberately in that direction
+ * -------------------------------------------------------
+ * The server renders the full paragraph with no clamp and no button. The clamp
+ * is applied by script, and only when BOTH conditions hold: the viewport is
+ * below the `md` breakpoint, and the text genuinely overflows the line budget.
+ * So a reader without JS gets the complete copy rather than a truncated block
+ * with no way to open it, and a short translation never grows a "read more"
+ * that reveals nothing. The desktop layout is untouched at every step.
+ *
+ * The toggle is a real `<button>` with `aria-expanded` and `aria-controls`
+ * pointing at the body, so the state is exposed rather than implied by the
+ * label alone.
+ */
+import { getLocale, useTranslations } from "@i18n";
+
+interface Props {
+  /** Lines to show before clamping. */
+  lines?: number;
+  /** Extra classes for the prose wrapper. */
+  class?: string;
+}
+
+const { lines = 4, class: className = "" } = Astro.props;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+---
+
+<div
+  class="collapsible"
+  data-collapsible
+  data-collapsible-lines={lines}
+  data-label-more={t("common.readMore")}
+  data-label-less={t("common.readLess")}
+>
+  <div class:list={["collapsible__body", className]} data-collapsible-body>
+    <slot />
+  </div>
+</div>
+
+<style>
+  .collapsible__body {
+    /* No clamp until the script decides one is warranted — see the note above
+       about which direction the enhancement runs in. */
+    --collapsible-lines: 4;
+  }
+
+  .collapsible__body.is-clamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--collapsible-lines);
+    line-clamp: var(--collapsible-lines);
+    overflow: hidden;
+  }
+
+  .collapsible__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    /* 44px tap target without 44px of visible chrome. */
+    min-height: 2.75rem;
+    margin-top: 0.15rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.75;
+    cursor: pointer;
+  }
+  .collapsible__toggle:hover { opacity: 1; }
+
+  .collapsible__toggle::after {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    rotate: 45deg;
+    translate: 0 -0.1rem;
+    transition: rotate 0.2s;
+  }
+  .collapsible__toggle[aria-expanded="true"]::after {
+    rotate: -135deg;
+    translate: 0 0.1rem;
+  }
+
+  /* The clamp is a mobile affordance only. Belt and braces: the script already
+     removes it above `md`, but if it never runs the desktop layout must not
+     inherit a clamped body from a stale class. */
+  @media (min-width: 768px) {
+    .collapsible__body.is-clamped {
+      display: block;
+      overflow: visible;
+    }
+    .collapsible__toggle { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .collapsible__toggle::after { transition: none; }
+  }
+</style>
+
+<script>
+  const BREAKPOINT = "(max-width: 767px)";
+  let seq = 0;
+
+  function setup(root: HTMLElement, narrow: boolean) {
+    const body = root.querySelector<HTMLElement>("[data-collapsible-body]");
+    if (!body) return;
+
+    let toggle = root.querySelector<HTMLButtonElement>(".collapsible__toggle");
+
+    // Above the breakpoint the component is inert: drop the clamp and the
+    // button entirely rather than leaving a hidden control in the a11y tree.
+    if (!narrow) {
+      body.classList.remove("is-clamped");
+      toggle?.remove();
+      return;
+    }
+
+    const lines = Number(root.dataset.collapsibleLines ?? 4) || 4;
+    body.style.setProperty("--collapsible-lines", String(lines));
+
+    // Measure against the clamp: apply it, then compare. A paragraph that fits
+    // inside the budget keeps neither the clamp nor a button that would expand
+    // nothing — short translations are common and a dead toggle is worse than
+    // no toggle.
+    const wasExpanded = toggle?.getAttribute("aria-expanded") === "true";
+    body.classList.add("is-clamped");
+    const overflows = body.scrollHeight > body.clientHeight + 2;
+
+    if (!overflows) {
+      body.classList.remove("is-clamped");
+      toggle?.remove();
+      return;
+    }
+
+    if (!toggle) {
+      toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "collapsible__toggle";
+      // Astro scopes this component's CSS behind a `data-astro-cid-*`
+      // attribute that it stamps onto template elements at build time. A node
+      // built here never gets one, so every scoped rule below — including the
+      // 44px tap target — silently fails to match and the button renders as
+      // bare inline text. Copy the scope off the root.
+      const scope = Array.from(root.attributes).find((a) =>
+        a.name.startsWith("data-astro-cid-"),
+      );
+      if (scope) toggle.setAttribute(scope.name, "");
+      if (!body.id) body.id = `collapsible-${++seq}`;
+      toggle.setAttribute("aria-controls", body.id);
+      toggle.addEventListener("click", () => {
+        const open = body.classList.toggle("is-clamped") === false;
+        apply(toggle!, root, open);
+      });
+      root.appendChild(toggle);
+    }
+
+    // Re-crossing the breakpoint rebuilds the button; carry the open state over
+    // so a reader who expanded the text does not lose their place on rotate.
+    if (wasExpanded) body.classList.remove("is-clamped");
+    apply(toggle, root, wasExpanded);
+  }
+
+  function apply(toggle: HTMLButtonElement, root: HTMLElement, open: boolean) {
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.textContent = open
+      ? (root.dataset.labelLess ?? "Show less")
+      : (root.dataset.labelMore ?? "Read more");
+  }
+
+  function initCollapsibles() {
+    const roots = Array.from(document.querySelectorAll<HTMLElement>("[data-collapsible]"));
+    if (!roots.length) return;
+
+    const mq = window.matchMedia(BREAKPOINT);
+    const run = () => roots.forEach((el) => setup(el, mq.matches));
+
+    run();
+    mq.addEventListener("change", run);
+
+    // Webfonts land after first paint and change how many lines the text takes,
+    // which is exactly the measurement this depends on.
+    if (document.fonts?.ready) document.fonts.ready.then(run);
+  }
+
+  initCollapsibles();
+  document.addEventListener("astro:page-load", initCollapsibles);
+</script>

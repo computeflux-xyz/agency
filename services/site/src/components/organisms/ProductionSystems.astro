@@ -22,6 +22,7 @@
 import Button from "@atoms/Button.astro";
 import Eyebrow from "@atoms/Eyebrow.astro";
 import Highlight from "@atoms/Highlight.astro";
+import Collapsible from "@atoms/Collapsible.astro";
 import NotchedPanel from "@organisms/NotchedPanel.astro";
 import SectionHeader from "@molecules/SectionHeader.astro";
 import SystemSketch from "@atoms/SystemSketch.astro";
@@ -96,11 +97,16 @@ const logoCls: Record<"mark" | "lockup", string> = {
                 <Eyebrow accent={s.light ? "magenta" : "amber"} class:list={[s.light ? "text-ink-400" : "text-ink-500"]}>
                   {t("systems.hardLabel")}
                 </Eyebrow>
-                <p
+                {/* The "what was hard" copy runs 210–285 characters, which is
+                    ten to twelve stacked lines at 294px of measure and the main
+                    reason each of these cards is ~1000px tall on a phone. The
+                    text is kept in full; only the mobile preview is clamped. */}
+                <Collapsible
+                  lines={3}
                   class:list={["text-pretty leading-relaxed", s.light ? "text-ink-200" : "text-ink-600"]}
                 >
                   {s.hard}
-                </p>
+                </Collapsible>
               </div>
 
               <ul class="flex flex-wrap gap-2">
@@ -158,7 +164,7 @@ const logoCls: Record<"mark" | "lockup", string> = {
           if (!svg.id) svg.id = `sys-sketch-${Math.random().toString(36).slice(2, 9)}`;
           new Vivus(svg as unknown as HTMLElement, {
             type: "oneByOne",
-            duration: 160,
+            duration: 80,
             start: "autostart",
             animTimingFunction: Vivus.LINEAR,
             pathTimingFunction: Vivus.EASE_OUT,

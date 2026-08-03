@@ -9,6 +9,14 @@
  *    old hero highlighted "bare metal".
  *  - `logo` prepends a compact Computeflux mark when the surrounded word is the
  *    brand name (the brief's `highlighted_with_logo`).
+ *
+ * Only the logo lockup is `nowrap`. It has to be — the mark and "Computeflux"
+ * are one word and must not come apart — and at ~1 word it always fits. Plain
+ * highlights wrap whole phrases ("Du silicon au dashboard", the systems title),
+ * and holding those on one line overflowed every narrow viewport: the phrase
+ * became an unbreakable ~600px run that pushed the hero heading off-screen and
+ * forced MorphPanel to outgrow its column (the atom measures rendered ink, and
+ * its own comments call out exactly this case).
  */
 import Mark from "@atoms/Mark.astro";
 
@@ -22,7 +30,7 @@ const { class: className = "", grade = "gradient", logo = false } = Astro.props;
 const classes = grade === "gradient" ? "flux-gradient-text" : "bg-flux-blue/15 text-ink-50";
 ---
 
-<span class:list={["inline whitespace-nowrap", classes, className]}>
+<span class:list={["inline", logo && "whitespace-nowrap", classes, className]}>
   {logo && <Mark class="mr-1.5 -mt-0.5 inline-block size-[1em]" />}
   <slot />
 </span>

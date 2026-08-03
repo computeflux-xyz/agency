@@ -19,12 +19,9 @@
  * re-partitioning). The card is a dark NotchedPanel: title, body, the layer's
  * tools (each with a hover "?" popup explaining why that tool sits on this
  * layer, ported from the DiagnosticSection tooltip), and a centred yellow CTA.
- * Below sits the merged "-- integrate the Why content --" strip.
  */
-import Eyebrow from "@atoms/Eyebrow.astro";
 import SectionHeader from "@molecules/SectionHeader.astro";
 import Button from "@atoms/Button.astro";
-import FramedPhoto from "@molecules/FramedPhoto.astro";
 import TechMark from "@atoms/TechMark.astro";
 import NotchedPanel from "@organisms/NotchedPanel.astro";
 import { getPractices, type Practice } from "@data/practices";
@@ -34,16 +31,6 @@ const locale = getLocale(Astro);
 const t = useTranslations(locale);
 
 const practices = getPractices(locale);
-
-/* Timers / docs grid for the merged Why band. */
-const reasons = [
-  { n: "01", title: t("why.r1.title"), body: t("why.r1.body") },
-  { n: "02", title: t("why.r2.title"), body: t("why.r2.body") },
-  { n: "03", title: t("why.r3.title"), body: t("why.r3.body") },
-  { n: "04", title: t("why.r4.title"), body: t("why.r4.body") },
-  { n: "05", title: t("why.r5.title"), body: t("why.r5.body") },
-  { n: "06", title: t("why.r6.title"), body: t("why.r6.body") },
-];
 
 /* Pyramid order, base → apex. Each level binds to the practice it represents;
    the `layer` label is the short name shown on the trapezoid (no numbers). */
@@ -63,7 +50,13 @@ const levels: Practice[] = [
    rows [topEdge, botEdge]. The true triangle is inset from the side by
    (1 - f) / 2 width at height fraction `f`, so every trapezoid's side points
    are derived from that. `LEVEL_GAP` is a hairline carved out of each shared
-   seam so the slices read as separate steps. */
+   seam so the slices read as separate steps.
+
+   The three geometry values (`top` / `height` / `clip`) ship as CUSTOM PROPERTIES
+   on each level rather than as inline `top:` / `height:` / `clip-path:`
+   declarations: a media query cannot override an inline style without
+   `!important`, and below 768px the pyramid has to stop being a pyramid. The
+   stylesheet therefore consumes them only inside `@media (min-width: 768px)`. */
 const LEVEL_GAP = 0.012;
 function pyrShape(level: number) {
   const topEdge = (4 - level) / 5;
@@ -129,7 +122,7 @@ const accentDot: Record<string, string> = {
             return (
               <span
                 class="pyr-shadow-lvl"
-                style={`top:${s.top}%;height:${s.height}%;clip-path:${s.clip}`}
+                style={`--lvl-top:${s.top}%;--lvl-h:${s.height}%;--lvl-clip:${s.clip}`}
               ></span>
             );
           })
@@ -150,7 +143,7 @@ const accentDot: Record<string, string> = {
                 tabindex={i === 0 ? 0 : -1}
                 class="pyr-lvl"
                 title={lv.title}
-                style={`top:${s.top}%;height:${s.height}%;clip-path:${s.clip};--pyr-accent:${accentVar[lv.accent]};--pyr-text:${accentTextVar[lv.accent] ?? "#ffffff"}`}
+                style={`--lvl-top:${s.top}%;--lvl-h:${s.height}%;--lvl-clip:${s.clip};--pyr-accent:${accentVar[lv.accent]};--pyr-text:${accentTextVar[lv.accent] ?? "#ffffff"}`}
                 data-pyr-level
                 data-pyr-mid={s.mid}
                 data-pyr-right={s.right}
@@ -229,47 +222,6 @@ const accentDot: Record<string, string> = {
       <circle data-pyr-node class="pyr-link-node" r="3.5" />
     </svg>
   </div>
-
-  {/* Merged "why Computeflux" band. */}
-  <div class="mt-20 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-14 md:mt-28">
-    <div class="flex flex-col gap-8">
-      <header class="flex flex-col gap-3" data-reveal>
-        <Eyebrow accent="magenta">{t("why.eyebrow")}</Eyebrow>
-        <h3 class="text-2xl font-semibold tracking-tight text-ink-50 md:text-3xl">{t("why.title")}</h3>
-      </header>
-      <dl class="grid gap-x-8 gap-y-6 sm:grid-cols-2" data-reveal-stagger="80">
-        {
-          reasons.map((r) => (
-            <div class="flex flex-col gap-1.5 border-t border-[var(--color-ink-line)] pt-4" data-reveal>
-              <dt class="flex items-baseline gap-2.5">
-                <span class="font-mono text-xs text-ink-400">{r.n}</span>
-                <span class="font-semibold text-ink-50">{r.title}</span>
-              </dt>
-              <dd class="text-pretty text-sm leading-relaxed text-ink-300">{r.body}</dd>
-            </div>
-          ))
-        }
-      </dl>
-    </div>
-    <div class="flex flex-col gap-4" data-reveal>
-      <FramedPhoto
-        src="/photos/reason-baremetal-800.webp"
-        src2x="/photos/reason-baremetal-1600.webp"
-        alt=""
-        label={t("why.photo.baremetal")}
-        corner="bl"
-        ratio="16/9"
-      />
-      <FramedPhoto
-        src="/photos/reason-remote-800.webp"
-        src2x="/photos/reason-remote-1600.webp"
-        alt=""
-        label={t("why.photo.remote")}
-        corner="br"
-        ratio="4/3"
-      />
-    </div>
-  </div>
 </section>
 
 <style>
@@ -287,49 +239,59 @@ const accentDot: Record<string, string> = {
     }
   }
 
-  /* ---- the pyramid square, and its offset NotchedPanel-style shadow ---- */
+  /* ---- the pyramid square, and its offset NotchedPanel-style shadow ----
+     Mobile first. Under 768px there is no pyramid: a triangle 350px wide is a
+     spike, `clip-path` clips hit-testing as well as paint (the apex level's tap
+     target would be a ~33px sliver), and the labels get cut by the same clip.
+     So the default styling here is a plain stacked list of full-width rows, and
+     the trapezoid geometry is re-applied wholesale at >= 768px below. */
   .pyr-aspect {
     position: relative;
     width: 100%;
     max-width: 30rem;
     margin-inline: auto;
-    height: clamp(24rem, 62vh, 32rem);
+    height: auto; /* the square is a >= 768px idea; the list sizes itself */
   }
   .pyr-fig {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
+    display: flex;
+    /* DOM order is base -> apex (levels[0] = bare metal). `column-reverse`
+       paints the list apex-first, matching how the pyramid reads top to bottom,
+       without touching the DOM or the tab/arrow-key sequence. */
+    flex-direction: column-reverse;
+    gap: 0.375rem;
   }
   /* the NotchedPanel offset shadow: the pyramid silhouette, 7px right / 9px
-     down, in near-ink */
+     down, in near-ink — a pyramid-shaped shadow behind a list means nothing */
   .pyr-shadow {
+    display: none;
     position: absolute;
     inset: 0;
     z-index: 0;
     transform: translate(7px, 9px);
   }
   .pyr-shadow-lvl {
-    position: absolute;
     left: 0;
     width: 100%;
     background: var(--color-invert-bg);
   }
 
-  /* ---- one trapezoid level ---- */
+  /* ---- one level: a full-width tappable row on mobile ---- */
   .pyr-lvl {
-    position: absolute;
-    left: 0;
+    /* `relative`, not `static`, purely so the .pyr-fill gauge stays anchored to
+       its own row instead of escaping to .pyr-aspect; it takes no space in flow. */
+    position: relative;
     width: 100%;
+    min-height: 3.25rem; /* 52px — comfortably past the 44px tap-target floor */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    padding-inline: 0.6rem;
-    border: none;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border-strong);
     background: var(--color-surface-raised);
     color: var(--color-ink-300);
-    text-align: center;
+    text-align: left;
     cursor: pointer;
     overflow: hidden;
     opacity: 0;
@@ -338,6 +300,41 @@ const accentDot: Record<string, string> = {
       background 0.3s,
       color 0.3s;
   }
+  /* ---- >= 768px: the pyramid, unchanged. The per-level geometry arrives as
+     --lvl-top / --lvl-h / --lvl-clip custom properties (see the frontmatter
+     note) because inline styles are unreachable from a media query. ---- */
+  @media (min-width: 768px) {
+    .pyr-aspect { height: clamp(24rem, 62vh, 32rem); }
+    .pyr-fig {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+    .pyr-shadow { display: block; }
+    .pyr-shadow-lvl {
+      position: absolute;
+      top: var(--lvl-top);
+      height: var(--lvl-h);
+      clip-path: var(--lvl-clip);
+    }
+    .pyr-lvl {
+      position: absolute;
+      left: 0;
+      top: var(--lvl-top);
+      height: var(--lvl-h);
+      min-height: 0;
+      clip-path: var(--lvl-clip);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0 0.6rem;
+      border: none;
+      text-align: center;
+    }
+  }
+
   .pyr-fig.is-ready .pyr-lvl { opacity: 1; }
   .pyr-lvl:hover {
     z-index: 2;
@@ -351,6 +348,7 @@ const accentDot: Record<string, string> = {
   }
 
   .pyr-lvl-dot {
+    flex: none; /* it is a flex item in the mobile row; never let it squash */
     width: 6px;
     height: 6px;
     border-radius: 9999px;
@@ -360,7 +358,8 @@ const accentDot: Record<string, string> = {
 
   .pyr-lvl-name {
     font-family: var(--font-display);
-    font-size: clamp(0.78rem, 1.4vw, 1.02rem);
+    font-size: 0.95rem; /* list rows read at a normal size; the vw clamp is a
+                           pyramid concern and comes back at >= 768px */
     font-weight: 600;
     line-height: 1.08;
     letter-spacing: -0.01em;
@@ -368,8 +367,14 @@ const accentDot: Record<string, string> = {
     overflow-wrap: anywhere;
   }
   .pyr-lvl[aria-selected="true"] .pyr-lvl-name {
-    font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+    font-size: 1rem;
     font-weight: 700;
+  }
+  @media (min-width: 768px) {
+    .pyr-lvl-name { font-size: clamp(0.78rem, 1.4vw, 1.02rem); }
+    .pyr-lvl[aria-selected="true"] .pyr-lvl-name {
+      font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+    }
   }
 
   /* timer fill along the base of the ACTIVE level's trapezoid */

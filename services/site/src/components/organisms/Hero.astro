@@ -10,6 +10,7 @@
  */
 import Button from "@atoms/Button.astro";
 import Highlight from "@atoms/Highlight.astro";
+import Collapsible from "@atoms/Collapsible.astro";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
@@ -28,14 +29,19 @@ const t = useTranslations(locale);
       nous concevons votre plateforme de traitement de données.
     </h1>
 
-    <p
+    {/* Clamped to four lines on mobile. At 390px this card ran ~14 lines and
+        sat between the headline and the CTAs, which put both buttons more than
+        a screen below the fold. Nothing is removed — the rest is one tap away. */}
+    <div
       class="hero-copy-card dot-grid max-w-2xl rounded-[var(--radius-md)] border border-[var(--color-border-strong)]/70 bg-ink-900/85 px-6 py-5 text-left text-pretty text-base leading-relaxed text-ink-100 shadow-[0_6px_24px_rgba(32,31,30,0.10)] backdrop-blur sm:px-8 sm:text-lg"
       data-reveal
     >
-      <Highlight logo>Computeflux</Highlight> est une agence française d'ingénierie data et IA.
-      Nous vous aidons à concevoir des systèmes intelligents basés sur vos besoins les plus exotiques,
-      qu'il s'agisse d'un prototypage ou du refactoring d'un système mature en production.
-    </p>
+      <Collapsible lines={4}>
+        <Highlight logo>Computeflux</Highlight> est une agence française d'ingénierie data et IA.
+        Nous vous aidons à concevoir des systèmes intelligents basés sur vos besoins les plus exotiques,
+        qu'il s'agisse d'un prototypage ou du refactoring d'un système mature en production.
+      </Collapsible>
+    </div>
 
     <div class="flex flex-col items-center gap-3 sm:flex-row" data-reveal>
       <Button href={localizedPath("/book", locale)} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>

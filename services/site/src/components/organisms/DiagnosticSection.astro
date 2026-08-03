@@ -258,33 +258,49 @@ const items = cases.map((c, i) => ({
     min-width: 0;
   }
 
-  /* ---- the quadtree container: a fixed square, exactly as designed ---- */
+  /* ---- the quadtree container ----
+     A square only from 768px up. Below that there is no quadtree at all: the
+     square would be ~350px wide, and ten regions carved out of it leave leaves
+     of 30-90px a side — far under a 44px tap target, with labels of up to 59
+     characters shredded to three broken glyphs. So on phones this is just a
+     rounded box wrapping a stacked list, sized by its content. */
   .diag-quadtree {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: auto;
     max-width: 30rem;
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-ink-line);
     background: var(--color-surface);
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 1px 0 var(--color-ink-line) inset;
   }
+  @media (min-width: 768px) {
+    .diag-quadtree {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+    }
+  }
 
-  /* ---- one region (a leaf of the quadtree) ---- */
+  /* ---- one region (a leaf of the quadtree) / one row of the mobile list ----
+     Mobile is the default: a full-width row, at least 44px tall, with its own
+     divider and text that wraps like text. The absolute placement the JS drives
+     is restored from 768px up. */
   .qt-cell {
-    position: absolute;
+    position: static;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 0.4rem;
-    padding: clamp(0.4rem, 1.6vw, 0.8rem);
-    border: 1px solid var(--color-ink-line);
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.8rem 0.95rem;
+    border: 0;
+    border-bottom: 1px solid var(--color-ink-line);
     background: var(--color-surface-raised);
     color: var(--color-ink-400);
     text-align: left;
     cursor: pointer;
-    overflow: hidden;
     opacity: 0;
     transition:
       left 0.75s var(--ease-out-expo),
@@ -296,7 +312,32 @@ const items = cases.map((c, i) => ({
       color 0.3s,
       opacity 0.6s;
   }
+  /* the container no longer clips, so the end rows carry its corners instead */
+  .qt-cell:first-child { border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .qt-cell:last-child {
+    border-bottom: 0;
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
   .diag-quadtree.is-ready .qt-cell { opacity: 1; }
+
+  /* Back to regions of a square. This block sits BEFORE the :hover and
+     [aria-selected] rules on purpose: it restates the `border` shorthand, and
+     at equal specificity the later rules must keep the last word on colour. */
+  @media (min-width: 768px) {
+    .qt-cell {
+      position: absolute;
+      width: auto;
+      min-height: 0;
+      padding: clamp(0.4rem, 1.6vw, 0.8rem);
+      overflow: hidden;
+    }
+    .qt-cell,
+    .qt-cell:first-child,
+    .qt-cell:last-child {
+      border: 1px solid var(--color-ink-line);
+      border-radius: 0;
+    }
+  }
 
   /* hover: the region lifts and highlights; the pointer stays a hand
      (buttons default to `default`, so it must be asked for) */
@@ -319,28 +360,51 @@ const items = cases.map((c, i) => ({
     color: var(--color-ink-50);
   }
 
+  /* Mobile: readable, wrapping label. The square's clamp bottoms out at 9.9px
+     and `overflow-wrap: anywhere` is only tolerable when a region is a few tens
+     of pixels wide — in a full-width row both would be vandalism. */
   .qt-label {
-    font-size: clamp(0.62rem, 1.5vw, 0.85rem);
+    font-size: 0.9rem;
     font-weight: 500;
-    line-height: 1.2;
+    line-height: 1.35;
     color: inherit;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
-  /* the active region's text is the hero of the square: bigger and bolder */
   .qt-cell[aria-selected="true"] .qt-label {
-    font-size: clamp(0.95rem, 2vw, 1.25rem);
+    font-size: 1rem;
     font-weight: 600;
-    line-height: 1.12;
+    line-height: 1.3;
+  }
+  @media (min-width: 768px) {
+    .qt-label {
+      font-size: clamp(0.62rem, 1.5vw, 0.85rem);
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    /* the active region's text is the hero of the square: bigger and bolder */
+    .qt-cell[aria-selected="true"] .qt-label {
+      font-size: clamp(0.95rem, 2vw, 1.25rem);
+      line-height: 1.12;
+    }
   }
 
-  /* timer fill along the bottom edge of the active region */
+  /* Timer fill along the bottom edge of the active region. In the mobile list
+     the row is `position: static`, so an absolute track would anchor itself to
+     the whole container — it rides along as the row's last flex child instead. */
   .qt-fill {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: static;
+    display: block;
+    align-self: stretch;
     height: 3px;
     background: rgba(0, 0, 0, 0.16);
+  }
+  @media (min-width: 768px) {
+    .qt-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
   }
   .qt-fill-bar {
     display: block;
@@ -504,6 +568,9 @@ const items = cases.map((c, i) => ({
 
     const isCoarse = window.matchMedia("(pointer: coarse)").matches;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // The quadtree only exists from 768px up; below it the regions render as a
+    // plain stacked list (see the stylesheet) and the geometry pass is skipped.
+    const wide = window.matchMedia("(min-width: 768px)");
 
     /* ---- random quadtree layout engine ---- */
     type Rect = { x: number; y: number; w: number; h: number };
@@ -665,7 +732,7 @@ const items = cases.map((c, i) => ({
         if (!v) {
           v = new Vivus(svg as unknown as HTMLElement, {
             type: "oneByOne",
-            duration: 130,
+            duration: 65,
             start: "manual",
             animTimingFunction: Vivus.LINEAR,
             pathTimingFunction: Vivus.EASE_OUT,
@@ -680,14 +747,27 @@ const items = cases.map((c, i) => ({
     }
 
     function applyLayout() {
-      const rects = buildLayout(idx, chips.length);
-      chips.forEach((c, i) => {
-        const r = rects[i];
-        c.style.left = `${r.x * 100}%`;
-        c.style.top = `${r.y * 100}%`;
-        c.style.width = `${r.w * 100}%`;
-        c.style.height = `${r.h * 100}%`;
-      });
+      if (!wide.matches) {
+        /* Mobile branch: no partition at all — the list is pure CSS. The
+           geometry below is written as INLINE styles, which no stylesheet can
+           beat short of `!important`, so a desktop pass that ran before the
+           viewport shrank has to be undone here rather than overridden. */
+        chips.forEach((c) => {
+          c.style.left = "";
+          c.style.top = "";
+          c.style.width = "";
+          c.style.height = "";
+        });
+      } else {
+        const rects = buildLayout(idx, chips.length);
+        chips.forEach((c, i) => {
+          const r = rects[i];
+          c.style.left = `${r.x * 100}%`;
+          c.style.top = `${r.y * 100}%`;
+          c.style.width = `${r.w * 100}%`;
+          c.style.height = `${r.h * 100}%`;
+        });
+      }
       if (!tabs.classList.contains("is-ready")) {
         // reveal the regions only once they are placed (fade-in, no jump)
         requestAnimationFrame(() => tabs.classList.add("is-ready"));
@@ -798,6 +878,11 @@ const items = cases.map((c, i) => ({
       panelArea.addEventListener("touchstart", pause, { passive: true });
       panelArea.addEventListener("touchend", resume, { passive: true });
     }
+
+    /* Crossing the breakpoint — a rotated phone, a resized window — swaps list
+       and quadtree in both directions: re-run the layout so the geometry is
+       either written for the square or wiped for the list. */
+    wide.addEventListener("change", () => applyLayout());
 
     // Initial placement, then start the timer loop.
     applyLayout();

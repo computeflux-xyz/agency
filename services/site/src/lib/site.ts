@@ -35,7 +35,7 @@ export const site: SiteConfig = {
   foundingYear: 2026,
   social: {
     linkedin: "https://www.linkedin.com/company/computeflux",
-    github: "https://github.com/computeflux",
+    github: "https://github.com/computeflux-xyz",
     x: "https://x.com/computeflux",
   },
   themeColor: "#f5f4ef",

@@ -178,28 +178,6 @@ export const ui = {
     // Sovereignty expertise page deep-dive
     "sovPage.steps": "Our approach",
 
-    // Home — why Computeflux
-    "why.eyebrow": "Why Computeflux",
-    "why.title": "Why companies call us",
-    "why.lead": "Six commitments. Each one is checkable during the engagement, not in a brochure.",
-    "why.r1.title": "Production, not the pitch deck",
-    "why.r1.body": "An engagement is judged on what runs at the end, not on what was presented at the start. A promising model is never enough: what decides is the engineering around it — evaluation, serving, data, reliability.",
-    "why.r1.dont": "What we don't sell:",
-    "why.r2.title": "From bare metal to the model",
-    "why.r2.body": "Few teams cover both the physical server and the model. We go down to the disk and back up to evaluation, without handing off halfway.",
-    "why.r3.title": "Seniors, not juniors on your invoice",
-    "why.r3.body": "You talk to the engineers writing the code. Nobody learns the trade on your budget, and there is no layer between the decision and the execution.",
-    "why.r4.title": "Fully remote, and it shows on the quote",
-    "why.r4.body": "No office to fund, no travel to bill back to you. We work in writing and asynchronously: decisions leave a trail, and that trail stays with you.",
-    "why.r5.title": "Measured before, measured after",
-    "why.r5.body": "We instrument before we touch anything. An improvement is a reproducible before-and-after, not an end-of-sprint impression. If the gain doesn't show up in the measurements, it doesn't exist.",
-    "why.r6.title": "Your data stays where you decide",
-    "why.r6.body": "Hosted in France, at your provider, or on your own hardware. GDPR is settled when the architecture is drawn, not with a box ticked at delivery.",
-    "why.photo.baremetal": "Bare metal",
-    "why.photo.senior": "Seniors",
-    "why.photo.remote": "Remote",
-    "why.photo.measure": "Measurement",
-
     // Reused by the "why" section — the dragon can burn these words
     "home.thesis.slideware": "slideware",
     "home.thesis.vanity": "empty promises",
@@ -231,6 +209,12 @@ export const ui = {
     "approach.s3.title": "We strengthen your team",
     "approach.s3.desc": "We plug into your team, work in your repository, level up your engineers — and leave when you no longer need us.",
     "approach.s3.meta": "Embed",
+    "common.readMore": "Read more",
+    "common.readLess": "Show less",
+    "approach.axis.out": "Alongside your team",
+    "approach.axis.in": "Inside your team",
+    "approach.legend.us": "Computeflux",
+    "approach.legend.you": "Your team",
 
     // CTA section (default copy)
     "cta.eyebrow": "Let's work together",
@@ -687,28 +671,6 @@ export const ui = {
     // Page expertise souveraineté — approfondissement
     "sovPage.steps": "Notre approche",
 
-    // Home — pourquoi Computeflux
-    "why.eyebrow": "Pourquoi Computeflux",
-    "why.title": "Pourquoi les entreprises nous appellent",
-    "why.lead": "Six engagements. Chacun se vérifie pendant la mission, pas dans une plaquette.",
-    "why.r1.title": "La production, pas la plaquette",
-    "why.r1.body": "Une mission se juge à ce qui tourne à la fin, pas à ce qui a été présenté au début. Un modèle prometteur ne suffit jamais : ce qui décide, c'est l'ingénierie autour — l'évaluation, la mise en service, les données, la fiabilité.",
-    "why.r1.dont": "Ce que nous ne vendons pas :",
-    "why.r2.title": "Du bare metal au modèle",
-    "why.r2.body": "Peu d'équipes couvrent à la fois le serveur physique et le modèle. Nous descendons jusqu'au disque et nous remontons jusqu'à l'évaluation, sans passer le relais au milieu du chemin.",
-    "why.r3.title": "Des seniors, pas des juniors refacturés",
-    "why.r3.body": "Vous parlez aux ingénieurs qui écrivent le code. Personne n'apprend le métier sur votre budget, et il n'y a pas d'intermédiaire entre la décision et l'exécution.",
-    "why.r4.title": "Entièrement à distance, et ça se voit sur le devis",
-    "why.r4.body": "Pas de bureau à financer, pas de déplacement à vous refacturer. On travaille en écrit et en asynchrone : les décisions laissent des traces, et ces traces restent chez vous.",
-    "why.r5.title": "Mesuré avant, mesuré après",
-    "why.r5.body": "On instrumente avant de toucher quoi que ce soit. Une amélioration est un avant/après reproductible, pas une impression de fin de sprint. Si le gain n'apparaît pas dans les mesures, il n'existe pas.",
-    "why.r6.title": "Vos données restent où vous décidez",
-    "why.r6.body": "Hébergement en France, chez votre fournisseur ou sur votre propre matériel. Le RGPD se traite au moment où l'architecture se dessine, pas dans une case cochée à la livraison.",
-    "why.photo.baremetal": "Bare metal",
-    "why.photo.senior": "Seniors",
-    "why.photo.remote": "À distance",
-    "why.photo.measure": "Mesure",
-
     // Réutilisées par la section « pourquoi » — le dragon peut brûler ces mots
     "home.thesis.slideware": "des slides",
     "home.thesis.vanity": "de fausses promesses",
@@ -740,6 +702,12 @@ export const ui = {
     "approach.s3.title": "On renforce votre équipe",
     "approach.s3.desc": "On s'intègre à votre équipe, on travaille dans votre dépôt, on fait monter vos ingénieurs — et on part quand vous n'avez plus besoin de nous.",
     "approach.s3.meta": "Renfort",
+    "common.readMore": "Lire la suite",
+    "common.readLess": "Réduire",
+    "approach.axis.out": "À côté de votre équipe",
+    "approach.axis.in": "Dans votre équipe",
+    "approach.legend.us": "Computeflux",
+    "approach.legend.you": "Votre équipe",
 
     // CTA section (default copy)
     "cta.eyebrow": "Travaillons ensemble",

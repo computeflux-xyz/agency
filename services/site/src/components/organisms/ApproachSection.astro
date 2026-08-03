@@ -1,14 +1,84 @@
 ---
+/**
+ * "Trois manières de travailler ensemble" — an engagement-depth diagram.
+ *
+ * The two sections above this one each own a geometric idiom: DiagnosticSection
+ * recursively subdivides a square (quadtree), PracticesSection stacks five
+ * trapezoids base → apex (pyramid). Both say "layers". Neither fits here,
+ * because these three items are not layers and not a funnel — the copy is
+ * explicit that scoping is "usable even if you stop there".
+ *
+ * What actually orders them is how far inside your organisation we sit. So the
+ * idiom is set overlap: two discs, Computeflux and your team, drawn three times
+ * with the distance between their centres closing. Scoping is a thin lens (we
+ * look from outside and hand back a plan); build is a broad shared surface;
+ * embed is our disc nearly nested inside yours (your repo, your standup). The
+ * shared area IS the engagement — the one thing the reader should take away —
+ * and it grows left to right along a labelled depth rail.
+ *
+ * Two deliberate departures from the neighbouring sections:
+ *
+ *   - **All three are shown at once**, not one at a time behind an autoplay
+ *     gauge. The heading offers a choice between three modes, so they have to
+ *     be comparable at a glance; rotating them would hide two thirds of the
+ *     answer and imply a sequence that the copy denies.
+ *   - **No JavaScript.** With nothing to rotate there is no timer, no
+ *     IntersectionObserver and no tablist to keep in sync — the section is
+ *     inert SVG plus `:hover`/`:focus-within`. It is also the third figure on
+ *     the page, and two autoplaying diagrams is already the ceiling.
+ *
+ * The overlap is filled with `<clipPath>` (one disc clipped by the other)
+ * rather than a hand-computed lens path: same result, no circle-intersection
+ * arithmetic, and the geometry stays readable.
+ */
 import SectionHeader from "@molecules/SectionHeader.astro";
+import MorphPanel from "@atoms/MorphPanel.astro";
 import { getLocale, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 
+/* Disc geometry, in viewBox units. `gap` is the distance between the two
+   centres: the whole progression is that one number shrinking. Diameter is 88,
+   so the shared width is 88 - gap → 14, 44, 70. Schematic, not a measurement:
+   the steps are chosen to read clearly at thumbnail size, and nothing is
+   labelled with a figure. */
+const R = 44;
+const CY = 70;
+const CX = 100;
+
+/* Every engagement starts from the same place: outside. The three pairs are
+   drawn tangent (centres 2R apart, no shared surface at all) and close to their
+   own depth once the column is revealed, staggered so they resolve 01 → 02 →
+   03. That turns the static comparison into the process itself — same origin,
+   three distances travelled. */
+const START = 2 * R;
+
 const steps = [
-  { n: "01", title: t("approach.s1.title"), description: t("approach.s1.desc"), meta: t("approach.s1.meta") },
-  { n: "02", title: t("approach.s2.title"), description: t("approach.s2.desc"), meta: t("approach.s2.meta") },
-  { n: "03", title: t("approach.s3.title"), description: t("approach.s3.desc"), meta: t("approach.s3.meta") },
+  {
+    n: "01",
+    title: t("approach.s1.title"),
+    description: t("approach.s1.desc"),
+    meta: t("approach.s1.meta"),
+    gap: 74,
+    accent: "var(--color-flux-blue)",
+  },
+  {
+    n: "02",
+    title: t("approach.s2.title"),
+    description: t("approach.s2.desc"),
+    meta: t("approach.s2.meta"),
+    gap: 44,
+    accent: "var(--color-flux-magenta)",
+  },
+  {
+    n: "03",
+    title: t("approach.s3.title"),
+    description: t("approach.s3.desc"),
+    meta: t("approach.s3.meta"),
+    gap: 18,
+    accent: "var(--color-flux-amber)",
+  },
 ];
 ---
 
@@ -17,25 +87,373 @@ const steps = [
     eyebrow={t("approach.eyebrow")}
     title={t("approach.title")}
     lead={t("approach.lead")}
-    class="mb-14"
+    class="mb-10"
   />
 
-  <ol class="flex flex-col border-t border-[var(--color-ink-line)]" data-reveal-stagger="90">
+  {/* Which disc is which. Stated once, rather than repeated under all three
+      glyphs: the two strokes (solid ink / dashed) carry it after the first
+      read. */}
+  <div class="eng-legend" aria-hidden="true">
+    <span class="eng-legend-item">
+      <svg class="eng-legend-swatch" viewBox="0 0 16 16" focusable="false">
+        <circle cx="8" cy="8" r="6.5" class="eng-disc eng-disc--us"></circle>
+      </svg>
+      {t("approach.legend.us")}
+    </span>
+    <span class="eng-legend-item">
+      <svg class="eng-legend-swatch" viewBox="0 0 16 16" focusable="false">
+        <circle cx="8" cy="8" r="6.5" class="eng-disc eng-disc--you"></circle>
+      </svg>
+      {t("approach.legend.you")}
+    </span>
+  </div>
+
+  <ol class="eng-grid" data-reveal-stagger="90">
     {
-      steps.map((step) => (
+      steps.map((step, i) => (
         <li
-          class="grid grid-cols-1 gap-2 border-b border-[var(--color-ink-line)] py-8 md:grid-cols-[auto_1fr_auto] md:items-baseline md:gap-8"
+          class="eng-col"
+          style={[
+            `--eng-accent:${step.accent}`,
+            /* Endpoints of the convergence, in viewBox units. The clip circle
+               tracks `us` and the lens tracks `you`, so all four stay locked
+               together off two variables. */
+            `--eng-us-from:${CX - START / 2}px`,
+            `--eng-us-to:${CX - step.gap / 2}px`,
+            `--eng-you-from:${CX + START / 2}px`,
+            `--eng-you-to:${CX + step.gap / 2}px`,
+          ].join(";")}
           data-reveal
         >
-          <div class="flex items-baseline gap-4 md:w-64">
-            <span class="font-mono text-sm text-ink-400">{step.n}</span>
-            <h3 class="text-xl font-semibold tracking-tight text-ink-50 md:text-2xl">{step.title}</h3>
+          {/* The glyph. `focusable="false"` + aria-hidden: the geometry is a
+              restatement of the heading and body beneath it, so a screen
+              reader should read the prose, not "image". */}
+          <svg
+            class="eng-glyph"
+            viewBox="0 0 200 140"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <clipPath id={`eng-clip-${i}`}>
+                <circle class="eng-clip-circle" cx={CX - step.gap / 2} cy={CY} r={R} />
+              </clipPath>
+            </defs>
+
+            <circle cx={CX + step.gap / 2} cy={CY} r={R} class="eng-disc eng-disc--you" />
+            <circle cx={CX - step.gap / 2} cy={CY} r={R} class="eng-disc eng-disc--us" />
+
+            {/* The shared surface: your team's disc, clipped to ours. */}
+            <circle
+              cx={CX + step.gap / 2}
+              cy={CY}
+              r={R}
+              class="eng-lens"
+              clip-path={`url(#eng-clip-${i})`}
+            />
+          </svg>
+
+          {/* The depth rail. One segment per column, bled by half the grid gap
+              at each end so the three meet into a single continuous axis; the
+              outer ends stop at their node instead of overhanging the section.
+              Its two captions name the direction of travel, and they live here
+              rather than in a footer so they sit on the axis they describe. */}
+          <div class="eng-rail" aria-hidden="true">
+            {i === 0 && <span class="eng-axis-cap eng-axis-cap--start">{t("approach.axis.out")}</span>}
+            {i === steps.length - 1 && (
+              <span class="eng-axis-cap eng-axis-cap--end">{t("approach.axis.in")}</span>
+            )}
           </div>
-          <p class="text-pretty leading-relaxed text-ink-300">{step.description}</p>
-          <span class="font-mono text-xs uppercase tracking-wider text-ink-400 md:text-right">{step.meta}</span>
+
+          {/* `fit={false}`: three columns of body copy each measure a
+              different longest line, and letting the atom shrink to it would
+              leave the row ragged. The bite is taken from the top-left so it
+              points back at the glyph's leading disc rather than away. */}
+          <MorphPanel
+            class="eng-panel"
+            cut="top-left"
+            cutWidth={64}
+            cutHeight={24}
+            radius={14}
+            innerRadius={12}
+            tone="surface"
+            fit={false}
+          >
+            <div class="eng-body">
+              <header class="eng-head">
+                <span class="eng-n">{step.n}</span>
+                <span class="eng-meta">{step.meta}</span>
+              </header>
+              <h3 class="eng-title">{step.title}</h3>
+              <p class="eng-desc text-pretty">{step.description}</p>
+            </div>
+          </MorphPanel>
         </li>
       ))
     }
   </ol>
 </section>
 
+<style>
+  .eng-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 1.1rem;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-400);
+  }
+  .eng-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .eng-legend-swatch {
+    width: 0.85rem;
+    height: 0.85rem;
+    overflow: visible;
+  }
+
+  .eng-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 2rem;
+  }
+  @media (min-width: 768px) {
+    .eng-grid {
+      /* The three columns must be exactly equal for the rail nodes to land on
+         a straight line: each segment is centred in its own column. */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .eng-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* On one-column mobile the cell is ~350px wide but the height floor is 112px,
+     and `xMidYMid meet` scales to whichever axis binds first — the height — so
+     the pair was drawn at 0.8x and centred, leaving ~190px of dead row. Sizing
+     by aspect ratio instead lets the glyph fill the box it is given. */
+  .eng-glyph {
+    display: block;
+    width: min(100%, 15rem);
+    aspect-ratio: 10 / 7;
+    height: auto;
+    margin-inline: auto;
+  }
+  @media (min-width: 768px) {
+    .eng-glyph {
+      width: 100%;
+      aspect-ratio: auto;
+      height: clamp(7rem, 13vw, 9.5rem);
+      margin-inline: 0;
+    }
+  }
+
+  .eng-disc {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    transition: stroke 0.3s;
+  }
+
+  /* ---- the convergence ----
+     `cx` is an SVG geometry property, so it animates straight from CSS — no rAF
+     loop and no JS beyond the reveal class the page already sets. The delay
+     chains off `--reveal-delay`, which the stagger script has already computed
+     per column, so the discs close in column order for free.
+
+     Every rule here is scoped under `.eng-glyph`. The legend swatches reuse
+     `.eng-disc--us` / `--you` for their strokes, and unscoped geometry would
+     reach them too: `--eng-us-from` is undefined there, which makes `cx`
+     invalid at computed-value time, so it falls back to the initial `0` and
+     drags the swatch half off its own viewBox.
+
+     The delay is written per-property inside each shorthand rather than hoisted
+     to `transition-delay`, which would also postpone the hover stroke and
+     opacity changes by the column's stagger and read as lag on the pointer.
+     Each selector restates the transition it is overriding, since the shorthand
+     drops any property it does not list. */
+  .eng-glyph .eng-disc {
+    transition:
+      stroke 0.3s,
+      cx 900ms var(--ease-out-expo) calc(var(--reveal-delay, 0ms) + 220ms);
+  }
+  .eng-glyph .eng-clip-circle {
+    transition: cx 900ms var(--ease-out-expo) calc(var(--reveal-delay, 0ms) + 220ms);
+  }
+  .eng-glyph .eng-lens {
+    transition:
+      opacity 0.3s,
+      cx 900ms var(--ease-out-expo) calc(var(--reveal-delay, 0ms) + 220ms);
+  }
+
+  .eng-glyph .eng-disc--us,
+  .eng-glyph .eng-clip-circle { cx: var(--eng-us-from); }
+  .eng-glyph .eng-disc--you,
+  .eng-glyph .eng-lens { cx: var(--eng-you-from); }
+
+  .eng-col.is-revealed .eng-glyph .eng-disc--us,
+  .eng-col.is-revealed .eng-glyph .eng-clip-circle { cx: var(--eng-us-to); }
+  .eng-col.is-revealed .eng-glyph .eng-disc--you,
+  .eng-col.is-revealed .eng-glyph .eng-lens { cx: var(--eng-you-to); }
+  /* Solid ink = us. */
+  .eng-disc--us {
+    stroke: var(--color-ink-50);
+    stroke-width: 1.5;
+  }
+  /* Dashed = your team, the side we are joining. */
+  .eng-disc--you {
+    stroke: var(--color-ink-400);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 3.5;
+  }
+
+  /* The shared surface — the payload of the whole diagram. */
+  .eng-lens {
+    fill: var(--eng-accent);
+    opacity: 0.82;
+    transition: opacity 0.3s;
+  }
+
+  /* The rail is CSS rather than SVG on purpose. To bridge the grid gap the
+     line has to overrun its column, which in SVG means either `meet` (the
+     overrun is capped by the viewBox aspect and falls short of the gap) or
+     `none` (enough overrun, but the non-uniform scale turns the round node
+     into an ellipse). A bled pseudo-element has neither problem. */
+  .eng-rail {
+    position: relative;
+    height: 2.5rem;
+  }
+  .eng-rail::before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    /* Half the 2rem column gap at each end, so adjacent segments meet exactly. */
+    left: -1rem;
+    right: -1rem;
+    height: 1px;
+    background: var(--color-ink-line);
+  }
+  /* The axis starts and ends at a node, not in mid-air past the outer edge. */
+  .eng-col:first-child .eng-rail::before { left: 50%; }
+  .eng-col:last-child .eng-rail::before { right: 50%; }
+
+  .eng-rail::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    box-sizing: border-box;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border: 2px solid var(--eng-accent);
+    border-radius: 9999px;
+    background: var(--color-bg);
+    transition: background 0.3s;
+  }
+
+  .eng-axis-cap {
+    position: absolute;
+    top: 1.15rem;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink-400);
+  }
+  .eng-axis-cap--start { left: 0; }
+  .eng-axis-cap--end { right: 0; }
+
+  /* One column per row on mobile: a horizontal axis across a vertical stack
+     would be a lie, so it goes away with the layout that justified it. */
+  @media (max-width: 767px) {
+    .eng-rail { display: none; }
+  }
+
+  /* The panel carries the row's height: the grid stretches each <li>, and
+     `flex: 1` hands that height down so all three outlines end level despite
+     unequal copy. */
+  .eng-panel {
+    flex: 1 1 auto;
+  }
+
+  .eng-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .eng-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .eng-n {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-ink-400);
+  }
+  .eng-meta {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--eng-accent);
+  }
+  .eng-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-50);
+  }
+  @media (min-width: 768px) {
+    .eng-title { font-size: 1.4rem; }
+  }
+  .eng-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-ink-300);
+  }
+
+  /* Hover/focus is the only state: bring the shared surface to full strength
+     and darken your team's outline, so the pair reads as engaged. */
+  .eng-col:hover .eng-lens,
+  .eng-col:focus-within .eng-lens {
+    opacity: 1;
+  }
+  .eng-col:hover .eng-disc--you,
+  .eng-col:focus-within .eng-disc--you {
+    stroke: var(--color-ink-50);
+  }
+  .eng-col:hover .eng-rail::after,
+  .eng-col:focus-within .eng-rail::after {
+    background: var(--eng-accent);
+  }
+
+  /* No convergence to watch, so the pairs are simply drawn where they end up.
+     This has to override the unrevealed `--eng-*-from` rules above, hence its
+     position last in the sheet. */
+  @media (prefers-reduced-motion: reduce) {
+    .eng-disc,
+    .eng-glyph .eng-disc,
+    .eng-glyph .eng-clip-circle,
+    .eng-glyph .eng-lens,
+    .eng-rail::after { transition: none; }
+    /* Specificity has to beat the unrevealed `--eng-*-from` rules above, so the
+       `.eng-glyph` prefix is kept rather than dropped. */
+    .eng-glyph .eng-disc--us,
+    .eng-glyph .eng-clip-circle { cx: var(--eng-us-to); }
+    .eng-glyph .eng-disc--you,
+    .eng-glyph .eng-lens { cx: var(--eng-you-to); }
+  }
+</style>

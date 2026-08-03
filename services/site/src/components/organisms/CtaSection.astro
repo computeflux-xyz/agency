@@ -43,7 +43,10 @@ const studiesHref = localizedPath("/studies", locale);
         <h2 class="text-balance text-3xl font-semibold leading-[1.05] tracking-tight text-[#fbfbf9] sm:text-4xl md:text-5xl">
           {titleText}
         </h2>
-        <p class="text-pretty text-lg leading-relaxed text-ink-500">{leadText}</p>
+        {/* `text-ink-500` (#9c9686) on the #157493 fill is about 2.2:1 — it
+            fails contrast outright, and a phone screen outdoors is where that
+            shows first. Matches the body copy on the other dark panels. */}
+        <p class="text-pretty text-lg leading-relaxed text-white/[0.88]">{leadText}</p>
         <div class="mt-2 flex flex-col gap-3 sm:flex-row">
           <Button href={bookHref} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>
           <Button href={studiesHref} variant="outline" size="lg" onDark>{t("cta.studies")}</Button>

@@ -128,7 +128,12 @@ const bookHref = localizedPath("/book", locale);
         >
           {t("cta.contact")}
         </a>
-        <Button href={headerCta.href} size="sm" variant="primary" class="hidden sm:inline-flex" arrow>
+        {/* `max-sm:hidden`, not `hidden sm:inline-flex`: Button's base class
+            already sets `inline-flex`, and an unvariant `hidden` alongside it
+            is a coin toss on utility order — it lost, so the 168px CTA stayed
+            in the bar next to the burger and pushed the cluster 6px past the
+            viewport. A media-query variant always wins over the base. */}
+        <Button href={headerCta.href} size="sm" variant="primary" class="max-sm:hidden" arrow>
           {headerCta.label}
         </Button>
 

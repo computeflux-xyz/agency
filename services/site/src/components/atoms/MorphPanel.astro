@@ -58,6 +58,13 @@ interface Props {
   innerRadius?: number;
   tone?: Tone;
   shadow?: boolean;
+  /**
+   * Shrink the panel to its longest rendered line (see "Fitting the content").
+   * Right for a heading, wrong for a column in an equal-width grid: there the
+   * measured widths differ per column and the row comes out ragged. Pass
+   * `false` to keep the panel the full width of its column.
+   */
+  fit?: boolean;
   /** Inner padding. Pass `false` to lay the slot out yourself. */
   padded?: boolean;
   as?: "div" | "header" | "section";
@@ -74,6 +81,7 @@ const {
   innerRadius = 14,
   tone = "surface",
   shadow = true,
+  fit = true,
   padded = true,
   as = "div",
   class: className = "",
@@ -103,6 +111,7 @@ const { fill, stroke } = tones[tone];
   data-mp-ch={cutHeight}
   data-mp-r={radius}
   data-mp-ir={innerRadius}
+  data-mp-fit={fit ? "1" : "0"}
 >
   <svg class="mp__shape" aria-hidden="true" preserveAspectRatio="none" focusable="false">
     <path data-mp-path fill={fill} stroke={stroke} stroke-width="1" vector-effect="non-scaling-stroke"></path>
@@ -289,7 +298,12 @@ const { fill, stroke } = tones[tone];
     // line. The bound keeps a pathological layout from spinning.
     let width = 0;
     for (let pass = 0; pass < 3; pass++) {
-      const wanted = Math.max(240, Math.min(avail, Math.ceil(measureInk(el, content) + padRight)));
+      // The 240px floor keeps a short heading from collapsing to a stub, but it
+      // is applied INSIDE the `avail` clamp: hoisting it outside made any
+      // container narrower than 240px overflow by construction, which is a live
+      // hazard for a panel dropped into a narrow grid column on a phone.
+      const ink = Math.ceil(measureInk(el, content) + padRight);
+      const wanted = Math.min(avail, Math.max(240, ink));
       if (wanted === width) break;
       width = wanted;
 
@@ -334,14 +348,31 @@ const { fill, stroke } = tones[tone];
     const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-mp]"));
     if (!panels.length) return;
 
-    // Widths this script applied itself. Without this the observer would see
-    // its own write, re-fit, and oscillate.
+    /**
+     * The container width each panel was last fitted against.
+     *
+     * This deliberately keys on the PARENT's width, not the panel's own. The
+     * guard exists so the observer does not see this script's own write and
+     * re-fit forever, and the panel's width is exactly what the write changes —
+     * so keying on it meant that after the first fit `applied === offsetWidth`
+     * always held, and the panel could never be re-fitted. Narrowing the
+     * viewport then left a stale width behind: the panel kept a figure measured
+     * against a wider column, overflowed its parent, and pushed the page into
+     * horizontal scroll on rotate. The parent's width is the actual input to
+     * the fit and never changes as a result of it, so it is both stable against
+     * feedback and correct on resize.
+     */
     const applied = new WeakMap<HTMLElement, number>();
+    const availOf = (el: HTMLElement) => el.parentElement?.clientWidth ?? 0;
 
     function layout(el: HTMLElement) {
-      if (applied.get(el) !== el.offsetWidth) {
+      // `fit: false` keeps the panel at its column width; only the outline is
+      // redrawn. The measure/settle pass is skipped entirely rather than run
+      // and discarded — it forces layout three times per element.
+      const avail = availOf(el);
+      if (el.dataset.mpFit !== "0" && applied.get(el) !== avail) {
         fitPanel(el);
-        applied.set(el, el.offsetWidth);
+        applied.set(el, avail);
       }
 
       drawPanel(el);
@@ -349,13 +380,23 @@ const { fill, stroke } = tones[tone];
 
     // The shape depends on the box, and the box depends on the text, which
     // reflows on viewport resize and on webfont load.
+    //
+    // The parent is observed as well as the panel. A fitted panel carries an
+    // inline width, so it no longer resizes with the viewport and its own
+    // entry stops firing — the container is the only element left that still
+    // reports the change.
     const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) layout(entry.target as HTMLElement);
+      for (const entry of entries) {
+        const target = entry.target as HTMLElement;
+        if (target.hasAttribute("data-mp")) layout(target);
+        else target.querySelectorAll<HTMLElement>("[data-mp]").forEach(layout);
+      }
     });
 
     panels.forEach((el) => {
       layout(el);
       ro.observe(el);
+      if (el.parentElement) ro.observe(el.parentElement);
     });
 
     // Webfonts land after first paint and change every measurement.
