@@ -1,0 +1,314 @@
+---
+/**
+ * PipelineSketch — the working path of a piece of data, sketched stencil by
+ * stencil the way you would draw it on a whiteboard.
+ *
+ * Same family as `SystemSketch` (landing page) and `DiagnosticDiagram`: every
+ * node is ONE stroked path, every edge is ONE stroked path plus its arrowhead,
+ * and they are emitted in traversal order — node, edge, node, edge — so vivus
+ * `oneByOne` draws the sentence left to right instead of scattering shapes.
+ *
+ * While the outline is being drawn the parent adds `.is-drawing` on the `<svg>`:
+ * fills and labels are held back and fade in once the stroke lands. Without JS,
+ * or under `prefers-reduced-motion`, the class is never set and the drawing is
+ * simply static — the section still reads.
+ *
+ * WHY STENCILS AND NOT `FlowDiagram`: five identical rounded boxes say "five
+ * things in a row". A document stack, a contract seal, a gate, a storage drum
+ * and a dashboard window say WHAT each stage is, which is the whole argument of
+ * this section. Nothing here is quantitative: no axis, no scale, no number, and
+ * every stencil is the same size, so no shape can be read as a measurement.
+ *
+ * COLOUR is passed in, because this sketch lives on the blue `NotchedPanel` and
+ * a second palette in a second place is how two blues drift apart.
+ */
+import type { FlowNodeInput, FlowEdgeInput } from "@lib/schematic";
+
+interface Props {
+  /** Five stages, in order. `tone: "fix"` marks the ones we own. */
+  nodes: FlowNodeInput[];
+  /** Edges between consecutive stages; only `label` is used (the path is fixed). */
+  edges: FlowEdgeInput[];
+  /** Short label for screen readers — a `<path>` announces nothing. */
+  alt: string;
+  /** Longer description, read after `alt`. */
+  desc?: string;
+  class?: string;
+}
+
+const { nodes, edges, alt, desc, class: className = "" } = Astro.props;
+
+/* ---- canvas + grid: one row, one column per stage ---- */
+const VW = 640;
+const VH = 140;
+const PAD = 12;
+const GAP = 36;
+const H = 52;
+const BEVEL = 7;
+const HEAD = 9; // arrowhead length
+const HALF = 4.6; // arrowhead half width
+const MARGIN = 5; // clearance between a node's face and the arrow
+
+const count = Math.max(nodes.length, 1);
+const W = (VW - 2 * PAD - GAP * (count - 1)) / count;
+const CY = 84;
+const Y = CY - H / 2;
+
+const f = (v: number) => Number(v.toFixed(1));
+
+type Box = { x: number; y: number; w: number; h: number; cx: number; cy: number };
+const boxes: Box[] = nodes.map((_, i) => {
+  const x = PAD + i * (W + GAP);
+  return { x, y: Y, w: W, h: H, cx: x + W / 2, cy: CY };
+});
+
+/* ---- stencils. Each one is a single stroked path, closed where it reads as a
+       container. `stencil` picks by position, because the story is fixed: what
+       comes in, what we put in front of it, what checks it, where it lands and
+       who reads it. ---- */
+
+/** Beveled box — the Computeflux corner cut, used as the base shape. */
+const bevel = (b: Box, inset = 0): string => {
+  const x = b.x + inset;
+  const y = b.y + inset;
+  const w = b.w - inset * 2;
+  const h = b.h - inset * 2;
+  return (
+    `M ${f(x + BEVEL)} ${f(y)} L ${f(x + w - BEVEL)} ${f(y)} L ${f(x + w)} ${f(y + BEVEL)}` +
+    ` L ${f(x + w)} ${f(y + h - BEVEL)} L ${f(x + w - BEVEL)} ${f(y + h)}` +
+    ` L ${f(x + BEVEL)} ${f(y + h)} L ${f(x)} ${f(y + h - BEVEL)} L ${f(x)} ${f(y + BEVEL)} Z`
+  );
+};
+
+/** Two sheets peeking out behind the front one: disparate sources. */
+const stack = (b: Box): string =>
+  `M ${f(b.x + 9)} ${f(b.y - 4)} L ${f(b.x + b.w - 9)} ${f(b.y - 4)}` +
+  ` M ${f(b.x + 17)} ${f(b.y - 8)} L ${f(b.x + b.w - 17)} ${f(b.y - 8)}`;
+
+/** Hexagon — the contract: a boundary everything has to pass through. */
+const hexagon = (b: Box): string => {
+  const c = 13;
+  return (
+    `M ${f(b.x + c)} ${f(b.y)} L ${f(b.x + b.w - c)} ${f(b.y)} L ${f(b.x + b.w)} ${f(b.cy)}` +
+    ` L ${f(b.x + b.w - c)} ${f(b.y + b.h)} L ${f(b.x + c)} ${f(b.y + b.h)} L ${f(b.x)} ${f(b.cy)} Z`
+  );
+};
+
+/** A tick, drawn after the box it sits in: the tests that gate the stage. */
+const tick = (b: Box): string =>
+  `M ${f(b.cx - 9)} ${f(b.y + b.h - 13)} L ${f(b.cx - 3)} ${f(b.y + b.h - 7)} L ${f(b.cx + 10)} ${f(b.y + b.h - 20)}`;
+
+/** Storage drum — the warehouse. */
+const drum = (b: Box): string => {
+  const r = 7; // ellipse half-height
+  const top = b.y + r;
+  const bottom = b.y + b.h - r;
+  return (
+    `M ${f(b.x)} ${f(top)} A ${f(b.w / 2)} ${r} 0 0 1 ${f(b.x + b.w)} ${f(top)}` +
+    ` A ${f(b.w / 2)} ${r} 0 0 1 ${f(b.x)} ${f(top)} Z` +
+    ` M ${f(b.x)} ${f(top)} L ${f(b.x)} ${f(bottom)}` +
+    ` A ${f(b.w / 2)} ${r} 0 0 0 ${f(b.x + b.w)} ${f(bottom)}` +
+    ` L ${f(b.x + b.w)} ${f(top)}`
+  );
+};
+
+/** A window with its title bar — the dashboards people actually open. The bar is
+    a chrome hint, so the label sits UNDER it rather than inside 9 units of it. */
+const windowFrame = (b: Box): string =>
+  `${bevel(b)} M ${f(b.x + 3)} ${f(b.y + 9)} L ${f(b.x + b.w - 3)} ${f(b.y + 9)}`;
+
+/** A line going up, drawn low in the window. Shape only — it plots nothing. */
+const spark = (b: Box): string =>
+  `M ${f(b.x + 11)} ${f(b.y + b.h - 8)} L ${f(b.x + b.w * 0.38)} ${f(b.y + b.h - 14)}` +
+  ` L ${f(b.x + b.w * 0.62)} ${f(b.y + b.h - 10)} L ${f(b.x + b.w - 11)} ${f(b.y + b.h - 20)}`;
+
+/* ---- assembly, in traversal order ---- */
+type Piece =
+  | { t: "edge"; d: string; head: string; label?: string; lx: number; ly: number; tone: string }
+  | { t: "node"; d: string; detail?: string; label: string; cx: number; ly: number; tone: string };
+
+const pieces: Piece[] = [];
+
+nodes.forEach((node, i) => {
+  const b = boxes[i];
+  const tone = node.tone === "fix" ? "fix" : "default";
+
+  /* Shape and label baseline per position. The drum's label has to clear its top
+     ellipse and the window's has to clear its title bar, so neither sits on the
+     geometric centre. */
+  let d = bevel(b);
+  let detail: string | undefined;
+  let ly = b.cy;
+
+  if (i === 0) {
+    d = `${bevel(b)} ${stack(b)}`;
+    ly = b.cy + 2;
+  } else if (i === 1) {
+    d = hexagon(b);
+  } else if (i === 2) {
+    detail = tick(b);
+    ly = b.cy - 6;
+  } else if (i === nodes.length - 1) {
+    d = windowFrame(b);
+    detail = spark(b);
+    ly = b.y + 22;
+  } else {
+    d = drum(b);
+    ly = b.cy + 3;
+  }
+
+  pieces.push({ t: "node", d, detail, label: node.label, cx: b.cx, ly, tone });
+
+  /* The edge that leaves this node, so the drawing advances one stage at a time
+     rather than laying every box down first. */
+  const next = boxes[i + 1];
+  if (!next) return;
+  const from = b.x + b.w + MARGIN;
+  const to = next.x - MARGIN;
+  const edge = edges[i];
+  const eTone = edge?.tone === "fix" ? "fix" : "default";
+  pieces.push({
+    t: "edge",
+    d: `M ${f(from)} ${f(b.cy)} L ${f(to)} ${f(b.cy)}`,
+    head: `M ${f(to - HEAD)} ${f(b.cy - HALF)} L ${f(to)} ${f(b.cy)} L ${f(to - HEAD)} ${f(b.cy + HALF)}`,
+    /* Label above the boxes, not in the gutter: "transformations" is wider than
+       any gap we can afford, and up there it may overhang its neighbours
+       harmlessly. The halo stroke punches it out of whatever it crosses. */
+    label: edge?.label,
+    lx: (from + to) / 2,
+    ly: b.y - 11,
+    tone: eTone,
+  });
+});
+
+const outline =
+  desc ??
+  nodes
+    .map((node, i) => (i === 0 ? node.label : `${edges[i - 1]?.label ?? "→"} → ${node.label}`))
+    .join(", ");
+---
+
+<svg
+  data-pipeline-sketch
+  viewBox={`0 0 ${VW} ${VH}`}
+  preserveAspectRatio="xMidYMid meet"
+  class:list={["ps-svg", className]}
+  role="img"
+  aria-label={alt}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <desc>{outline}</desc>
+
+  {
+    pieces.map((piece) =>
+      piece.t === "edge" ? (
+        <>
+          <path class:list={["ps-edge", `ps--${piece.tone}`]} d={piece.d} fill="none" />
+          <path class:list={["ps-edge", `ps--${piece.tone}`]} d={piece.head} fill="none" />
+          {piece.label && (
+            <text class="ps-edge-label" x={piece.lx} y={piece.ly} text-anchor="middle">
+              {piece.label}
+            </text>
+          )}
+        </>
+      ) : (
+        <>
+          <path class:list={["ps-node", `ps--${piece.tone}`]} d={piece.d} />
+          {piece.detail && <path class:list={["ps-detail", `ps--${piece.tone}`]} d={piece.detail} fill="none" />}
+          <text
+            class="ps-label"
+            x={piece.cx}
+            y={piece.ly}
+            text-anchor="middle"
+            dominant-baseline="central"
+          >
+            {piece.label}
+          </text>
+        </>
+      ),
+    )
+  }
+</svg>
+
+<style>
+  /* The palette lives here, once. `--ps-*` is overridable by the caller if this
+     sketch ever sits on another surface. */
+  .ps-svg {
+    --ps-line: #cbe7f2;
+    --ps-fill: #0d5e7c;
+    --ps-fix: #ffffff;
+    --ps-fix-fill: #0a4d66;
+    --ps-fg: #ffffff;
+    --ps-faint: #a9d5e6;
+    /* Halo behind the mono edge labels: the panel fill, so a label crossing a
+       stroke punches it out instead of muddying it. */
+    --ps-halo: #157493;
+
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ps-node {
+    fill: var(--ps-fill);
+    stroke: var(--ps-line);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    transition: fill-opacity 0.45s ease 0.1s;
+  }
+  .ps-node.ps--fix {
+    fill: var(--ps-fix-fill);
+    stroke: var(--ps-fix);
+    stroke-width: 2;
+  }
+
+  .ps-edge {
+    stroke: var(--ps-line);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ps-edge.ps--fix {
+    stroke: var(--ps-fix);
+  }
+
+  /* The tick and the sparkline: drawn on top of their container, never filled. */
+  .ps-detail {
+    stroke: var(--ps-fix);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.4s ease 0.1s;
+  }
+
+  .ps-label {
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    fill: var(--ps-fg);
+    transition: opacity 0.4s ease 0.12s;
+  }
+  .ps-edge-label {
+    font-family: var(--font-mono);
+    font-size: 8.6px;
+    fill: var(--ps-faint);
+    stroke: var(--ps-halo);
+    stroke-width: 3.2;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    transition: opacity 0.4s ease 0.12s;
+  }
+
+  /* While vivus sketches the outline, hold everything that is not a stroke back. */
+  .ps-svg.is-drawing .ps-node {
+    fill-opacity: 0;
+    transition: none;
+  }
+  .ps-svg.is-drawing .ps-label,
+  .ps-svg.is-drawing .ps-edge-label {
+    opacity: 0;
+    transition: none;
+  }
+</style>

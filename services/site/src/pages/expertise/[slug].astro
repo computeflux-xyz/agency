@@ -9,6 +9,12 @@ import Tag from "@atoms/Tag.astro";
 import Button from "@atoms/Button.astro";
 import { expertiseSlugs, getExpertise, getExpertiseItem } from "@data/expertise";
 import { getSources, TOOLS } from "@data/sovereignty";
+import { getMediaItem, getMediaPending } from "@data/media";
+import DataEngineeringDetail from "@organisms/DataEngineeringDetail.astro";
+import ExpertiseHero from "@organisms/ExpertiseHero.astro";
+import MoebiusNav from "@molecules/MoebiusNav.astro";
+import SectionHeader from "@molecules/SectionHeader.astro";
+import { getDataEngineering } from "@data/dataEngineering";
 import { breadcrumbSchema } from "@lib/seo";
 import { site } from "@lib/site";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
@@ -28,6 +34,19 @@ const origin = Astro.site?.origin ?? site.url;
 const others = getExpertise(locale).filter((e) => e.slug !== item.slug);
 
 const isSovereignty = item.slug === "sovereignty";
+const isDataEngineering = item.slug === "data-engineering";
+
+/* Media-backed hero, per expertise page. Only data-engineering has a media slot
+   declared in `data/media.ts` so far; every other practice keeps the plain text
+   hero until its own slot exists (add `<slug>-hero` there to opt one in). */
+const heroMedia = getMediaItem(locale, `${isDataEngineering ? "de" : item.slug}-hero`);
+
+/* Hero copy: a page with footage behind it gets a title and a line written
+   against that footage (they live with the page's deep copy), not the generic
+   practice name and tagline. */
+const deContent = isDataEngineering ? getDataEngineering(locale).content : null;
+const heroTitle = deContent?.heroTitle ?? item.title;
+const heroLead = deContent?.heroLead ?? item.tagline;
 const sources = isSovereignty ? getSources(locale) : [];
 const claims = isSovereignty
   ? (["c1", "c2", "c3", "c4"] as const).map((key, i) => ({
@@ -55,34 +74,58 @@ const jsonLd = [
 ---
 
 <PageLayout title={item.title} description={item.summary} jsonLd={jsonLd}>
-  <PageHero eyebrow={`${t("expertise.detail.practice")} ${item.index}`} title={item.title} lead={item.tagline} />
+  {
+    heroMedia ? (
+      <ExpertiseHero
+        eyebrow={`${t("expertise.detail.practice")}`}
+        title={heroTitle}
+        lead={heroLead}
+        ctaLabel={t("nav.bookCall")}
+        ctaHref={localizedPath("/book", locale)}
+        media={heroMedia}
+        pendingLabel={getMediaPending(locale)}
+      />
+    ) : (
+      <PageHero
+        eyebrow={`${t("expertise.detail.practice")}`}
+        title={item.title}
+        lead={item.tagline}
+      />
+    )
+  }
 
-  <section class="container-flux pb-8">
-    <Divider label={t("expertise.overview")} />
-    <div class="py-12">
-      <p class="max-w-3xl text-pretty text-xl leading-relaxed text-ink-200" data-reveal>{item.intro}</p>
-    </div>
-  </section>
+  {isDataEngineering ? (
+    <DataEngineeringDetail item={item} />
+  ) : (
+    <>
+      <section class="container-flux pb-8">
+        <Divider label={t("expertise.overview")} />
+        <div class="py-12">
+          <p class="max-w-3xl text-pretty text-xl leading-relaxed text-ink-200" data-reveal>{item.intro}</p>
+        </div>
+      </section>
 
-  <section class="container-flux py-12 md:py-16">
-    <Divider label={t("expertise.capabilities")} />
-    <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
-      {
-        item.capabilities.map((cap) => (
-          <article
-            class="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-6"
-            data-reveal
-          >
-            <span class="flex size-9 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
-              <Icon name="check" size={16} />
-            </span>
-            <h3 class="text-lg font-semibold tracking-tight text-ink-50">{cap.title}</h3>
-            <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{cap.description}</p>
-          </article>
-        ))
-      }
-    </div>
-  </section>
+      <section class="container-flux py-12 md:py-16">
+        <Divider label={t("expertise.capabilities")} />
+        <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
+          {
+            item.capabilities.map((cap) => (
+              <article
+                class="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-6"
+                data-reveal
+              >
+                <span class="flex size-9 items-center justify-center rounded-full border border-[var(--color-border)] text-flux-blue">
+                  <Icon name="check" size={16} />
+                </span>
+                <h3 class="text-lg font-semibold tracking-tight text-ink-50">{cap.title}</h3>
+                <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{cap.description}</p>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+    </>
+  )}
 
   {isSovereignty && (
     <section class="container-flux py-12 md:py-16">
@@ -133,26 +176,28 @@ const jsonLd = [
   )}
 
   <section class="container-flux py-12 md:py-16">
-    <Divider label={t("expertise.related")} />
-    <div class="grid gap-4 py-12 sm:grid-cols-3" data-reveal-stagger="80">
-      {
-        others.map((o) => (
-          <a
-            href={localizedPath(`/expertise/${o.slug}`, locale)}
-            class="group flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-5 transition-colors hover:border-[var(--color-border-strong)] hover:bg-ink-850"
-            data-reveal
-          >
-            <span class="flex flex-col">
-              <span class="font-mono text-xs text-ink-400">{o.index}</span>
-              <span class="font-medium text-ink-50">{o.shortTitle}</span>
-            </span>
-            <Icon name="arrow" size={16} class="text-ink-400 transition-transform group-hover:translate-x-0.5" />
-          </a>
-        ))
-      }
+    <SectionHeader
+      eyebrow={t("expertise.related")}
+      accent="blue"
+      title={t("expertise.related.title")}
+      lead={t("expertise.related.lead")}
+    />
+    {/* The other practices are one continuous surface, so they are drawn as one:
+        a Möbius band whose every segment is the link to a practice. */}
+    <div class="pb-6 pt-2" data-reveal>
+      <MoebiusNav
+        items={others.map((o) => ({
+          index: o.index,
+          label: o.shortTitle,
+          href: localizedPath(`/expertise/${o.slug}`, locale),
+        }))}
+        caption={t("expertise.related.title")}
+      />
     </div>
     <div class="flex justify-center">
-      <Button href={localizedPath("/expertise", locale)} variant="ghost" arrow>{t("expertise.all")}</Button>
+      <Button href={localizedPath("/expertise", locale)} variant="primary" size="lg" arrow>
+        {t("expertise.all")}
+      </Button>
     </div>
   </section>
 

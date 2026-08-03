@@ -1,0 +1,93 @@
+---
+/**
+ * ExpertiseHero — the media-backed hero for an expertise page.
+ *
+ * Layout (one centred stack over full-bleed media, Tenstorrent-style):
+ *
+ *     ┌──────────────── NotchedPanel, media behind ────────────────┐
+ *     │                  mark + practice eyebrow                   │
+ *     │                     BIG PAGE TITLE                         │
+ *     │                two-line supporting line                    │
+ *     │                    [ book a call ]                         │
+ *     └────────────────────────────────────────────────────────────┘
+ *
+ * It is a composition, not a new surface: `NotchedPanel` owns the chamfered
+ * frame and its offset shadow, `MediaBackdrop` owns the video/photo/placeholder
+ * layer and the contrast scrim, `Mark` and `Button` are the existing atoms. The
+ * single CTA is the appointment flow (`/book`), passed in by the page so the
+ * label stays localized.
+ *
+ * The copy sits in a `relative` child AFTER the backdrop, so it paints above it
+ * without a z-index race.
+ */
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import MediaBackdrop from "@molecules/MediaBackdrop.astro";
+import Button from "@atoms/Button.astro";
+import Mark from "@atoms/Mark.astro";
+import type { MediaItem } from "@data/media";
+
+interface Props {
+  /** Mono label above the title, e.g. "Pratique 04". */
+  eyebrow?: string;
+  title: string;
+  /** Keep it to roughly two lines, like the reference hero. */
+  lead?: string;
+  ctaLabel: string;
+  ctaHref: string;
+  media: MediaItem;
+  pendingLabel: string;
+  class?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  lead,
+  ctaLabel,
+  ctaHref,
+  media,
+  pendingLabel,
+  class: className = "",
+} = Astro.props;
+---
+
+<section class:list={["container-flux pt-28 pb-10 md:pt-36 md:pb-14", className]}>
+  <NotchedPanel tone="dark" notch={44} dotted={false} data-reveal>
+    <div
+      class="relative flex min-h-[clamp(23rem,56vh,34rem)] flex-col items-center justify-center gap-6 px-6 py-20 text-center md:px-12 md:py-28"
+    >
+      <MediaBackdrop media={media} pendingLabel={pendingLabel} />
+
+      <div class="relative flex flex-col items-center gap-5">
+        {
+          eyebrow && (
+            <span class="inline-flex items-center gap-2.5">
+              <Mark class="size-5 md:size-6" />
+              <span class="font-mono text-[0.7rem] font-medium uppercase tracking-[0.16em] text-white/75 md:text-[0.72rem]">
+                {eyebrow}
+              </span>
+            </span>
+          )
+        }
+
+        <h1
+          class="max-w-4xl text-balance text-4xl font-semibold leading-[1.03] tracking-tight text-[#fbfbf9] sm:text-5xl md:text-[3.4rem]"
+        >
+          {title}
+        </h1>
+
+        {
+          lead && (
+            <p class="max-w-xl text-pretty text-base leading-relaxed text-white/80 md:text-lg">
+              {lead}
+            </p>
+          )
+        }
+
+        <div class="mt-3">
+          <Button href={ctaHref} variant="primary" size="lg" arrow>{ctaLabel}</Button>
+        </div>
+      </div>
+    </div>
+  </NotchedPanel>
+</section>

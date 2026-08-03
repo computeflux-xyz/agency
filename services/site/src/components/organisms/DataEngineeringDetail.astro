@@ -1,0 +1,215 @@
+---
+/**
+ * Editorial body of the /expertise/data-engineering page.
+ *
+ * Every block reuses an existing atom or molecule — nothing here invents a
+ * surface, a chart or a button:
+ *
+ *   - overview      — SectionHeader + prose + bullets + two photographs from
+ *                     `data/media.ts` (a slot with no `src` yet renders as a
+ *                     "media pending" panel, so the layout holds either way);
+ *   - pipeline      — the working path of a piece of data, SKETCHED with
+ *                     `PipelineSketch` (vivus, like the landing page's system
+ *                     drawings) inside a blue `NotchedPanel`, beside the tools we
+ *                     reach for (`TechMark` chips).
+ *
+ * The generic capability cards and the build-stack chip wall used to live here
+ * too. They were cut: the cards repeated what the bullets above already promise,
+ * and an eighteen-chip stack wall is a list of nouns, not an argument.
+ */
+import SectionHeader from "@molecules/SectionHeader.astro";
+import TechMark from "@atoms/TechMark.astro";
+import Button from "@atoms/Button.astro";
+import Icon from "@atoms/Icon.astro";
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import PipelineSketch from "@atoms/PipelineSketch.astro";
+import MediaPanel from "@molecules/MediaPanel.astro";
+import { getDataEngineering } from "@data/dataEngineering";
+import { getMedia, getMediaPending } from "@data/media";
+import type { Expertise } from "@data/expertise";
+import { getLocale, localizedPath } from "@i18n";
+
+interface Props {
+  item: Expertise;
+  class?: string;
+}
+
+const { item, class: className = "" } = Astro.props;
+
+const locale = getLocale(Astro);
+
+const { content, flow } = getDataEngineering(locale);
+const mediaBySlug = new Map(getMedia(locale).map((m) => [m.slug, m]));
+
+const overviewMedia = ["de-overview-a", "de-overview-b"];
+
+const pendingLabel = getMediaPending(locale);
+---
+
+<div class:list={["flex flex-col", className]}>
+  {/* ---------- Overview: the promise, beside the humans ---------- */}
+  <section class="container-flux py-12 md:py-16">
+    {/* Two columns from `md`, not `lg`: the photographs belong beside the prose,
+        and a tablet has the width for it. The section header sits INSIDE the text
+        column so both tracks start on the same grid row — with `items-start` that
+        lines the first photograph's top edge up with the header panel's, instead
+        of starting it a header's height lower. `minmax(0,1fr)` on the text track
+        keeps long words from pushing the media column off the container. */}
+    <div
+      class="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_16rem] md:gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-16"
+      data-reveal-stagger="100"
+    >
+      <div class="flex min-w-0 flex-col gap-10">
+        <SectionHeader eyebrow={content.overviewEyebrow} accent="blue" title={content.overviewTitle} />
+        <div class="flex flex-col gap-6" data-reveal>
+          <p class="max-w-3xl text-pretty text-xl leading-relaxed text-ink-200">{item.intro}</p>
+
+          <ul class="flex flex-col gap-3">
+            {
+              content.overviewBullets.map((bullet) => (
+                <li class="flex items-start gap-3 text-pretty leading-relaxed text-ink-300">
+                  <Icon name="check" size={16} class="mt-1.5 shrink-0 text-flux-blue" />
+                  {bullet}
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="mt-1">
+            <Button href={localizedPath("/book", locale)} variant="primary" size="md" arrow>
+              {content.overviewCta}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* `items-start`, no `h-full`: the two photographs have different native
+          ratios, so stretching them to a shared row height would crop them for
+          nothing. */}
+      <div class="grid min-w-0 items-start gap-6" data-reveal>
+        {
+          overviewMedia.map((slug) => {
+            const media = mediaBySlug.get(slug);
+            return media ? <MediaPanel media={media} pendingLabel={pendingLabel} /> : null;
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Pipeline: the one thing a data platform buyer buys ---------- */}
+  <section class="container-flux py-12 md:py-16">
+    <SectionHeader eyebrow={content.pipelineEyebrow} accent="blue" title={content.pipelineTitle} lead={content.pipelineLead} class="mb-10" />
+
+    <NotchedPanel bg="#157493" data-reveal>
+      <div class="flex flex-col gap-10 p-6 md:p-10 lg:flex-row lg:items-center lg:gap-12">
+        {/* The path is SKETCHED, not laid out: `PipelineSketch` draws one stencil
+            per stage with vivus when the panel scrolls into view, the same way the
+            landing page's system drawings work. Caption and legend are ours here
+            because the sketch is not wrapped in `SchemaFrame`. */}
+        <figure class="m-0 flex min-w-0 flex-1 flex-col gap-4">
+          <PipelineSketch nodes={flow.nodes} edges={flow.edges} alt={content.flowAlt} />
+
+          <figcaption class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-white/60">
+            <span class="normal-case tracking-normal text-white/70">{content.flowCaption}</span>
+            <span class="flex items-center gap-1.5">
+              <span class="h-0.5 w-4 rounded-full bg-white" aria-hidden="true"></span>
+              {content.flowLegendFix}
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="h-0.5 w-4 rounded-full bg-[#cbe7f2]" aria-hidden="true"></span>
+              {content.flowLegendDefault}
+            </span>
+          </figcaption>
+        </figure>
+
+        <aside class="flex w-full flex-col gap-6 lg:max-w-sm lg:shrink-0 lg:border-l lg:border-white/10 lg:pl-12">
+          <div class="flex flex-col gap-3">
+            <h3 class="text-xl font-semibold tracking-tight text-[#fbfbf9]">{content.darkTitle}</h3>
+            <p class="text-pretty leading-relaxed text-white/80">{content.darkLead}</p>
+          </div>
+
+          <ul class="flex flex-wrap gap-2">
+            {
+              content.pipelineTools.map((tool) => (
+                <li>
+                  <span class="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-white/20 bg-white/10 px-2.5 py-1.5 text-[0.72rem] font-medium text-white/90">
+                    <TechMark name={tool.name} si={tool.si} class="size-4" />
+                    {tool.name}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </aside>
+      </div>
+    </NotchedPanel>
+  </section>
+
+</div>
+
+<script>
+  import Vivus from "vivus";
+
+  /**
+   * Sketch the pipeline once, when the panel first scrolls into view — same
+   * options as the landing page's system drawings, so the two pages draw at the
+   * same speed and in the same order (`oneByOne`, markup order = reading order).
+   *
+   * `is-drawing` holds the node fills and every label back while the outline
+   * runs; it is removed on completion. Under `prefers-reduced-motion` the class
+   * is never added and nothing animates: the finished drawing is just there.
+   */
+  /**
+   * Make the finished drawing unconditional: drop `is-drawing` and clear the
+   * inline dash styles vivus writes. Called on completion AND from a watchdog,
+   * because vivus animates on `requestAnimationFrame` — which a background or
+   * hidden tab freezes mid-stroke. Without this the section could be left
+   * permanently blank, which is a far worse failure than "it did not animate".
+   */
+  function settle(svg: SVGSVGElement) {
+    svg.classList.remove("is-drawing");
+    svg.querySelectorAll<SVGPathElement>("path").forEach((path) => {
+      path.style.strokeDasharray = "";
+      path.style.strokeDashoffset = "";
+    });
+  }
+
+  function initPipelineSketch() {
+    const svgs = Array.from(document.querySelectorAll<SVGSVGElement>("[data-pipeline-sketch]"));
+    if (!svgs.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const seen = new WeakSet<SVGSVGElement>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const svg = entry.target as SVGSVGElement;
+          if (!entry.isIntersecting || seen.has(svg)) continue;
+          seen.add(svg);
+          io.unobserve(svg);
+
+          // vivus keys its internal state on the element id.
+          if (!svg.id) svg.id = `pipeline-sketch-${Math.random().toString(36).slice(2, 9)}`;
+          svg.classList.add("is-drawing");
+          const vivus = new Vivus(svg as unknown as HTMLElement, {
+            type: "oneByOne",
+            duration: 90,
+            start: "manual",
+            animTimingFunction: Vivus.LINEAR,
+            pathTimingFunction: Vivus.EASE_OUT,
+          });
+          vivus.play(1, () => settle(svg));
+          // ~1.5s of drawing at 90 frames; anything past 5s means rAF stalled.
+          window.setTimeout(() => settle(svg), 5000);
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    svgs.forEach((svg) => io.observe(svg));
+  }
+
+  initPipelineSketch();
+  document.addEventListener("astro:page-load", initPipelineSketch);
+</script>

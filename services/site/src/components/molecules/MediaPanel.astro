@@ -1,0 +1,77 @@
+---
+/**
+ * MediaPanel — a photograph slot that renders itself, placeholders included.
+ *
+ * The data-engineering page needs human photos it does not have yet. This
+ * molecule is the single place that decides what a media slot looks like:
+ *
+ *   - no `src` yet → a light `NotchedPanel` (the site's chamfered card frame)
+ *     with a dashed inner frame, a photo glyph, the slot's mono enum and the
+ *     editorial brief, so the layout works today and the slot visibly says
+ *     "photo pending";
+ *   - `src` set → the same slot becomes a real photograph via `FramedPhoto` —
+ *     the site's single photo entry point — with its chamfer, hover accent and
+ *     retina srcset. The `ratio` is shared between both branches, so the column
+ *     never jumps when the asset lands.
+ *
+ * To go live you only edit `src/data/media.ts` (`src`/`src2x` → your assets);
+ * this file needs no changes.
+ */
+import NotchedPanel from "@organisms/NotchedPanel.astro";
+import FramedPhoto from "@molecules/FramedPhoto.astro";
+import Icon from "@atoms/Icon.astro";
+import type { MediaItem } from "@data/media";
+
+interface Props {
+  media: MediaItem;
+  /** Localized "media pending" badge (the atom stays locale-agnostic). */
+  pendingLabel: string;
+  class?: string;
+}
+const { media, pendingLabel, class: className = "" } = Astro.props;
+const isPlaceholder = !media.src;
+---
+
+{
+  isPlaceholder ? (
+    <figure class:list={["group relative", className]} aria-label={media.alt}>
+      <NotchedPanel tone="surface" notch={34} shadow>
+        <div
+          class="relative overflow-hidden"
+          style={`aspect-ratio:${media.ratio}`}
+        >
+          {/* Where the picture will sit: a dashed slip inside the chamfered frame. */}
+          <div
+            class="absolute inset-3 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-md)] border border-dashed border-ink-400/60 bg-ink-900/60 p-6 text-center"
+            aria-hidden="true"
+          >
+            <span class="flex size-11 items-center justify-center rounded-full border border-ink-500/60 text-ink-400">
+              <Icon name="photo" size={18} />
+            </span>
+            <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-500">
+              {media.placeholderTitle}
+            </span>
+            <span class="max-w-[17rem] text-pretty text-xs leading-relaxed text-ink-400">
+              {media.note}
+            </span>
+          </div>
+
+          <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-ink-500/40 bg-ink-900/80 px-2 py-0.5 font-mono text-[0.58rem] font-medium uppercase tracking-[0.14em] text-ink-500">
+            <span class="size-1 rounded-full bg-flux-magenta" aria-hidden="true"></span>
+            {pendingLabel}
+          </span>
+        </div>
+      </NotchedPanel>
+    </figure>
+  ) : (
+    <FramedPhoto
+      src={media.src!}
+      src2x={media.src2x}
+      alt={media.alt}
+      label={media.label}
+      corner={media.corner}
+      ratio={media.ratio}
+      class={className}
+    />
+  )
+}

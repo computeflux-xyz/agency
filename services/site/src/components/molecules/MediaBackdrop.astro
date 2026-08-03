@@ -1,0 +1,156 @@
+---
+/**
+ * MediaBackdrop — a full-bleed media layer for a hero panel.
+ *
+ * Sibling of `MediaPanel`: that one is a framed slot in the flow, this one is
+ * the layer a hero's copy sits ON TOP of. Three states, decided by
+ * `src/data/media.ts` alone:
+ *
+ *   - `video` set → muted, looped, inline footage (paused under
+ *     `prefers-reduced-motion`, where the poster stands in). The file is NOT in
+ *     the markup: the element carries `data-hero-src` and the script below
+ *     attaches it only when the footage is worth its weight — wide viewport, no
+ *     `save-data`, no reduced-motion request. Everyone else sees the poster
+ *     still and downloads a few dozen kB instead of a few MB;
+ *   - `src` set   → the still, with its retina candidate;
+ *   - neither     → a dark dotted surface with the brand glows, so the hero
+ *     reads as designed today and the copy on top keeps its contrast.
+ *
+ * The scrim is only drawn over REAL media: the placeholder is already dark, and
+ * stacking a second scrim on it would mute the accents for nothing.
+ *
+ * To go live you only edit `src/data/media.ts` (`video`/`poster`, or
+ * `src`/`src2x`); nothing here changes.
+ */
+import type { MediaItem } from "@data/media";
+
+interface Props {
+  media: MediaItem;
+  /** Localized "media pending" badge (this molecule stays locale-agnostic). */
+  pendingLabel: string;
+  class?: string;
+}
+const { media, pendingLabel, class: className = "" } = Astro.props;
+
+const video = media.video ?? null;
+const poster = media.poster ?? media.src ?? undefined;
+const hasMedia = Boolean(video || media.src);
+---
+
+<div
+  class:list={["pointer-events-none absolute inset-0 overflow-hidden", className]}
+  aria-hidden="true"
+>
+  {
+    video ? (
+      <video
+        class="size-full object-cover"
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster={poster}
+        data-hero-video
+        data-hero-src={video}
+      />
+    ) : media.src ? (
+      <img
+        src={media.src}
+        srcset={media.src2x ? `${media.src} 1x, ${media.src2x} 2x` : undefined}
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        class="size-full object-cover"
+      />
+    ) : (
+      /* Placeholder: the dark canvas the final footage will replace. */
+      <div class="relative size-full bg-[var(--color-invert-bg)]">
+        <div
+          class="absolute inset-0 opacity-[0.16]"
+          style="background-image:var(--svg-dot-light)"
+        />
+        <div class="absolute -left-24 -top-24 size-80 rounded-full bg-flux-blue/25 blur-[120px]" />
+        <div class="absolute -bottom-24 -right-24 size-80 rounded-full bg-flux-magenta/20 blur-[120px]" />
+      </div>
+    )
+  }
+
+  {/* Contrast floor for the copy, over footage we do not control. */}
+  {
+    hasMedia && (
+      <>
+        <div class="absolute inset-0 bg-[var(--color-invert-bg)]/55" />
+        <div class="absolute inset-0 bg-gradient-to-b from-[var(--color-invert-bg)]/70 via-transparent to-[var(--color-invert-bg)]/80" />
+      </>
+    )
+  }
+
+  {/* The editor's reminder of what belongs in this slot. */}
+  {
+    !hasMedia && (
+      <div class="absolute inset-x-4 bottom-4 flex flex-col items-end gap-1.5 text-right md:inset-x-6 md:bottom-6">
+        <span class="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-white/20 bg-black/30 px-2 py-0.5 font-mono text-[0.58rem] font-medium uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
+          <span class="size-1 rounded-full bg-flux-magenta" />
+          {pendingLabel}
+        </span>
+        <span class="hidden max-w-md text-pretty font-mono text-[0.58rem] leading-relaxed text-white/45 md:block">
+          {media.placeholderTitle} — {media.note}
+        </span>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  /**
+   * A looping backdrop is decoration, so it is worth neither someone's data plan
+   * nor overriding their motion preference. The `<video>` ships with NO source:
+   * this script attaches `data-hero-src` only when all three hold —
+   *
+   *   - the viewport is wide (a phone gets the poster; it is also the layout
+   *     where the footage reads as a backdrop rather than a crop),
+   *   - the connection is not flagged `save-data`,
+   *   - the visitor has not asked for reduced motion.
+   *
+   * Each condition is re-evaluated on change, so rotating a tablet or turning
+   * "reduce motion" on mid-session does the right thing (attach once, then just
+   * play/pause — the bytes are already spent).
+   */
+  const WIDE = "(min-width: 768px)";
+  const REDUCE = "(prefers-reduced-motion: reduce)";
+
+  function saveData() {
+    // Non-standard, Chromium-only; absent elsewhere, which reads as "no flag".
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    return Boolean(conn?.saveData);
+  }
+
+  function syncHeroVideos() {
+    const wide = window.matchMedia(WIDE).matches;
+    const reduce = window.matchMedia(REDUCE).matches;
+    const wanted = wide && !reduce && !saveData();
+
+    for (const el of document.querySelectorAll<HTMLVideoElement>("[data-hero-video]")) {
+      const src = el.dataset.heroSrc;
+      if (!src) continue;
+
+      if (!wanted) {
+        el.pause();
+        continue;
+      }
+
+      if (!el.currentSrc && !el.src) {
+        el.src = src;
+        el.load();
+      }
+      void el.play().catch(() => {
+        /* Autoplay refused (low power mode): the poster stands in. */
+      });
+    }
+  }
+
+  syncHeroVideos();
+  window.matchMedia(WIDE).addEventListener("change", syncHeroVideos);
+  window.matchMedia(REDUCE).addEventListener("change", syncHeroVideos);
+  document.addEventListener("astro:page-load", syncHeroVideos);
+</script>

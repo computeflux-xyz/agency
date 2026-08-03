@@ -1,0 +1,389 @@
+---
+/**
+ * MoebiusNav — the "other practices" links as one slowly turning Möbius band,
+ * where every segment of the band IS a link.
+ *
+ * Same family of idea as the pyramid in `PracticesSection` and the quadtree in
+ * `DiagnosticSection`: the drawing carries the argument instead of decorating a
+ * list. Here the argument is that the practices are one continuous surface —
+ * a Möbius band has ONE side and ONE edge, so there is no "other side" for a
+ * practice to hide on. Follow it round and you come back inverted, having
+ * touched every segment.
+ *
+ * HOW IT WORKS
+ *   - `lib/moebius.ts` owns the parametrisation. This file calls it once at build
+ *     time, so the band and its links are in the HTML before any JS runs;
+ *   - the client script re-runs the same function each frame with an advancing
+ *     `spin`, rewrites each segment's `d`, and reorders the segments back-to-front
+ *     so the band overlaps itself correctly;
+ *   - paint order changes, tab order never does: the `<a>` elements stay in
+ *     document order and only their `<path>` siblings are reordered.
+ *
+ * ACCESSIBILITY / DEGRADATION
+ *   - every segment is a real `<a>` with its own accessible name, reachable by
+ *     keyboard, with a visible focus ring;
+ *   - `prefers-reduced-motion` keeps the band at its build-time pose — no rAF
+ *     loop is ever started;
+ *   - below `md` the band is replaced by a plain list of the same links: a
+ *     spinning surface on a 375px screen is a puzzle, not a menu. Both are the
+ *     same `items`, so there is nothing to keep in sync.
+ */
+import Icon from "@atoms/Icon.astro";
+import { moebiusEdge, moebiusFacets, MOEBIUS_DEFAULTS } from "@lib/moebius";
+
+export type MoebiusItem = {
+  /** Mono ordinal shown on the segment, e.g. "01". */
+  index: string;
+  label: string;
+  href: string;
+};
+
+interface Props {
+  items: MoebiusItem[];
+  /** Accessible name for the band's link group (not rendered as visible text). */
+  caption?: string;
+  class?: string;
+}
+
+const { items, caption, class: className = "" } = Astro.props;
+
+/* View box: the band spans about ±(radius + halfWidth) in view units, and the
+   tilt flattens the vertical extent. These numbers are the whole layout — the
+   SVG scales to its container and nothing else is positioned by hand. */
+const VW = 760;
+/* The viewBox is deliberately taller than the band needs. The band sweeps as it
+   turns, and the SVG is CLIPPED to this box (no `overflow: visible`), so the
+   headroom is what guarantees the drawing can never reach up into the section
+   header above it — a spinning surface that overlaps its own title reads as a
+   bug, not as depth. */
+const VH = 300;
+const SCALE = 150;
+
+const pose = {
+  ...MOEBIUS_DEFAULTS,
+  segments: items.length,
+  spin: -0.35,
+  cx: VW / 2,
+  /* Sits low in its box: the band hangs under the header rather than crowding it. */
+  cy: VH * 0.56,
+  scale: SCALE,
+};
+
+const facets = moebiusFacets(pose);
+const edge = moebiusEdge(pose);
+/* Server render only: far segments first, so the initial frame already overlaps
+   correctly. The client script redoes this every frame. */
+const painted = [...facets].sort((a, b) => a.depth - b.depth);
+---
+
+<div class:list={["mb-nav", className]}>
+  {/* ---------- The band: md and up ---------- */}
+  <div class="mb-nav__stage hidden md:block" data-moebius-stage data-segments={items.length}>
+    <svg
+      class="mb-nav__svg"
+      viewBox={`0 0 ${VW} ${VH}`}
+      role="group"
+      aria-label={caption}
+      data-moebius-svg
+      data-vw={VW}
+      data-vh={VH}
+      data-scale={SCALE}
+    >
+      {/* A soft radial wash so the band reads as sitting in space, not floating
+          on the paper grid. Decorative, hence no role. */}
+      <defs>
+        <radialGradient id="mb-wash" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="var(--color-flux-blue)" stop-opacity="0.10" />
+          <stop offset="100%" stop-color="var(--color-flux-blue)" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx={VW / 2} cy={VH / 2} rx={VW / 2.4} ry={VH / 2.6} fill="url(#mb-wash)" />
+
+      {/* The single boundary curve, under the segments: one stroke that goes round
+          twice before it closes. Decorative in the DOM sense, load-bearing in the
+          argument sense. */}
+      <path class="mb-edge" d={edge} data-moebius-edge aria-hidden="true" />
+
+      <g data-moebius-band>
+        {
+          painted.map((facet) => {
+            const item = items[facet.index];
+            return (
+              <a
+                class="mb-seg"
+                href={item.href}
+                data-moebius-seg={facet.index}
+                style={`--depth:${facet.depth.toFixed(3)};--facing:${facet.facing.toFixed(3)}`}
+                aria-label={`${item.label} — ${item.index}`}
+              >
+                <path class="mb-seg__face" d={facet.d} data-moebius-face />
+                <g class="mb-seg__label" data-moebius-label transform={`translate(${facet.cx} ${facet.cy})`}>
+                  <text class="mb-seg__ord" y="-9" text-anchor="middle">{item.index}</text>
+                  <text class="mb-seg__name" y="8" text-anchor="middle">{item.label}</text>
+                </g>
+              </a>
+            );
+          })
+        }
+      </g>
+    </svg>
+  </div>
+
+  {/* ---------- Below md: the same links, as a list ---------- */}
+  <ul class="flex flex-col gap-3 md:hidden">
+    {
+      items.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class="group flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-4 transition-colors hover:border-[var(--color-border-strong)]"
+          >
+            <span class="flex flex-col">
+              <span class="font-mono text-xs text-ink-400">{item.index}</span>
+              <span class="font-medium text-ink-50">{item.label}</span>
+            </span>
+            <Icon name="arrow" size={16} class="text-ink-400 transition-transform group-hover:translate-x-0.5" />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .mb-nav__stage {
+    position: relative;
+  }
+  .mb-nav__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Clip to the viewBox: whatever the pose, the band stays inside its own box. */
+    overflow: hidden;
+  }
+  .mb-edge {
+    fill: none;
+    stroke: color-mix(in srgb, var(--color-flux-magenta) 55%, transparent);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .mb-seg {
+    cursor: pointer;
+    /* `--depth` runs about -1 (far) → 1 (near); `--facing` is 0 edge-on → 1
+       square-on. Both are written per frame by the script, so every visual that
+       depends on the pose is one calc() away from the geometry. */
+    --near: calc((var(--depth) + 1) / 2);
+  }
+  .mb-seg__face {
+    /* Depth shading: the far half of the band recedes towards the page canvas
+       instead of being hidden, because on a Möbius band "the back" is the same
+       surface you are already looking at. The hue is the segment's own accent. */
+    fill: color-mix(in srgb, var(--color-flux-blue) calc(34% + var(--near) * 52%), var(--color-ink-900));
+    stroke: color-mix(in srgb, var(--color-flux-blue) calc(40% + var(--near) * 55%), transparent);
+    stroke-width: 1.1;
+    stroke-linejoin: round;
+    transition:
+      fill 0.25s ease,
+      stroke 0.25s ease;
+  }
+  .mb-seg:hover .mb-seg__face,
+  .mb-seg:focus-visible .mb-seg__face {
+    fill: var(--color-flux-blue);
+    stroke: var(--color-ink-50);
+    stroke-width: 1.8;
+  }
+  .mb-seg:focus-visible {
+    outline: none;
+  }
+  .mb-seg:focus-visible .mb-seg__face {
+    stroke-dasharray: 5 3;
+  }
+
+  .mb-seg__label {
+    /* An edge-on facet is a sliver: its text would sit on nothing legible, so it
+       fades with `--facing` rather than being toggled on and off. */
+    opacity: calc(0.25 + var(--facing) * 0.75);
+    transition: opacity 0.25s ease;
+  }
+  .mb-seg__ord {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    fill: color-mix(in srgb, var(--color-ink-950) 75%, transparent);
+  }
+  .mb-seg__name {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    fill: var(--color-ink-950);
+    /* Halo in the dark ink, so the label survives both the near (saturated blue)
+       and far (washed-out) end of the shading. */
+    paint-order: stroke;
+    stroke: color-mix(in srgb, var(--color-ink-50) 45%, transparent);
+    stroke-width: 2.6px;
+    stroke-linejoin: round;
+  }
+  .mb-seg:hover .mb-seg__label,
+  .mb-seg:focus-visible .mb-seg__label {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mb-seg__face,
+    .mb-seg__label {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { moebiusEdge, moebiusFacets, MOEBIUS_DEFAULTS } from "@lib/moebius";
+
+  /**
+   * Spin the band. One rAF loop per stage, only while it is on screen, and never
+   * at all under `prefers-reduced-motion` — the build-time pose already reads.
+   *
+   * Per frame: recompute the facets, write each segment's `d`, label transform
+   * and `--depth` / `--facing`, then reorder the `<a>`s' PATHS back-to-front.
+   * The links themselves are never moved, so tab order is stable.
+   */
+  const SPEED = 0.16; // radians per second — a full turn takes ~40s
+
+  function initMoebius(stage: HTMLElement) {
+    if (stage.dataset.moebiusReady === "1") return;
+    stage.dataset.moebiusReady = "1";
+
+    const svgEl = stage.querySelector<SVGSVGElement>("[data-moebius-svg]");
+    const bandEl = stage.querySelector<SVGGElement>("[data-moebius-band]");
+    if (!svgEl || !bandEl) return;
+    // Bound to consts so the null checks above still hold inside the rAF closure.
+    const svg = svgEl;
+    const band = bandEl;
+
+    const segments = Number(stage.dataset.segments ?? 0);
+    if (!segments) return;
+
+    const anchors = new Map<number, SVGAElement>();
+    band.querySelectorAll<SVGAElement>("[data-moebius-seg]").forEach((el) => {
+      anchors.set(Number(el.dataset.moebiusSeg), el);
+    });
+
+    const pose = {
+      ...MOEBIUS_DEFAULTS,
+      segments,
+      spin: -0.35,
+      cx: Number(svg.dataset.vw) / 2,
+      cy: Number(svg.dataset.vh) / 2,
+      scale: Number(svg.dataset.scale),
+    };
+
+    const edgePath = stage.querySelector<SVGPathElement>("[data-moebius-edge]");
+
+    function render(spin: number) {
+      const facets = moebiusFacets({ ...pose, spin });
+      edgePath?.setAttribute("d", moebiusEdge({ ...pose, spin }));
+
+      for (const facet of facets) {
+        const anchor = anchors.get(facet.index);
+        if (!anchor) continue;
+        anchor.querySelector<SVGPathElement>("[data-moebius-face]")?.setAttribute("d", facet.d);
+        anchor
+          .querySelector<SVGGElement>("[data-moebius-label]")
+          ?.setAttribute("transform", `translate(${facet.cx.toFixed(2)} ${facet.cy.toFixed(2)})`);
+        anchor.style.setProperty("--depth", facet.depth.toFixed(3));
+        anchor.style.setProperty("--facing", facet.facing.toFixed(3));
+      }
+
+      /* Paint order: far first. `appendChild` on an existing child MOVES it, which
+         is also why the spin has to freeze while a pointer is over the band: a
+         node that moves between mousedown and mouseup never produces a click, so
+         a spinning band would swallow every one of them. */
+      [...facets]
+        .sort((a, b) => a.depth - b.depth)
+        .forEach((facet) => {
+          const anchor = anchors.get(facet.index);
+          if (anchor) band.appendChild(anchor);
+        });
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let spin = pose.spin;
+    let last = 0;
+    let raf = 0;
+    let running = false;
+
+    function frame(now: number) {
+      if (!running) return;
+      if (last) spin += ((now - last) / 1000) * SPEED;
+      last = now;
+      render(spin);
+      raf = window.requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      last = 0;
+      raf = window.requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      if (raf) window.cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    /* Only spin what is being looked at: an off-screen band burns battery for
+       nobody, and a hidden tab freezes rAF anyway. */
+    let onScreen = false;
+    let held = false; // pointer over the band, or a segment focused
+
+    function sync() {
+      if (onScreen && !held) start();
+      else stop();
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          onScreen = entry.isIntersecting;
+        }
+        sync();
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(stage);
+
+    /* Freeze on hover / focus. Two reasons, and both matter: a moving target is
+       hard to click, and the per-frame reordering that gives the band its depth
+       would cancel the click anyway (see `render`). Same contract as the pyramid
+       and the quadtree, which pause their timers on hover. */
+    const hold = () => {
+      held = true;
+      sync();
+    };
+    const release = () => {
+      held = false;
+      sync();
+    };
+    stage.addEventListener("pointerenter", hold);
+    stage.addEventListener("pointerleave", release);
+    stage.addEventListener("focusin", hold);
+    stage.addEventListener("focusout", release);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stop();
+      else sync();
+    });
+  }
+
+  function initAll() {
+    document.querySelectorAll<HTMLElement>("[data-moebius-stage]").forEach(initMoebius);
+  }
+
+  initAll();
+  document.addEventListener("astro:page-load", initAll);
+</script>

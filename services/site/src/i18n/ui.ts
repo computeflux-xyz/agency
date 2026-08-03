@@ -235,13 +235,17 @@ export const ui = {
     "expertise.overview": "Overview",
     "expertise.capabilities": "What we do",
     "expertise.related": "Other practices",
+    "expertise.related.title": "The rest of the practice.",
+    "expertise.related.lead":
+      "Data engineering rarely arrives alone. The other practices sit on the same surface — pick the one your problem actually starts in.",
     "expertise.all": "All expertise",
     "expertise.cta.eyebrow": "Not sure where to start?",
     "expertise.cta.title": "Book a scoping call",
     "expertise.cta.lead":
       "Tell us the problem. We'll tell you honestly which skills fit, what an engagement would look like, and whether we're the right team for it.",
-    "expertise.detail.practice": "Practice",
+    "expertise.detail.practice": "Computeflux",
     "expertise.detail.ctaTitle": "A {topic} project?",
+
 
     // About
     "about.title": "About",
@@ -728,13 +732,17 @@ export const ui = {
     "expertise.overview": "Vue d'ensemble",
     "expertise.capabilities": "Ce que nous faisons",
     "expertise.related": "Autres pratiques",
+    "expertise.related.title": "Le reste de la pratique.",
+    "expertise.related.lead":
+      "L'ingénierie de données arrive rarement seule...",
     "expertise.all": "Toute l'expertise",
     "expertise.cta.eyebrow": "Vous ne savez pas par où commencer ?",
     "expertise.cta.title": "Réservez un appel de cadrage",
     "expertise.cta.lead":
       "Dites-nous le problème. On vous dira franchement quelles compétences correspondent, à quoi ressemblerait la mission, et si nous sommes la bonne équipe.",
-    "expertise.detail.practice": "Pratique",
+    "expertise.detail.practice": "Computeflux",
     "expertise.detail.ctaTitle": "Un projet {topic} ?",
+
 
     // About
     "about.title": "À propos",
