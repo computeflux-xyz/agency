@@ -1,24 +1,56 @@
 ---
+/**
+ * /expertise — the hub above the six practice pages.
+ *
+ * It gets the SAME hero treatment as a full practice page (`ExpertiseHero` over
+ * the `xp-hero` media slot), because it is the page a visitor lands on from the
+ * mega-menu or from search and the typographic hero read as a stub next to its
+ * own children. The slot decides: no footage yet → `MediaBackdrop` draws its
+ * designed pending state, which is a finished surface, not a hole.
+ *
+ * The job of the page is picking, not describing: six summaries all read as
+ * competent engineering, so each card leads with the symptom that makes it the
+ * right door (`entryPoint` in `data/expertise.ts`). `ApproachSection` then
+ * answers the question that follows — "what would working together look like?".
+ */
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHero from "@organisms/PageHero.astro";
+import ExpertiseHero from "@organisms/ExpertiseHero.astro";
 import ApproachSection from "@organisms/ApproachSection.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import ExpertiseCard from "@molecules/ExpertiseCard.astro";
 import Divider from "@atoms/Divider.astro";
 import { getExpertise } from "@data/expertise";
+import { getMediaItem, getMediaPending } from "@data/media";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 const expertise = getExpertise(locale);
+
+const heroMedia = getMediaItem(locale, "xp-hero");
 ---
 
 <PageLayout title={t("expertise.title")} description={t("expertise.metaDescription")} dragon>
-  <PageHero
-    eyebrow={t("expertise.hero.eyebrow")}
-    title={t("expertise.hero.title")}
-    lead={t("expertise.hero.lead")}
-  />
+  {
+    heroMedia ? (
+      <ExpertiseHero
+        eyebrow={t("expertise.hero.eyebrow")}
+        title={t("expertise.hero.title")}
+        lead={t("expertise.hero.lead")}
+        ctaLabel={t("nav.bookCall")}
+        ctaHref={localizedPath("/book", locale)}
+        media={heroMedia}
+        pendingLabel={getMediaPending(locale)}
+      />
+    ) : (
+      <PageHero
+        eyebrow={t("expertise.hero.eyebrow")}
+        title={t("expertise.hero.title")}
+        lead={t("expertise.hero.lead")}
+      />
+    )
+  }
 
   <section class="container-flux pb-8">
     <Divider label={t("expertise.practices")} />
@@ -29,6 +61,7 @@ const expertise = getExpertise(locale);
             item={item}
             href={localizedPath(`/expertise/${item.slug}`, locale)}
             cta={t("expertise.learnMore")}
+            startHere={t("expertise.startHere")}
           />
         ))
       }

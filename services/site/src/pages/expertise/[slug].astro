@@ -10,11 +10,16 @@ import Button from "@atoms/Button.astro";
 import { expertiseSlugs, getExpertise, getExpertiseItem } from "@data/expertise";
 import { getSources, TOOLS } from "@data/sovereignty";
 import { getMediaItem, getMediaPending } from "@data/media";
-import DataEngineeringDetail from "@organisms/DataEngineeringDetail.astro";
+import PracticeDetail from "@organisms/PracticeDetail.astro";
 import ExpertiseHero from "@organisms/ExpertiseHero.astro";
 import MoebiusNav from "@molecules/MoebiusNav.astro";
 import SectionHeader from "@molecules/SectionHeader.astro";
 import { getDataEngineering } from "@data/dataEngineering";
+import { getAiEngineering } from "@data/aiEngineering";
+import { getBareMetal } from "@data/bareMetal";
+import { getAgenticSystems } from "@data/agenticSystems";
+import { getInferenceOptimization } from "@data/inferenceOptimization";
+import type { PracticeContent, PracticeFlow } from "@data/practiceContent";
 import { breadcrumbSchema } from "@lib/seo";
 import { site } from "@lib/site";
 import { getLocale, localizedPath, useTranslations } from "@i18n";
@@ -34,19 +39,33 @@ const origin = Astro.site?.origin ?? site.url;
 const others = getExpertise(locale).filter((e) => e.slug !== item.slug);
 
 const isSovereignty = item.slug === "sovereignty";
-const isDataEngineering = item.slug === "data-engineering";
 
-/* Media-backed hero, per expertise page. Only data-engineering has a media slot
-   declared in `data/media.ts` so far; every other practice keeps the plain text
-   hero until its own slot exists (add `<slug>-hero` there to opt one in). */
-const heroMedia = getMediaItem(locale, `${isDataEngineering ? "de" : item.slug}-hero`);
+/* ---- FULL PRACTICE PAGES ----------------------------------------------------
+   A practice listed here gets the media hero + the `PracticeDetail` body. To add
+   the next one: write `data/<practice>.ts` against `PracticeContent`, add its
+   `<key>-hero` / `<key>-overview-a` / `-b` slots to `data/media.ts`, and add one
+   row below. Everything else on this page — including the practices that are
+   still a tagline and a capability grid — keeps working untouched. */
+const FULL: Record<string, { key: string; load: () => { content: PracticeContent; flow: PracticeFlow } }> = {
+  "data-engineering": { key: "de", load: () => getDataEngineering(locale) },
+  "ai-engineering": { key: "ai", load: () => getAiEngineering(locale) },
+  "bare-metal": { key: "bm", load: () => getBareMetal(locale) },
+  "agentic-systems": { key: "ag", load: () => getAgenticSystems(locale) },
+  "inference-optimization": { key: "io", load: () => getInferenceOptimization(locale) },
+};
+
+const full = FULL[item.slug];
+const practice = full?.load() ?? null;
+
+/* Media-backed hero. The media slot is what opts a page in, so a practice whose
+   footage is not shot yet simply keeps the typographic `PageHero`. */
+const heroMedia = full ? getMediaItem(locale, `${full.key}-hero`) : undefined;
 
 /* Hero copy: a page with footage behind it gets a title and a line written
    against that footage (they live with the page's deep copy), not the generic
    practice name and tagline. */
-const deContent = isDataEngineering ? getDataEngineering(locale).content : null;
-const heroTitle = deContent?.heroTitle ?? item.title;
-const heroLead = deContent?.heroLead ?? item.tagline;
+const heroTitle = practice?.content.heroTitle ?? item.title;
+const heroLead = practice?.content.heroLead ?? item.tagline;
 const sources = isSovereignty ? getSources(locale) : [];
 const claims = isSovereignty
   ? (["c1", "c2", "c3", "c4"] as const).map((key, i) => ({
@@ -94,8 +113,13 @@ const jsonLd = [
     )
   }
 
-  {isDataEngineering ? (
-    <DataEngineeringDetail item={item} />
+  {full && practice ? (
+    <PracticeDetail
+      item={item}
+      content={practice.content}
+      flow={practice.flow}
+      overviewMedia={[`${full.key}-overview-a`, `${full.key}-overview-b`]}
+    />
   ) : (
     <>
       <section class="container-flux pb-8">

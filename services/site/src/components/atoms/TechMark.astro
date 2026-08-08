@@ -150,7 +150,10 @@ const monogram = (mono ?? name.slice(0, 4)).toUpperCase();
   ) : (
     <span
       class:list={[
-        "flex shrink-0 items-center justify-center font-mono font-bold leading-none text-ink-50",
+        /* No colour of its own: the glyph branch tints via `fill-current`, so
+           the monogram has to inherit too or a mark on a dark chip (the blue
+           pipeline panel) comes out in ink and disappears. */
+        "flex shrink-0 items-center justify-center font-mono font-bold leading-none",
         className,
       ]}
       style="font-size:0.6rem"

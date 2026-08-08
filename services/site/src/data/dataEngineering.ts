@@ -1,61 +1,20 @@
 /**
  * Deep copy for the /expertise/data-engineering page.
  *
- * This page is different from the other expertise satellites: it tells the
- * story of a working pipeline (the one thing a data platform buyer actually
- * buys) and shows the humans behind it. Long-form copy lives here, French-first
- * with an English mirror, exactly like `expertise.ts` / `systems.ts` /
- * `diagnostics.ts`. The `src/data/media.ts` file owns the photographs; this file
- * only references them by slug through `media.ts`.
+ * Long-form copy, French-first with an English mirror, exactly like
+ * `expertise.ts` / `systems.ts` / `diagnostics.ts`. The SHAPE lives in
+ * `practiceContent.ts` and is shared with the other full practice pages, which
+ * all render through `PracticeDetail.astro`; `media.ts` owns the photographs.
  *
- * No invented measurements anywhere: the diagram draws topology, not data.
+ * No invented measurements anywhere: the sketch draws topology, not data.
  */
 
 import type { Locale } from "@i18n";
-import type { FlowEdgeInput, FlowNodeInput } from "@lib/schematic";
-
-export type DataEngineeringContent = {
-  /** Hero title. Deliberately not the generic practice name from `expertise.ts`:
-      it is written against the hero footage (a trail runner), so it trades on
-      endurance and pace. */
-  heroTitle: string;
-  /** Hero lead, under the title. Same register as the title — pace, latency, no
-      numbers, nothing we cannot prove on a given project. */
-  heroLead: string;
-  // Overview
-  overviewEyebrow: string;
-  overviewTitle: string;
-  overviewBullets: string[];
-  overviewCta: string;
-  // Pipeline / dark panel
-  pipelineEyebrow: string;
-  pipelineTitle: string;
-  pipelineLead: string;
-  flowAlt: string;
-  flowCaption: string;
-  flowLegendFix: string;
-  flowLegendDefault: string;
-  darkTitle: string;
-  darkLead: string;
-  pipelineTools: { name: string; si: string }[];
-  // Full stack
-  stackLabel: string;
-  stackLead: string;
-  buildStack: string[];
-  // Team gallery
-  teamEyebrow: string;
-  teamTitle: string;
-  teamLead: string;
-};
-
-export type DataEngineeringFlow = {
-  nodes: FlowNodeInput[];
-  edges: FlowEdgeInput[];
-};
+import type { PracticeContent, PracticeFlow } from "@data/practiceContent";
 
 /* Shared topology: sources → contract → tests → warehouse → usage. Node ids are
    the same in both locales; only the mono labels differ. */
-const flowFr: DataEngineeringFlow = {
+const flowFr: PracticeFlow = {
   nodes: [
     { id: "src", label: "Sources", tone: "default" },
     { id: "ctr", label: "Contrat", tone: "fix" },
@@ -71,7 +30,7 @@ const flowFr: DataEngineeringFlow = {
   ],
 };
 
-const flowEn: DataEngineeringFlow = {
+const flowEn: PracticeFlow = {
   nodes: [
     { id: "src", label: "Sources", tone: "default" },
     { id: "ctr", label: "Contract", tone: "fix" },
@@ -87,7 +46,7 @@ const flowEn: DataEngineeringFlow = {
   ],
 };
 
-const deFr: DataEngineeringContent = {
+const deFr: PracticeContent = {
   heroTitle: "Des données qui tiennent la distance.",
   heroLead:
     "Vos données au rythme de votre activité : flux continus, latence maîtrisée, une architecture qui ne vous ralentit pas.",
@@ -98,7 +57,7 @@ const deFr: DataEngineeringContent = {
     "Qualité mesurée : contrôles à chaque étape, alertes de dérive, fraîcheur garantie.",
     "Modélisation pour l'usage : des schémas pensés pour l'analyse, le reporting et l'entraînement.",
   ],
-  overviewCta: "Réserver un appel",
+  overviewCta: "Bâtissons votre pipeline data",
   pipelineEyebrow: "Comment on construit",
   pipelineTitle: "Le chemin normal d'une donnée.",
   pipelineLead:
@@ -148,7 +107,7 @@ const deFr: DataEngineeringContent = {
     "Une petite équipe senior, entièrement à distance. Les photos remplacent le jargon : voilà ce que ça donne en vrai.",
 };
 
-const deEn: DataEngineeringContent = {
+const deEn: PracticeContent = {
   heroTitle: "Data that goes the distance.",
   heroLead:
     "Your data at the pace of your business: continuous flows, latency under control, an architecture that never slows you down.",
@@ -159,7 +118,7 @@ const deEn: DataEngineeringContent = {
     "Measured quality: checks at every step, drift alerts, guaranteed freshness.",
     "Modelling for use: schemas built for analytics, reporting and model training.",
   ],
-  overviewCta: "Book a call",
+  overviewCta: "Build your data pipeline",
   pipelineEyebrow: "How we build",
   pipelineTitle: "The normal path of a piece of data.",
   pipelineLead:
@@ -209,19 +168,19 @@ const deEn: DataEngineeringContent = {
     "A small, senior team, fully remote. Photos beat jargon: this is what it looks like in practice.",
 };
 
-const contentByLocale: Record<Locale, DataEngineeringContent> = {
+const contentByLocale: Record<Locale, PracticeContent> = {
   fr: deFr,
   en: deEn,
 };
 
-const flowByLocale: Record<Locale, DataEngineeringFlow> = {
+const flowByLocale: Record<Locale, PracticeFlow> = {
   fr: flowFr,
   en: flowEn,
 };
 
 export function getDataEngineering(locale: Locale): {
-  content: DataEngineeringContent;
-  flow: DataEngineeringFlow;
+  content: PracticeContent;
+  flow: PracticeFlow;
 } {
   return {
     content: contentByLocale[locale] ?? deFr,

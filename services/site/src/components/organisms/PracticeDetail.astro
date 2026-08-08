@@ -1,6 +1,13 @@
 ---
 /**
- * Editorial body of the /expertise/data-engineering page.
+ * Editorial body of a "full" expertise page — data engineering, AI engineering,
+ * and whatever gets written next.
+ *
+ * The page is the same shape for every practice; only the copy and the five flow
+ * stages change, and both arrive as props (`content` / `flow`, typed by
+ * `data/practiceContent.ts`). So a new practice page is a data file plus one
+ * entry in the registry in `pages/expertise/[slug].astro` — never a fork of this
+ * file.
  *
  * Every block reuses an existing atom or molecule — nothing here invents a
  * surface, a chart or a button:
@@ -8,10 +15,10 @@
  *   - overview      — SectionHeader + prose + bullets + two photographs from
  *                     `data/media.ts` (a slot with no `src` yet renders as a
  *                     "media pending" panel, so the layout holds either way);
- *   - pipeline      — the working path of a piece of data, SKETCHED with
- *                     `PipelineSketch` (vivus, like the landing page's system
- *                     drawings) inside a blue `NotchedPanel`, beside the tools we
- *                     reach for (`TechMark` chips).
+ *   - pipeline      — the practice's working path, SKETCHED with `PipelineSketch`
+ *                     (vivus, like the landing page's system drawings) inside a
+ *                     blue `NotchedPanel`, beside the tools we reach for
+ *                     (`TechMark` chips).
  *
  * The generic capability cards and the build-stack chip wall used to live here
  * too. They were cut: the cards repeated what the bullets above already promise,
@@ -24,24 +31,25 @@ import Icon from "@atoms/Icon.astro";
 import NotchedPanel from "@organisms/NotchedPanel.astro";
 import PipelineSketch from "@atoms/PipelineSketch.astro";
 import MediaPanel from "@molecules/MediaPanel.astro";
-import { getDataEngineering } from "@data/dataEngineering";
+import type { PracticeContent, PracticeFlow } from "@data/practiceContent";
 import { getMedia, getMediaPending } from "@data/media";
 import type { Expertise } from "@data/expertise";
 import { getLocale, localizedPath } from "@i18n";
 
 interface Props {
   item: Expertise;
+  content: PracticeContent;
+  flow: PracticeFlow;
+  /** The two `data/media.ts` slugs for the overview column, in order. */
+  overviewMedia: [string, string];
   class?: string;
 }
 
-const { item, class: className = "" } = Astro.props;
+const { item, content, flow, overviewMedia, class: className = "" } = Astro.props;
 
 const locale = getLocale(Astro);
 
-const { content, flow } = getDataEngineering(locale);
 const mediaBySlug = new Map(getMedia(locale).map((m) => [m.slug, m]));
-
-const overviewMedia = ["de-overview-a", "de-overview-b"];
 
 const pendingLabel = getMediaPending(locale);
 ---
@@ -97,7 +105,7 @@ const pendingLabel = getMediaPending(locale);
     </div>
   </section>
 
-  {/* ---------- Pipeline: the one thing a data platform buyer buys ---------- */}
+  {/* ---------- Pipeline: the path the buyer is actually buying ---------- */}
   <section class="container-flux py-12 md:py-16">
     <SectionHeader eyebrow={content.pipelineEyebrow} accent="blue" title={content.pipelineTitle} lead={content.pipelineLead} class="mb-10" />
 

@@ -85,10 +85,13 @@ const hasMedia = Boolean(video || media.src);
     )
   }
 
-  {/* The editor's reminder of what belongs in this slot. */}
+  {/* The editor's reminder of what belongs in this slot. Inset well clear of the
+      corner: the hero's `NotchedPanel` chamfers its bottom-right by ~44px, and
+      at `bottom-4 right-4` the brief's last line ran into the cut and was
+      clipped mid-word. */}
   {
     !hasMedia && (
-      <div class="absolute inset-x-4 bottom-4 flex flex-col items-end gap-1.5 text-right md:inset-x-6 md:bottom-6">
+      <div class="absolute inset-x-6 bottom-6 flex flex-col items-end gap-1.5 text-right md:inset-x-14 md:bottom-12">
         <span class="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-white/20 bg-black/30 px-2 py-0.5 font-mono text-[0.58rem] font-medium uppercase tracking-[0.14em] text-white/70 backdrop-blur-sm">
           <span class="size-1 rounded-full bg-flux-magenta" />
           {pendingLabel}

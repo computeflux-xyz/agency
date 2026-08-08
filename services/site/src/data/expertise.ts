@@ -29,6 +29,14 @@ export type Expertise = {
   summary: string;
   /** Longer intro shown on the detail page. */
   intro: string;
+  /**
+   * The symptom that sends someone to THIS practice rather than a neighbouring
+   * one, written to complete "Start here if…". Six summaries all read as
+   * competent engineering; only the symptom tells a visitor which door is
+   * theirs, so the /expertise hub leads with it. Phrased from the buyer's side
+   * (what they are living with), never from ours (what we sell).
+   */
+  entryPoint: string;
   capabilities: Capability[];
 };
 
@@ -43,6 +51,8 @@ const expertiseFr: Expertise[] = [
       "Nous construisons l'ingénierie autour du modèle : évaluation, garde-fous, observabilité et maîtrise des coûts, pour que vos fonctionnalités d'IA tiennent en production.",
     intro:
       "L'ingénierie IA, c'est le métier qui consiste à mettre des systèmes à base de modèles et d'agents en production, de façon fiable et sans faire exploser la facture. Nous entraînons rarement des modèles ; nous bâtissons ce qui les entoure : ingestion, recherche, évaluation, observabilité, maîtrise des coûts et sécurité, pour que votre équipe livre des fonctionnalités qui tiennent sous le trafic réel.",
+    entryPoint:
+      "votre fonctionnalité d'IA marche en démo et déraille dès qu'elle voit du vrai trafic.",
     capabilities: [
       {
         title: "Recherche augmentée (RAG)",
@@ -76,6 +86,8 @@ const expertiseFr: Expertise[] = [
       "Quantification, décodage spéculatif, batching et architecture de service pour faire baisser le coût et la latence de vos modèles sans sacrifier la qualité.",
     intro:
       "L'inférence est souvent la plus grosse ligne de dépense d'un projet d'IA. Nous l'attaquons sous tous les angles : quantification, distillation, décodage spéculatif, stratégie de batching, gestion du cache et composants critiques sur mesure, pour faire baisser le coût et la latence de queue sans dégrader la qualité des réponses.",
+    entryPoint:
+      "votre facture d'inférence grimpe plus vite que l'usage, ou vos utilisateurs attendent.",
     capabilities: [
       {
         title: "Quantification & distillation",
@@ -109,6 +121,8 @@ const expertiseFr: Expertise[] = [
       "Des architectures d'agents fiables avec mémoire, appel d'outils, stratégies de repli et évaluation, pensées pour de vrais usages, pas pour une démo.",
     intro:
       "La plupart des démos d'agents s'effondrent en production. Nous concevons des systèmes agentiques qui tiennent : mémoire durable, appel d'outils fiable, boucles de raisonnement bornées, stratégies de repli et évaluation continue. Le résultat est une autonomie à laquelle vous pouvez confier de vrais processus métier.",
+    entryPoint:
+      "vous voulez confier un vrai processus à un agent sans perdre la main dessus.",
     capabilities: [
       {
         title: "Architecture d'agents",
@@ -142,6 +156,8 @@ const expertiseFr: Expertise[] = [
       "Pipelines, modélisation et architecture de données fiables, sur lesquels vos équipes et vos modèles peuvent réellement compter.",
     intro:
       "Un projet d'IA ne vaut que ce que valent ses données. Nous concevons et fiabilisons les fondations : ingestion, pipelines, modélisation et architecture de données, afin que vos équipes prennent des décisions sur des chiffres justes et que vos modèles s'entraînent et s'exécutent sur une base saine.",
+    entryPoint:
+      "personne dans l'entreprise n'est d'accord sur le chiffre affiché.",
     capabilities: [
       {
         title: "Pipelines de données",
@@ -175,6 +191,8 @@ const expertiseFr: Expertise[] = [
       "Serveurs dédiés, GPU, stockage et réseau : dimensionner puis exploiter du matériel physique pour les charges lourdes et régulières que le cloud facture trop cher.",
     intro:
       "Le cloud n'est pas toujours la réponse, et le bare metal non plus. Sur des charges lourdes et régulières — entraînement, traitement massif, stockage chaud — la facture à l'usage finit par dépasser le prix du matériel. Nous mesurons ce que vous consommez réellement, nous dimensionnons, puis nous exploitons : placement mémoire, réseau, disques, ordonnancement des tâches. Nous faisons tourner les deux modèles, donc nous n'avons aucune raison de vous pousser vers l'un plutôt que l'autre.",
+    entryPoint:
+      "vous payez une charge lourde et régulière au prix du cloud à l'usage.",
     capabilities: [
       {
         title: "Dimensionnement",
@@ -208,6 +226,8 @@ const expertiseFr: Expertise[] = [
       "Nous concevons et exploitons des systèmes data et IA chez des hébergeurs européens ou sur votre propre matériel : portables, chiffrables, et sous votre contrôle juridique.",
     intro:
       "La souveraineté n'est pas une option de repli : c'est une propriété d'architecture. Vos données n'ont aucune raison de traverser l'Atlantique. Nous concevons des systèmes data et IA chez des hébergeurs européens — OVHcloud, Scaleway, Hetzner — ou sur du matériel qui vous appartient. Pas par principe : parce que l'énergie, le droit et la structure de coûts vont dans ce sens, et parce qu'un stack ouvert vous laisse partir quand vous voulez. Chaque choix se justifie par une mesure ou une contrainte juridique, pas par une promesse.",
+    entryPoint:
+      "vos données ne doivent pas quitter l'Europe, ou vous devez pouvoir partir quand vous voulez.",
     capabilities: [
       {
         title: "Juridiction & droit",
@@ -244,6 +264,8 @@ const expertiseEn: Expertise[] = [
       "We build the engineering around the model: evaluation, guardrails, observability and cost control, so your AI features hold up in production.",
     intro:
       "AI engineering is the discipline of putting model- and agent-based systems into production reliably and within budget. We rarely train models; we build everything around them: ingestion, retrieval, evaluation, observability, cost control and safety, so your team ships features that hold up under real traffic.",
+    entryPoint:
+      "your AI feature works in the demo and drifts the moment it meets real traffic.",
     capabilities: [
       {
         title: "Retrieval-augmented (RAG)",
@@ -277,6 +299,8 @@ const expertiseEn: Expertise[] = [
       "Quantization, speculative decoding, batching and serving architecture to bring down the cost and latency of your models without sacrificing quality.",
     intro:
       "Inference is often the biggest line item in an AI project. We attack it from every angle: quantization, distillation, speculative decoding, batching strategy, cache management and custom hot-path components, to drive down cost and tail latency without degrading answer quality.",
+    entryPoint:
+      "your inference bill grows faster than your usage, or your users are waiting.",
     capabilities: [
       {
         title: "Quantization & distillation",
@@ -310,6 +334,8 @@ const expertiseEn: Expertise[] = [
       "Reliable agent architectures with memory, tool-calling, fallback strategies and evaluation, designed for real workloads, not a demo.",
     intro:
       "Most agent demos fall apart in production. We design agentic systems that hold: durable memory, dependable tool-calling, bounded reasoning loops, fallback strategies and continuous evaluation. The result is autonomy you can trust with real business processes.",
+    entryPoint:
+      "you want to hand a real process to an agent without losing control of it.",
     capabilities: [
       {
         title: "Agent architecture",
@@ -343,6 +369,8 @@ const expertiseEn: Expertise[] = [
       "Reliable pipelines, modelling and data architecture your teams and your models can actually rely on.",
     intro:
       "An AI project is only as good as its data. We design and harden the foundations: ingestion, pipelines, modelling and data architecture, so your teams decide on accurate numbers and your models train and run on a healthy base.",
+    entryPoint:
+      "nobody in the company agrees on the number on the dashboard.",
     capabilities: [
       {
         title: "Data pipelines",
@@ -376,6 +404,8 @@ const expertiseEn: Expertise[] = [
       "Dedicated servers, GPUs, storage and network: sizing and then actually running physical hardware for the heavy, steady workloads the cloud overcharges for.",
     intro:
       "The cloud is not always the answer, and neither is bare metal. On heavy, steady workloads — training, bulk processing, hot storage — the metered bill eventually passes the price of the hardware. We measure what you actually consume, size it, then run it: memory placement, network, disks, job scheduling. We operate both models, so we have no reason to push you towards either.",
+    entryPoint:
+      "you are paying metered cloud prices for a heavy, steady workload.",
     capabilities: [
       {
         title: "Sizing",
@@ -409,6 +439,8 @@ const expertiseEn: Expertise[] = [
       "We design and operate data and AI systems at European providers or on your own hardware: portable, quantifiable, and under your legal control.",
     intro:
       "Sovereignty is not a fallback option: it is an architectural property. Your data has no reason to cross the Atlantic. We design data and AI systems at European providers — OVHcloud, Scaleway, Hetzner — or on hardware you own. Not out of principle: because energy, law and cost structure all point that way, and because an open stack lets you leave whenever you want. Every choice is justified by a measurement or a legal constraint, not a promise.",
+    entryPoint:
+      "your data must not leave Europe, or you need to be able to walk away.",
     capabilities: [
       {
         title: "Jurisdiction & law",

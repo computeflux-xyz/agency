@@ -232,12 +232,14 @@ export const ui = {
     "expertise.hero.lead":
       "We provide the engineers your project is missing: AI engineers, data engineers, data architects. We solve concrete production problems and we prove the results.",
     "expertise.practices": "Practices",
+    "expertise.startHere": "Start here if",
     "expertise.overview": "Overview",
     "expertise.capabilities": "What we do",
     "expertise.related": "Other practices",
     "expertise.related.title": "The rest of the practice.",
+    /* Shown under every practice page, so it cannot name one of them. */
     "expertise.related.lead":
-      "Data engineering rarely arrives alone. The other practices sit on the same surface — pick the one your problem actually starts in.",
+      "A practice rarely arrives on its own. The others sit on the same surface — pick the one your problem actually starts in.",
     "expertise.all": "All expertise",
     "expertise.cta.eyebrow": "Not sure where to start?",
     "expertise.cta.title": "Book a scoping call",
@@ -729,12 +731,14 @@ export const ui = {
     "expertise.hero.lead":
       "Nous fournissons les ingénieurs qui manquent à votre projet : ingénieurs IA, data engineers, architectes de données. Nous réglons des problèmes concrets de production et nous prouvons les résultats.",
     "expertise.practices": "Pratiques",
+    "expertise.startHere": "Commencez ici si",
     "expertise.overview": "Vue d'ensemble",
     "expertise.capabilities": "Ce que nous faisons",
     "expertise.related": "Autres pratiques",
     "expertise.related.title": "Le reste de la pratique.",
+    /* Affiché sous chaque page de pratique : ne peut donc en nommer aucune. */
     "expertise.related.lead":
-      "L'ingénierie de données arrive rarement seule...",
+      "Une pratique arrive rarement seule. Les autres sont sur la même surface — choisissez celle où votre problème commence vraiment.",
     "expertise.all": "Toute l'expertise",
     "expertise.cta.eyebrow": "Vous ne savez pas par où commencer ?",
     "expertise.cta.title": "Réservez un appel de cadrage",

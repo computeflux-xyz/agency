@@ -1,4 +1,12 @@
 ---
+/**
+ * One practice on the /expertise hub.
+ *
+ * Six cards whose summaries all read as competent engineering are six identical
+ * cards. What separates them for a visitor is the SYMPTOM each practice answers,
+ * so `item.entryPoint` gets its own block under a hairline — the last thing read
+ * before the link is followed.
+ */
 import Icon from "@atoms/Icon.astro";
 import type { Expertise } from "@data/expertise";
 
@@ -6,11 +14,23 @@ interface Props {
   item: Expertise;
   href: string;
   cta: string;
+  /** Localized lead-in for the symptom line, e.g. "Start here if". */
+  startHere?: string;
   class?: string;
 }
-const { item, href, cta, class: className = "" } = Astro.props;
-const icons = ["spark", "gauge", "layers", "cpu"];
-const icon = icons[(parseInt(item.index, 10) - 1) % icons.length];
+const { item, href, cta, startHere, class: className = "" } = Astro.props;
+
+/* One glyph per practice, keyed by its ordinal — there are six practices and the
+   icon set has to cover all of them, or 05 and 06 silently reuse 01 and 02. */
+const ICONS: Record<string, string> = {
+  "01": "spark", // AI engineering
+  "02": "gauge", // inference
+  "03": "bolt", // agentic systems
+  "04": "layers", // data engineering
+  "05": "cpu", // bare metal
+  "06": "document", // sovereignty
+};
+const icon = ICONS[item.index] ?? "spark";
 ---
 
 <a
@@ -34,6 +54,19 @@ const icon = icons[(parseInt(item.index, 10) - 1) % icons.length];
       <h3 class="text-xl font-semibold tracking-tight text-ink-50">{item.title}</h3>
       <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{item.summary}</p>
     </div>
+
+    {
+      startHere && (
+        <p class="flex flex-col gap-1.5 border-l border-[var(--color-ink-line)] pl-4 transition-colors group-hover:border-flux-blue">
+          <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.14em] text-ink-400">
+            {startHere}
+          </span>
+          <span class="text-pretty text-[0.9rem] leading-relaxed text-ink-200">
+            {item.entryPoint}
+          </span>
+        </p>
+      )
+    }
   </div>
 
   <div class="mt-7 flex items-center justify-end border-t border-[var(--color-ink-line)] pt-5">

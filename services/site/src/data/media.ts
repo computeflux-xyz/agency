@@ -64,14 +64,145 @@ export type MediaItem = {
   note: string;
 };
 
+/**
+ * HERO FOOTAGE — the one place that says which practices have their film.
+ *
+ * `seedance.py` (repo root) generates five 5s clips per practice, chains them
+ * and writes the two web derivatives at fixed paths:
+ *
+ *   services/site/public/video/<key>-hero-1280.mp4
+ *   services/site/public/video/<key>-hero-poster-1280.webp
+ *
+ * So a hero goes live by adding its key to this set — one word, both locales —
+ * and never by editing eight lines twice. A key that is NOT in the set keeps the
+ * designed "media pending" backdrop in `MediaBackdrop`, which is a finished
+ * state, not a broken one: no 404, no empty <video>, copy still legible.
+ *
+ * Keys: `ai` AI engineering · `de` data engineering · `bm` bare metal ·
+ * `ag` agentic systems · `io` inference · `xp` the /expertise hub.
+ */
+const HERO_FOOTAGE = new Set(["ai", "de", "bm", "ag", "io", "xp"]);
+
+/** The `video` / `poster` pair for a practice's hero slot, or nulls while the
+    footage is still to be generated. */
+function heroVideo(key: string): Pick<MediaItem, "video" | "poster"> {
+  return HERO_FOOTAGE.has(key)
+    ? { video: `/video/${key}-hero-1280.mp4`, poster: `/video/${key}-hero-poster-1280.webp` }
+    : { video: null, poster: null };
+}
+
 const mediaFr: MediaItem[] = [
+  {
+    slug: "ag-hero",
+    src: null,
+    ...heroVideo("ag"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Agents",
+    placeholderTitle: "Vidéo · Hero systèmes agentiques",
+    note: "Plan large en boucle (mp4/webm, muet) : autonomie sous surveillance, relais, arrêt. Centre sombre ou peu contrasté (le titre se pose dessus).",
+  },
+  {
+    slug: "ag-overview-a",
+    /* Stock : la revue humaine — le point d'arrêt dont parle la page. Natif
+       800×574 ≈ 7/5. */
+    src: "/photos/reason-measure-800.webp",
+    src2x: "/photos/reason-measure-1600.webp",
+    corner: "br",
+    ratio: "7/5",
+    alt: "Équipe en revue autour d'une table dans une salle vitrée",
+    label: "Reprise",
+    placeholderTitle: "Photo · Reprise",
+    note: "Shoot : le point où un humain reprend la main sur une exécution, écran de parcours ouvert.",
+  },
+  {
+    slug: "ag-overview-b",
+    src: null,
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Trajectoire d'une exécution d'agent affichée à l'écran",
+    label: "Parcours",
+    placeholderTitle: "Photo · Parcours",
+    note: "Capture : la trajectoire d'une exécution — appels d'outils, durées, reprise après échec.",
+  },
+  {
+    slug: "ai-hero",
+    src: null,
+    ...heroVideo("ai"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "IA",
+    placeholderTitle: "Vidéo · Hero ingénierie IA",
+    note: "Plan large en boucle (mp4/webm, muet). Le texte du hero se pose par-dessus, donc prévoir une image sombre ou peu contrastée au centre.",
+  },
+  {
+    slug: "ai-overview-a",
+    /* Stock : quelqu'un au travail, concentré. Natif 2482×1370 ≈ 16/9. */
+    src: "/photos/ai-overview-focus-800.webp",
+    src2x: "/photos/ai-overview-focus-1600.webp",
+    corner: "br",
+    ratio: "16/9",
+    alt: "Ingénieur concentré devant son écran pendant une session de travail",
+    label: "Évaluations",
+    placeholderTitle: "Photo · Évaluations",
+    note: "Shoot editorial : ingénieur lisant des traces d'appels, écran de résultats d'évaluation.",
+  },
+  {
+    slug: "ai-overview-b",
+    /* Stock : allées de salle machine — ce qui sert le modèle. Natif 16/9. */
+    src: "/photos/ai-overview-racks-800.webp",
+    src2x: "/photos/ai-overview-racks-1600.webp",
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Allées de baies dans une salle machine",
+    label: "Service",
+    placeholderTitle: "Photo · Service",
+    note: "Shoot : le matériel qui sert le modèle. Salle machine ou GPU en rack.",
+  },
+  {
+    slug: "bm-hero",
+    src: null,
+    ...heroVideo("bm"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Bare metal",
+    placeholderTitle: "Vidéo · Hero bare metal",
+    note: "Plan large en boucle (mp4/webm, muet) : lame insérée, maillage réseau, carte inspectée. Centre sombre ou peu contrasté (le titre se pose dessus).",
+  },
+  {
+    slug: "bm-overview-a",
+    /* Stock : trois ingénieurs autour d'une machine ouverte, carte visible.
+       C'est littéralement le sujet de la page. Natif 800×451 ≈ 16/9. */
+    src: "/photos/reason-remote-800.webp",
+    src2x: "/photos/reason-remote-1600.webp",
+    corner: "br",
+    ratio: "16/9",
+    alt: "Ingénieurs inspectant une machine ouverte équipée d'une carte graphique",
+    label: "Matériel",
+    placeholderTitle: "Photo · Matériel",
+    note: "Shoot : montage ou inspection d'une machine — carte, refroidissement, câblage. Vue atelier, pas de pose.",
+  },
+  {
+    slug: "bm-overview-b",
+    /* Stock : allée de salle machine, rendu 3D. Natif 800×450 = 16/9. */
+    src: "/photos/reason-baremetal-800.webp",
+    src2x: "/photos/reason-baremetal-1600.webp",
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Allée de baies dans une salle machine",
+    label: "Parc",
+    placeholderTitle: "Photo · Parc",
+    note: "Shoot : le parc en exploitation — baies, câblage, allée froide.",
+  },
   {
     slug: "de-hero",
     /* Trail-running footage: the pace the copy talks about. `src` stays null —
        the poster is the still, and it is also all a phone downloads. */
     src: null,
-    video: "/video/de-hero-1280.mp4",
-    poster: "/video/de-hero-poster-1280.webp",
+    ...heroVideo("de"),
     corner: "br",
     ratio: "16/9",
     alt: "",
@@ -135,14 +266,155 @@ const mediaFr: MediaItem[] = [
     placeholderTitle: "Photo · Livraison",
     note: "Portrait : ingénieur validant une montée en production, vue ordinateur ouvert.",
   },
+  {
+    slug: "io-hero",
+    src: null,
+    ...heroVideo("io"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Inférence",
+    placeholderTitle: "Vidéo · Hero inférence",
+    note: "Plan large en boucle (mp4/webm, muet) : la mesure et le gain sous contrainte. Centre sombre ou peu contrasté.",
+  },
+  {
+    slug: "io-overview-a",
+    /* Stock : un tableau couvert de notation d'optimisation. Natif 600×800 = 3/4. */
+    src: "/photos/hero-whiteboard-800.webp",
+    src2x: "/photos/hero-whiteboard-1600.webp",
+    corner: "br",
+    ratio: "3/4",
+    alt: "Tableau blanc couvert de notation d'optimisation en cours de discussion",
+    label: "Réglages",
+    placeholderTitle: "Photo · Réglages",
+    note: "Shoot : deux ingénieurs devant l'arbitrage précision / latence, au tableau.",
+  },
+  {
+    slug: "io-overview-b",
+    src: null,
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Banc de mesure d'inférence affiché à l'écran",
+    label: "Banc",
+    placeholderTitle: "Photo · Banc",
+    note: "Capture : le banc — latence médiane et de queue, débit, coût par requête, avant/après.",
+  },
+  {
+    slug: "xp-hero",
+    src: null,
+    ...heroVideo("xp"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Expertise",
+    placeholderTitle: "Vidéo · Hero expertise",
+    note: "Plan large en boucle (mp4/webm, muet) : la pile complète, du métal au produit. Centre sombre ou peu contrasté.",
+  },
 ];
 
 const mediaEn: MediaItem[] = [
   {
+    slug: "ag-hero",
+    src: null,
+    ...heroVideo("ag"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Agents",
+    placeholderTitle: "Video · Agentic systems hero",
+    note: "Looping wide shot (mp4/webm, muted): autonomy under watch, a handover, a stop. Keep the centre dark or low-contrast — the title sits on it.",
+  },
+  {
+    slug: "ag-overview-a",
+    src: "/photos/reason-measure-800.webp",
+    src2x: "/photos/reason-measure-1600.webp",
+    corner: "br",
+    ratio: "7/5",
+    alt: "Team reviewing work around a table in a glass-walled room",
+    label: "Handover",
+    placeholderTitle: "Photo · Handover",
+    note: "Shot: the point where a human takes over a run, trajectory view open on screen.",
+  },
+  {
+    slug: "ag-overview-b",
+    src: null,
+    corner: "tl",
+    ratio: "16/9",
+    alt: "An agent run's trajectory shown on screen",
+    label: "Trajectory",
+    placeholderTitle: "Photo · Trajectory",
+    note: "Screenshot: one run's trajectory — tool calls, durations, recovery after a failure.",
+  },
+  {
+    slug: "ai-hero",
+    src: null,
+    ...heroVideo("ai"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "AI",
+    placeholderTitle: "Video · AI engineering hero",
+    note: "Looping wide shot (mp4/webm, muted). The hero copy sits on top, so pick footage that stays dark or low-contrast in the centre.",
+  },
+  {
+    slug: "ai-overview-a",
+    src: "/photos/ai-overview-focus-800.webp",
+    src2x: "/photos/ai-overview-focus-1600.webp",
+    corner: "br",
+    ratio: "16/9",
+    alt: "Engineer concentrating at their screen during a work session",
+    label: "Evals",
+    placeholderTitle: "Photo · Evals",
+    note: "Editorial shot: engineer reading call traces, evaluation results on screen.",
+  },
+  {
+    slug: "ai-overview-b",
+    src: "/photos/ai-overview-racks-800.webp",
+    src2x: "/photos/ai-overview-racks-1600.webp",
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Rows of racks in a machine room",
+    label: "Serving",
+    placeholderTitle: "Photo · Serving",
+    note: "Shot: the hardware that serves the model. Machine room or racked GPUs.",
+  },
+  {
+    slug: "bm-hero",
+    src: null,
+    ...heroVideo("bm"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Bare metal",
+    placeholderTitle: "Video · Bare metal hero",
+    note: "Looping wide shot (mp4/webm, muted): a blade going in, a network mesh, a card inspected. Keep the centre dark or low-contrast.",
+  },
+  {
+    slug: "bm-overview-a",
+    src: "/photos/reason-remote-800.webp",
+    src2x: "/photos/reason-remote-1600.webp",
+    corner: "br",
+    ratio: "16/9",
+    alt: "Engineers inspecting an open machine fitted with a graphics card",
+    label: "Hardware",
+    placeholderTitle: "Photo · Hardware",
+    note: "Shot: a machine being built or inspected — card, cooling, cabling. Workshop view, not a pose.",
+  },
+  {
+    slug: "bm-overview-b",
+    src: "/photos/reason-baremetal-800.webp",
+    src2x: "/photos/reason-baremetal-1600.webp",
+    corner: "tl",
+    ratio: "16/9",
+    alt: "Rows of racks in a machine room",
+    label: "Fleet",
+    placeholderTitle: "Photo · Fleet",
+    note: "Shot: the fleet in operation — racks, cabling, cold aisle.",
+  },
+  {
     slug: "de-hero",
     src: null,
-    video: "/video/de-hero-1280.mp4",
-    poster: "/video/de-hero-poster-1280.webp",
+    ...heroVideo("de"),
     corner: "br",
     ratio: "16/9",
     alt: "",
@@ -201,6 +473,49 @@ const mediaEn: MediaItem[] = [
     label: "Shipping",
     placeholderTitle: "Photo · Shipping",
     note: "Portrait: engineer validating a production rollout, laptop open.",
+  },
+  {
+    slug: "io-hero",
+    src: null,
+    ...heroVideo("io"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Inference",
+    placeholderTitle: "Video · Inference hero",
+    note: "Looping wide shot (mp4/webm, muted): measurement and gain under constraint. Keep the centre dark or low-contrast.",
+  },
+  {
+    slug: "io-overview-a",
+    src: "/photos/hero-whiteboard-800.webp",
+    src2x: "/photos/hero-whiteboard-1600.webp",
+    corner: "br",
+    ratio: "3/4",
+    alt: "Whiteboard covered with optimisation notation under discussion",
+    label: "Tuning",
+    placeholderTitle: "Photo · Tuning",
+    note: "Shot: two engineers at the whiteboard on the precision / latency trade-off.",
+  },
+  {
+    slug: "io-overview-b",
+    src: null,
+    corner: "tl",
+    ratio: "16/9",
+    alt: "An inference bench displayed on screen",
+    label: "Bench",
+    placeholderTitle: "Photo · Bench",
+    note: "Screenshot: the bench — median and tail latency, throughput, cost per request.",
+  },
+  {
+    slug: "xp-hero",
+    src: null,
+    ...heroVideo("xp"),
+    corner: "br",
+    ratio: "16/9",
+    alt: "",
+    label: "Expertise",
+    placeholderTitle: "Video · Expertise hero",
+    note: "Looping wide shot (mp4/webm, muted): the whole stack, from metal to product. Keep the centre dark or low-contrast.",
   },
 ];
 
