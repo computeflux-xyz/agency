@@ -1,0 +1,4 @@
+fpdf2>=2.8.7
+pillow>=10.0
+fonttools>=4.50
+brotli>=1.1
