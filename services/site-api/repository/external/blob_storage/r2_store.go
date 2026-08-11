@@ -27,7 +27,10 @@ func (s *store) GetObject(ctx context.Context, key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer body.Close()
+
+	defer func() {
+		_ = body.Close()
+	}()
 
 	return io.ReadAll(body)
 }
