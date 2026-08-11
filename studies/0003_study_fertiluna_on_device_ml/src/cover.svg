@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Schematic: the model is downloaded into the device, and the data never leaves it">
+  <!--
+    Card cover. Purely visual: no title text, no numbers, no axis. The site
+    renders it at aspect-[16/10] with object-cover, hence the 1200x750 frame.
+    Palette and motifs are the site's own (services/site/src/styles/global.css):
+    sand canvas, dot-grid backdrop, near-black ink, warm hairlines, flux-blue.
+
+    The argument, drawn: one arrow goes IN (the model, fetched once) and no
+    arrow comes out. The absence of a return path is the whole point.
+  -->
+  <defs>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#bdb7a8"/>
+    </pattern>
+    <marker id="tipBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#2f6bff"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="750" fill="#f5f4ef"/>
+  <rect width="1200" height="750" fill="url(#dots)"/>
+
+  <!-- Origin: the model artifact, sitting on the network. -->
+  <g transform="translate(96 96)">
+    <rect x="0" y="0" width="208" height="120" rx="10" fill="none" stroke="#201f1e" stroke-width="2.5"/>
+    <g stroke="#201f1e" stroke-width="2" opacity="0.85">
+      <path d="M28 34h152M28 60h152M28 86h108"/>
+    </g>
+  </g>
+
+  <!-- Fetched once. The only crossing of the boundary, and it points inward. -->
+  <path d="M200 232 C 200 318, 268 352, 336 352"
+        fill="none" stroke="#2f6bff" stroke-width="6" marker-end="url(#tipBlue)"/>
+
+  <!-- The device: everything below happens here and nowhere else. -->
+  <g transform="translate(360 168)">
+    <rect x="0" y="0" width="744" height="470" rx="18" fill="none" stroke="#201f1e" stroke-width="3"/>
+    <path d="M0 62h744" stroke="#201f1e" stroke-width="2" opacity="0.5"/>
+    <g stroke="#201f1e" stroke-width="2" opacity="0.45">
+      <path d="M32 31h16M64 31h16M96 31h16"/>
+    </g>
+
+    <!-- The luteal band: the answer the model produces, drawn as a region
+         rather than a number. -->
+    <rect x="352" y="96" width="300" height="300" fill="#2f6bff" fill-opacity="0.10"/>
+    <path d="M352 96v300" stroke="#2f6bff" stroke-width="2" stroke-dasharray="8 7"/>
+
+    <!-- Axes. -->
+    <g stroke="#201f1e" stroke-width="2" opacity="0.6">
+      <path d="M64 396h616M64 96v300"/>
+    </g>
+
+    <!-- Basal body temperature: the low follicular plateau, the shift, the
+         high luteal plateau. This is the shape the whole product reads. -->
+    <path d="M96 330c26 8 44-6 62 4s34 10 58 2 40 6 62-2"
+          fill="none" stroke="#201f1e" stroke-width="3"/>
+    <path d="M278 334c28-4 50-52 74-64"
+          fill="none" stroke="#201f1e" stroke-width="3"/>
+    <path d="M352 270c30 10 52-14 76-4s44 12 68 0 46 8 68-4 44 6 64-2"
+          fill="none" stroke="#201f1e" stroke-width="3"/>
+
+    <!-- The per-day samples recovered from a screenshot. -->
+    <g fill="#201f1e">
+      <circle cx="96" cy="330" r="5"/><circle cx="158" cy="334" r="5"/>
+      <circle cx="216" cy="336" r="5"/><circle cx="278" cy="334" r="5"/>
+      <circle cx="352" cy="270" r="5"/><circle cx="428" cy="266" r="5"/>
+      <circle cx="496" cy="278" r="5"/><circle cx="564" cy="266" r="5"/>
+      <circle cx="628" cy="272" r="5"/>
+    </g>
+
+    <!-- LH: a single sharp peak just before the shift. -->
+    <g stroke="#e11fd0" stroke-width="3">
+      <path d="M300 396v-42M318 396v-96M336 396v-54"/>
+    </g>
+  </g>
+
+  <!-- Hairline rules, the site's "technical sheet" motif. -->
+  <g stroke="#dcd7cb" stroke-width="1.5">
+    <path d="M96 60h1008"/>
+    <path d="M96 690h1008"/>
+  </g>
+  <rect x="96" y="54" width="52" height="6" rx="3" fill="#2f6bff"/>
+</svg>

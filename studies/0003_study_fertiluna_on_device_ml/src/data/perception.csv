@@ -1,0 +1,5 @@
+route,route_fr,status_en,status_fr,params,bytes,eval_en,eval_fr,bbt_mae,bbt_f1,scale_acc
+Deterministic CV + OCR,Vision déterministe + OCR,deployed default,défaut déployé,,8968420,"repo's own synthetic gate, n=40","garde-fou synthétique du dépôt, n=40",0.109,0.692,0.525
+Chart-vision CNN v1,CNN de courbe v1,"served, never loaded","servi, jamais chargé",4729540,18888373,renderer holdout,lot réservé du générateur,0.0238,0.9428,
+Chart-vision CNN v2,CNN de courbe v2,never deployed,jamais déployé,4133574,16608234,renderer holdout,lot réservé du générateur,0.0220,0.9341,1.0
+Cloud LLM,LLM cloud,"consented route, 503 in production","route consentie, 503 en production",,0,not evaluated,non évalué,,,

@@ -1,0 +1,7 @@
+name,file,bytes,mib,role,role_fr,fetched,fetched_fr
+ONNX Runtime Web (WASM),ort-wasm-simd-threaded.wasm,13022405,12.419,Runs every model in the browser,Exécute tous les modèles dans le navigateur,every analysis,chaque analyse
+Cycle classifier,cycle-classifier-v1.onnx,5893868,5.621,"Calibrated forest, 5 classes","Forêt calibrée, 5 classes",every analysis,chaque analyse
+Isolation forest,cycle-iforest-v1.onnx,1282184,1.223,Out-of-distribution backstop,Garde-fou pour courbes atypiques,every analysis,chaque analyse
+OCR recogniser,paddle-ocr-rec-v1.onnx,8968230,8.553,Reads axis tick labels off a screenshot,Lit les graduations d'axe sur la capture,screenshot import,import d'image
+OCR character dict,paddle-ocr-dict-v1.txt,190,0.000,Vocabulary for the CTC decode,Vocabulaire du décodage CTC,screenshot import,import d'image
+Chart-vision CNN,chart-vision-v1.onnx,18888373,18.013,Neural digitiser that lost the argument,Le lecteur neuronal qui a perdu l'arbitrage,never,jamais

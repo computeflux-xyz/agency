@@ -1,0 +1,3 @@
+variant,label_en,label_fr,ensembles,trees,nodes,bytes,mib,accuracy,log_loss,fit_seconds,export_seconds
+prefit,"One forest, Platt on a held-out split","Une forêt, Platt sur un lot réservé",1,120,94512,5893868,5.621,0.8856,0.32897,1.23,0.49
+cv5,CalibratedClassifierCV(cv=5),CalibratedClassifierCV(cv=5),5,600,467344,29137920,27.788,0.8869,0.32511,4.33,1.87

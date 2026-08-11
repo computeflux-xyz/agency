@@ -1,0 +1,6 @@
+label,short_en,short_fr,label_en,label_fr,precision,recall,f1,support
+ovulation_confirmee,Confirmed,Confirmée,Ovulation confirmed,Ovulation confirmée,0.9569,0.9318,0.9442,4474
+ovulation_douteuse,Doubtful,Douteuse,Ovulation doubtful,Ovulation douteuse,0.764,0.7839,0.7739,1495
+anovulation,Anovulatory,Anovulation,No ovulation,Anovulation,0.876,0.8766,0.8763,1507
+phase_luteale_courte,Short luteal,Lutéale courte,Short luteal phase,Phase lutéale courte,0.7845,0.8277,0.8055,1526
+donnees_insuffisantes,Insufficient,Insuffisantes,Insufficient data,Données insuffisantes,0.9395,0.9329,0.9361,998

@@ -1,0 +1,35 @@
+{
+  "slug": "fertiluna-on-device-ml",
+  "type": "study",
+  "topics": [
+    "machine-learning",
+    "on-device-inference",
+    "privacy",
+    "ai-engineering"
+  ],
+  "authors": [
+    "gabriel-mougard"
+  ],
+  "featured": true,
+  "cover": "cover.svg",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "On-device ML: small enough to fit in a browser tab",
+      "shortdesc": "FertiLuna reads basal-body-temperature charts with no sign-up and no upload, because every model runs in the browser. What that constraint did to the machine learning.",
+      "longdesc": "FertiLuna is our own open-source tool: it reads a basal-body-temperature chart, including from a screenshot, and explains the cycle in plain language. No account, no server-side storage, no upload, because inference runs client-side under ONNX Runtime Web. This study is about what that constraint did to the machine learning. A single Platt-calibrated forest instead of a five-fold ensemble, with the size difference re-measured rather than quoted. A confidence gate and an isolation-forest backstop so the tool can refuse to conclude. A chart-reading CNN that scored better, was trained twice, and was rejected in favour of a deterministic computer-vision pipeline that scores worse and knows how to report its own failures. A Python/TypeScript parity contract enforced by fixtures. And a consent-gated cloud route, described for what it is.",
+      "readingMinutes": 14,
+      "seoTitle": "Running ML in the browser so health data never leaves the device",
+      "seoDescription": "Case study: on-device ONNX inference for menstrual-cycle analysis. Calibrated random forest measured against a five-fold export, isolation-forest backstop, a rejected chart-vision CNN, a deterministic CV digitiser, and Python/TypeScript feature parity."
+    },
+    "fr": {
+      "entry": "fr/index.html",
+      "title": "IA embarquée : assez petit pour tenir dans un onglet",
+      "shortdesc": "FertiLuna lit des courbes de température basale sans inscription et sans upload, parce que tous les modèles tournent dans le navigateur. Ce que cette contrainte a fait à l'apprentissage automatique.",
+      "longdesc": "FertiLuna est notre propre outil open source : il lit une courbe de température basale, y compris depuis une capture d'écran, et explique le cycle en langage clair. Pas de compte, pas de stockage serveur, pas d'upload, parce que l'inférence tourne côté client sous ONNX Runtime Web. Cette étude porte sur ce que cette contrainte a fait à l'apprentissage automatique. Une forêt unique calibrée par Platt plutôt qu'un ensemble à cinq plis, avec l'écart de taille remesuré au lieu d'être cité. Un garde-fou de confiance et une forêt d'isolation pour que l'outil puisse refuser de conclure. Un CNN de lecture de courbe qui obtenait de meilleurs scores, entraîné deux fois, écarté au profit d'un pipeline de vision déterministe qui score moins bien mais sait signaler ses échecs. Un contrat de parité Python/TypeScript tenu par des fixtures. Et une voie cloud soumise au consentement, décrite telle qu'elle est.",
+      "readingMinutes": 14,
+      "seoTitle": "Faire tourner un modèle dans le navigateur pour que les données de santé restent anonymes.",
+      "seoDescription": "Étude de cas : inférence ONNX embarquée pour l'analyse de cycle menstruel. Random Forest, garde-fou par Random Forest d'isolation, CNN de lecture de courbe, numérisation déterministe et API Python/TypeScript."
+    }
+  }
+}
