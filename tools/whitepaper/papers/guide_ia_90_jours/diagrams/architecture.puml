@@ -1,0 +1,80 @@
+@startuml
+' Target architecture of a data-driven system in production.
+' TEMPLATE: the dollar-brace placeholders below are filled per language from
+' content_<lang>.DIAGRAM_LABELS["architecture"], then rendered by
+' tools/whitepaper/diagrams.py into assets/architecture-<lang>.svg.
+' Styling and structure live here and only here; translations carry words only.
+'
+' The magenta badges mark the reversibility points:
+'   (1) model provider  (2) index engine  (3) hosting
+'
+' The graph is left flowing top-down: it is the only direction where the
+' automatic layout stays stable once two paths converge.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 3
+skinparam nodesep 24
+skinparam ranksep 26
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+
+skinparam package {
+  BackgroundColor #EDEAE3
+  BorderColor #DCD7CB
+  BorderThickness 1
+  FontColor #575247
+  FontName "JetBrains Mono"
+  FontSize 11
+  FontStyle plain
+}
+
+package "${data_pkg}" as data {
+  rectangle "${sources_title}\n<size:10><color:#797263>${sources_note}</color></size>" as sources
+  rectangle "${ingest_title}" as ingest
+  rectangle "${chunk_title}" as chunk
+  rectangle "${index_title}\n<color:#E11FD0>**(2)**</color> <size:10><color:#797263>${index_note}</color></size>" as index
+}
+
+package "${service_pkg}" as service {
+  rectangle "${app_title}" as app
+  rectangle "${guards_title}\n<size:10><color:#797263>${guards_note}</color></size>" as guards
+  rectangle "${gateway_title}\n<size:10><color:#797263>${gateway_note}</color></size>" as gateway
+  rectangle "${managed_title}\n<color:#E11FD0>**(1)**</color>" as managed
+  rectangle "${selfhosted_title}\n<color:#E11FD0>**(1)**</color>" as selfhosted
+}
+
+package "${infra_pkg}" as infra {
+  rectangle "${iac_title}\n<color:#E11FD0>**(3)**</color> <size:10><color:#797263>${iac_note}</color></size>" as iac
+}
+
+sources --> ingest
+ingest --> chunk
+chunk --> index
+
+app --> guards
+guards --> gateway
+index --> gateway : ${edge_context}
+gateway --> managed
+gateway --> selfhosted
+
+selfhosted --> iac
+index --> iac
+
+@enduml

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable, Sequence
 
-import theme
+from . import theme
 
 Color = Sequence[int]
 

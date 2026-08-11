@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import re
+from typing import Callable
 
-NBSP = " "
+NBSP = " "
 APOS = "’"
 
-_SP = r"[  ]*"
+_SP = r"[  ]*"
 
 _RE_COLON = re.compile(_SP + r":(?=\s|$)")
 _RE_HIGH = re.compile(_SP + r"([;!?])")
@@ -27,5 +28,22 @@ def fr(text: str) -> str:
     return out
 
 
-def upper_label(text: str) -> str:
-    return fr(text).upper()
+def en(text: str) -> str:
+    """English typography: curly apostrophes and quotes, no French spacing."""
+    if not text:
+        return text
+
+    out = text.replace("'", APOS)
+    if '"' in out:
+        parts = out.split('"')
+        out = parts[0]
+        for i, segment in enumerate(parts[1:]):
+            out += ("“" if i % 2 == 0 else "”") + segment
+    return out
+
+
+TRANSFORMS: dict[str, Callable[[str], str]] = {"fr": fr, "en": en}
+
+
+def for_lang(lang: str) -> Callable[[str], str]:
+    return TRANSFORMS.get(lang, en)

@@ -5,13 +5,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[1]
+TOOL_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = TOOL_ROOT.parents[1]
 SITE = REPO_ROOT / "services" / "site"
 WEB_FONTS = SITE / "public" / "fonts"
 TTF_FONTS = SITE / "fonts"
 PHOTOS = SITE / "public" / "photos"
-FONT_CACHE = HERE / ".fontcache"
+FONT_CACHE = TOOL_ROOT / ".fontcache"
+ASSETS = TOOL_ROOT / "assets"
+OUT_DIR = TOOL_ROOT / "out"
 
 
 INK = (0x20, 0x1F, 0x1E)  # primary text (sand-900)
