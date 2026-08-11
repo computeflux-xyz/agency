@@ -237,15 +237,16 @@ func (s *articleStorage) GetPublishedArticleBySlug(ctx context.Context, slug str
 
 func (s *articleStorage) findPublishedRow(ctx context.Context, slug string, lang models.Lang) (*dao.Article, error) {
 	var row dao.Article
-	err := s.db.WithContext(ctx).
+	tx := s.db.WithContext(ctx).
 		Where("slug = ? AND lang = ? AND status = ?", slug, string(lang), string(models.ArticleStatusPublished)).
-		First(&row).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
+		Limit(1).
+		Find(&row)
+	if tx.Error != nil {
+		return nil, errorx.NewInternal("get article", tx.Error)
 	}
 
-	if err != nil {
-		return nil, errorx.NewInternal("get article", err)
+	if tx.RowsAffected == 0 {
+		return nil, nil
 	}
 
 	return &row, nil
@@ -352,19 +353,20 @@ func (s *articleStorage) FindCommittedVersionByChecksum(ctx context.Context, slu
 	}
 
 	var v dao.ArticleVersion
-	err := s.db.WithContext(ctx).
+	tx := s.db.WithContext(ctx).
 		Table("article_versions av").
 		Select("av.*").
 		Joins("JOIN articles a ON a.id = av.article_id").
 		Where("a.slug = ? AND a.lang = ? AND av.checksum = ? AND av.status = ? AND av.committed_at IS NOT NULL",
 			slug, string(lang), checksum, string(models.ArticleStatusPublished)).
-		First(&v).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
+		Limit(1).
+		Find(&v)
+	if tx.Error != nil {
+		return nil, errorx.NewInternal("find version by checksum", tx.Error)
 	}
 
-	if err != nil {
-		return nil, errorx.NewInternal("find version by checksum", err)
+	if tx.RowsAffected == 0 {
+		return nil, nil
 	}
 
 	m := dao.ToArticleVersionModel(v)

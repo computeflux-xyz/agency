@@ -32,6 +32,8 @@ secrets:
 
 config:
   logLevel: "INFO"
+  logFormat: "JSON"
+  disableMetrics: true
 
   server:
     port: 8080

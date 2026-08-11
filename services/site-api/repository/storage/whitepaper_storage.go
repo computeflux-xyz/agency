@@ -54,18 +54,19 @@ func (s *whitePaperStorage) ListPublished(ctx context.Context, f contracts.White
 
 func (s *whitePaperStorage) GetPublishedBySlug(ctx context.Context, slug string) (*models.WhitePaper, error) {
 	var row dao.WhitePaper
-	err := s.db.WithContext(ctx).
+	tx := s.db.WithContext(ctx).
 		Where("slug = ? AND status = ?", slug, string(models.WhitePaperStatusPublished)).
 		Preload("Locales", func(db *gorm.DB) *gorm.DB {
 			return db.Where("published_at IS NOT NULL").Order("lang ASC")
 		}).
-		First(&row).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
+		Limit(1).
+		Find(&row)
+	if tx.Error != nil {
+		return nil, errorx.NewInternal("get whitepaper", tx.Error)
 	}
 
-	if err != nil {
-		return nil, errorx.NewInternal("get whitepaper", err)
+	if tx.RowsAffected == 0 {
+		return nil, nil
 	}
 
 	if len(row.Locales) == 0 {
