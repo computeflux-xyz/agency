@@ -9,6 +9,7 @@ import (
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/articles"
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/contact"
 	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/meeting"
+	"github.com/computeflux-xyz/agency/services/site-api/application/usecase/whitepapers"
 	"github.com/computeflux-xyz/agency/services/site-api/config"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/handlers"
 	"github.com/computeflux-xyz/agency/services/site-api/presentation/middlewares"
@@ -97,8 +98,9 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 	ingestHandler := handlers.NewIngestHandler(ingestUseCase)
 
 	var (
-		contactMailer appcontracts.ContactMailer
-		meetingMailer appcontracts.MeetingMailer
+		contactMailer    appcontracts.ContactMailer
+		meetingMailer    appcontracts.MeetingMailer
+		whitePaperMailer appcontracts.WhitePaperMailer
 	)
 	if cfg.Resend.Enabled {
 		resendClient, err := mailer.NewResendClient(ctx, mailer.ResendConfig{
@@ -122,11 +124,17 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 			ReplyPersonalEmail:     cfg.Resend.MeetingReplyPersonalEmail,
 			ReplyPhone:             cfg.Resend.MeetingReplyPhone,
 		})
-		log.Info("Resend contact + meeting mailers enabled")
+		whitePaperMailer = emailadapter.NewResendWhitePaperMailer(resendClient, emailadapter.WhitePaperConfig{
+			AdminEmail:      cfg.Resend.AdminEmail,
+			TemplateID:      cfg.Resend.WhitePaperTemplateID,
+			AdminTemplateID: cfg.Resend.WhitePaperAdminTemplateID,
+		})
+		log.Info("Resend contact + meeting + whitepaper mailers enabled")
 	} else {
 		contactMailer = emailadapter.NewNoOpContactMailer(log)
 		meetingMailer = emailadapter.NewNoOpMeetingMailer(log)
-		log.Info("Resend disabled: using no-op contact + meeting mailers")
+		whitePaperMailer = emailadapter.NewNoOpWhitePaperMailer(log)
+		log.Info("Resend disabled: using no-op contact + meeting + whitepaper mailers")
 	}
 
 	contactStorage := storage.NewContactStorage(gormDB)
@@ -136,6 +144,16 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 	meetingStorage := storage.NewMeetingStorage(gormDB)
 	meetingUseCase := meeting.NewRequestUseCase(meetingStorage, meetingMailer, log)
 	meetingHandler := handlers.NewMeetingHandler(meetingUseCase)
+
+	whitePaperStorage := storage.NewWhitePaperStorage(gormDB)
+	whitePaperRead := whitepapers.NewReadUseCase(whitePaperStorage)
+	whitePaperRequest := whitepapers.NewRequestUseCase(whitePaperStorage, whitePaperStorage, blobStore, whitePaperMailer, log)
+	whitePaperHandler := handlers.NewWhitePaperHandler(whitePaperRead, whitePaperRequest)
+	whitePaperIngest := whitepapers.NewIngestUseCase(whitePaperStorage, blobStore, whitepapers.IngestConfig{
+		KeyPrefix:  cfg.Storage.KeyPrefix,
+		PresignTTL: presignTTL,
+	})
+	whitePaperIngestHandler := handlers.NewWhitePaperIngestHandler(whitePaperIngest)
 
 	routes := func(r *gin.Engine) {
 		r.Use(middlewares.ErrorHandler(log))
@@ -150,7 +168,11 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 			api.GET("/articles/:slug", articleHandler.HandleGetArticle)
 			api.GET("/topics", articleHandler.HandleListTopics)
 
+			api.GET("/whitepapers", whitePaperHandler.HandleList)
+			api.GET("/whitepapers/:slug", whitePaperHandler.HandleGet)
+
 			api.POST("/contact", middlewares.ContactAuth(cfg.Contact.Token), contactHandler.HandleSubmit)
+			api.POST("/whitepapers/:slug/request", middlewares.ContactAuth(cfg.Contact.Token), whitePaperHandler.HandleRequest)
 			api.POST("/meetings", middlewares.ContactAuth(cfg.Contact.Token), meetingHandler.HandleSubmit)
 
 			if cfg.Ingest.Enabled {
@@ -158,6 +180,9 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 				admin.POST("/articles/ingest/begin", ingestHandler.HandleBegin)
 				admin.POST("/articles/ingest/commit", ingestHandler.HandleCommit)
 				admin.DELETE("/articles/:slug", ingestHandler.HandleDelete)
+				admin.POST("/whitepapers/ingest/begin", whitePaperIngestHandler.HandleBegin)
+				admin.POST("/whitepapers/ingest/commit", whitePaperIngestHandler.HandleCommit)
+				admin.DELETE("/whitepapers/:slug", whitePaperIngestHandler.HandleDelete)
 				log.Info("Admin ingest API enabled")
 			} else {
 				log.Info("Admin ingest API disabled")

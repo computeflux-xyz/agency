@@ -6,63 +6,99 @@ import Divider from "@atoms/Divider.astro";
 import Tag from "@atoms/Tag.astro";
 import Icon from "@atoms/Icon.astro";
 import ApiNotice from "@molecules/ApiNotice.astro";
-import { getLocale, useTranslations } from "@i18n";
+import { getLocale, useTranslations, localizedPath } from "@i18n";
+import { createApiClient, type WhitePaper } from "@lib/api";
+
+export const prerender = false;
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 
-const papers = [
-  { slug: "inference-cost", title: t("whitePapers.wp1.title"), description: t("whitePapers.wp1.desc"), topics: [t("whitePapers.wp1.topic")] },
-  { slug: "production-agents", title: t("whitePapers.wp2.title"), description: t("whitePapers.wp2.desc"), topics: [t("whitePapers.wp2.topic")] },
-  { slug: "data-foundations", title: t("whitePapers.wp3.title"), description: t("whitePapers.wp3.desc"), topics: [t("whitePapers.wp3.topic")] },
-];
+type Runtime = { env?: Record<string, string | undefined> };
+const runtimeEnv = (Astro.locals as { runtime?: Runtime })?.runtime?.env;
+const baseUrl = runtimeEnv?.API_BASE_URL ?? (import.meta.env.API_BASE_URL as string | undefined);
+
+let papers: WhitePaper[] = [];
+let unavailable = !baseUrl;
+
+if (baseUrl) {
+  try {
+    papers = await createApiClient({ baseUrl, lang: locale, fetch }).listWhitePapers();
+  } catch {
+    unavailable = true;
+  }
+}
 
 const noticeParts = t("whitePapers.notice").split("{email}");
 ---
 
 <PageLayout title={t("whitePapers.title")} description={t("whitePapers.metaDescription")}>
   <PageHero eyebrow={t("whitePapers.hero.eyebrow")} title={t("whitePapers.hero.title")} lead={t("whitePapers.hero.lead")}>
-    <div class="mt-4" data-reveal>
-      <ApiNotice>
-        {noticeParts[0]}
-        <a href="mailto:hello@computeflux.xyz?subject=White paper request" class="text-flux-amber underline underline-offset-2">{t("whitePapers.noticeLink")}</a>{noticeParts[1]}
-      </ApiNotice>
-    </div>
+    {
+      unavailable && (
+        <div class="mt-4" data-reveal>
+          <ApiNotice>
+            {noticeParts[0]}
+            <a
+              href="mailto:hello@computeflux.xyz?subject=White paper request"
+              class="text-flux-amber underline underline-offset-2"
+            >
+              {t("whitePapers.noticeLink")}
+            </a>
+            {noticeParts[1]}
+          </ApiNotice>
+        </div>
+      )
+    }
   </PageHero>
 
   <section class="container-flux pb-24">
     <Divider label={t("whitePapers.hero.eyebrow")} />
-    <div class="grid gap-4 py-12 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
-      {
-        papers.map((paper) => (
-          <article
-            class="group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7 transition-colors hover:border-[var(--color-border-strong)]"
-            data-reveal
-          >
-            <div class="flex items-start justify-between">
-              <span class="flex size-11 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-flux-blue">
-                <Icon name="document" size={20} />
-              </span>
-            </div>
-            <div class="flex flex-1 flex-col gap-3">
-              <h2 class="text-lg font-semibold tracking-tight text-ink-50">{paper.title}</h2>
-              <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{paper.description}</p>
-            </div>
-            <div class="flex flex-wrap gap-1.5">
-              {paper.topics.map((topic) => <Tag size="xs">{topic}</Tag>)}
-            </div>
-            <button
-              type="button"
-              disabled
-              class="flex items-center justify-center gap-2 rounded-full border border-[var(--color-border-strong)] px-5 py-2.5 text-sm font-medium text-ink-200 opacity-60"
+
+    {
+      papers.length === 0 ? (
+        <p class="py-12 text-ink-300">{t("whitePapers.empty")}</p>
+      ) : (
+        <div class="grid gap-4 py-12 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
+          {papers.map((paper) => (
+            <article
+              class="group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7 transition-colors hover:border-[var(--color-border-strong)]"
+              data-reveal
             >
-              <Icon name="arrow" size={15} />
-              {t("whitePapers.download")}
-            </button>
-          </article>
-        ))
-      }
-    </div>
+              <div class="flex items-start justify-between">
+                <span class="flex size-11 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-flux-blue">
+                  <Icon name="document" size={20} />
+                </span>
+                {paper.pages > 0 && (
+                  <span class="font-mono text-[0.7rem] uppercase tracking-wider text-ink-400">
+                    {paper.pages} {t("whitePapers.pages")}
+                  </span>
+                )}
+              </div>
+
+              <div class="flex flex-1 flex-col gap-3">
+                <h2 class="text-lg font-semibold tracking-tight text-ink-50">{paper.title}</h2>
+                <p class="text-pretty text-[0.95rem] leading-relaxed text-ink-300">{paper.shortdesc}</p>
+              </div>
+
+              <div class="flex flex-wrap gap-1.5">
+                {paper.topics.map((topic) => (
+                  <Tag size="xs">{topic}</Tag>
+                ))}
+              </div>
+
+              <a
+                href={localizedPath(`/white-papers/${paper.slug}`, locale)}
+                class="flex items-center justify-center gap-2 rounded-full border border-[var(--color-border-strong)] px-5 py-2.5 text-sm font-medium text-ink-50 transition-colors hover:bg-ink-800"
+              >
+                <Icon name="arrow" size={15} />
+                {t("whitePapers.request")}
+              </a>
+            </article>
+          ))}
+        </div>
+      )
+    }
   </section>
 
   <CtaSection

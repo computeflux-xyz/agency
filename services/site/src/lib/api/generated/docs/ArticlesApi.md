@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost*
 
 ## apiArticlesGet
 
-> DtosPaginatedArticlesResp apiArticlesGet(types, topics, featured, q, sort, page, pageSize)
+> DtosPaginatedArticlesResp apiArticlesGet(types, topics, featured, q, sort, lang, page, pageSize)
 
 List published articles
 
@@ -42,6 +42,8 @@ async function example() {
     q: q_example,
     // string | recent | title | featured (default) (optional)
     sort: sort_example,
+    // string | Content language: en (default) | fr (optional)
+    lang: lang_example,
     // number | 1-based page (default 1) (optional)
     page: 56,
     // number | Items per page (default 12, max 100) (optional)
@@ -70,6 +72,7 @@ example().catch(console.error);
 | **featured** | `boolean` | Only featured articles | [Optional] [Defaults to `undefined`] |
 | **q** | `string` | Full-text search over title/summary/body | [Optional] [Defaults to `undefined`] |
 | **sort** | `string` | recent | title | featured (default) | [Optional] [Defaults to `undefined`] |
+| **lang** | `string` | Content language: en (default) | fr | [Optional] [Defaults to `undefined`] |
 | **page** | `number` | 1-based page (default 1) | [Optional] [Defaults to `undefined`] |
 | **pageSize** | `number` | Items per page (default 12, max 100) | [Optional] [Defaults to `undefined`] |
 
@@ -98,11 +101,11 @@ No authorization required
 
 ## apiArticlesSlugGet
 
-> DtosArticleDetailResp apiArticlesSlugGet(slug)
+> DtosArticleDetailResp apiArticlesSlugGet(slug, lang)
 
 Get a published article
 
-Returns article metadata plus the render manifest (entry URL + R2 blob list).
+Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
 
 ### Example
 
@@ -120,6 +123,8 @@ async function example() {
   const body = {
     // string | Article slug
     slug: slug_example,
+    // string | Content language: en (default) | fr (optional)
+    lang: lang_example,
   } satisfies ApiArticlesSlugGetRequest;
 
   try {
@@ -140,6 +145,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **slug** | `string` | Article slug | [Defaults to `undefined`] |
+| **lang** | `string` | Content language: en (default) | fr | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

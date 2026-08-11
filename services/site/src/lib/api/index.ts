@@ -3,6 +3,7 @@ import {
   ArticlesApi,
   ContactApi,
   MeetingsApi,
+  WhitepapersApi,
   ResponseError,
   type Middleware,
   type DtosArticleDetailResp,
@@ -11,6 +12,7 @@ import {
   type DtosManifestFileResp,
   type DtosPaginatedArticlesResp,
   type DtosTopicResp,
+  type DtosWhitePaperResp,
 } from "@api-client";
 
 export class NotImplementedError extends Error {
@@ -84,12 +86,19 @@ export type Paginated<T> = {
 export type WhitePaper = {
   id: string;
   slug: string;
+  lang: string;
   title: string;
-  description: string;
-  coverImage: string | null;
+  shortdesc: string;
+  longdesc: string;
   pages: number;
+  topics: string[];
+  featured: boolean;
+  langs: string[];
+  publishDate?: string;
   gated: boolean;
 };
+
+export type WhitePaperRequestPayload = ContactPayload & { lang?: string };
 export type BookingSlot = { id: string; startsAt: string; endsAt: string; available: boolean };
 export type ContactPreference = "phone" | "email";
 export type ContactPayload = {
@@ -145,8 +154,9 @@ export interface ComputefluxApi {
   listArticles(params?: ListArticlesParams): Promise<Paginated<ArticleSummary>>;
   getArticle(slug: string): Promise<ArticleDocument>;
   listTopics(): Promise<Topic[]>;
-  listWhitePapers(): Promise<WhitePaper[]>;
-  requestWhitePaper(slug: string, email: string): Promise<{ downloadUrl: string }>;
+  listWhitePapers(params?: { featured?: boolean }): Promise<WhitePaper[]>;
+  getWhitePaper(slug: string): Promise<WhitePaper>;
+  requestWhitePaper(slug: string, payload: WhitePaperRequestPayload): Promise<{ ok: true; lang: string }>;
   listBookingSlots(): Promise<BookingSlot[]>;
   book(slotId: string, payload: ContactPayload): Promise<{ confirmationId: string }>;
   submitContact(payload: ContactPayload): Promise<{ ok: true }>;
@@ -233,10 +243,26 @@ async function asError(e: unknown): Promise<Error> {
   return e instanceof Error ? e : new Error(String(e));
 }
 
+const mapWhitePaper = (w: DtosWhitePaperResp): WhitePaper => ({
+  id: w.id ?? "",
+  slug: w.slug ?? "",
+  lang: w.lang ?? "",
+  title: w.title ?? "",
+  shortdesc: w.shortdesc ?? "",
+  longdesc: w.longdesc ?? "",
+  pages: w.pages ?? 0,
+  topics: w.topics ?? [],
+  featured: w.featured ?? false,
+  langs: w.langs ?? [],
+  publishDate: w.publishDate || undefined,
+  gated: w.gated ?? true,
+});
+
 class HttpApi implements ComputefluxApi {
   private readonly articles: ArticlesApi;
   private readonly contact: ContactApi;
   private readonly meetings: MeetingsApi;
+  private readonly whitepapers: WhitepapersApi;
 
   constructor(options: ApiClientOptions) {
     const middleware: Middleware[] = [];
@@ -270,6 +296,7 @@ class HttpApi implements ComputefluxApi {
     this.articles = new ArticlesApi(config);
     this.contact = new ContactApi(config);
     this.meetings = new MeetingsApi(config);
+    this.whitepapers = new WhitepapersApi(config);
   }
 
   async listArticles(params: ListArticlesParams = {}): Promise<Paginated<ArticleSummary>> {
@@ -305,11 +332,46 @@ class HttpApi implements ComputefluxApi {
     }
   }
 
-  listWhitePapers(): Promise<WhitePaper[]> {
-    throw new NotImplementedError("listWhitePapers");
+  async listWhitePapers(params: { featured?: boolean } = {}): Promise<WhitePaper[]> {
+    try {
+      const res = await this.whitepapers.apiWhitepapersGet({ featured: params.featured });
+      return (res ?? []).map(mapWhitePaper);
+    } catch (e) {
+      throw await asError(e);
+    }
   }
-  requestWhitePaper(): Promise<{ downloadUrl: string }> {
-    throw new NotImplementedError("requestWhitePaper");
+
+  async getWhitePaper(slug: string): Promise<WhitePaper> {
+    try {
+      return mapWhitePaper(await this.whitepapers.apiWhitepapersSlugGet({ slug }));
+    } catch (e) {
+      throw await asError(e);
+    }
+  }
+
+  async requestWhitePaper(
+    slug: string,
+    payload: WhitePaperRequestPayload,
+  ): Promise<{ ok: true; lang: string }> {
+    try {
+      const res = await this.whitepapers.apiWhitepapersSlugRequestPost({
+        slug,
+        body: {
+          lang: payload.lang,
+          name: payload.name,
+          surname: payload.surname,
+          email: payload.email,
+          phoneNumber: payload.phoneNumber,
+          preferredContact: payload.preferredContact,
+          company: payload.company,
+          linkedinProfile: payload.linkedinProfile,
+          message: payload.message,
+        },
+      });
+      return { ok: true, lang: res.lang ?? payload.lang ?? "" };
+    } catch (e) {
+      throw await asError(e);
+    }
   }
   listBookingSlots(): Promise<BookingSlot[]> {
     throw new NotImplementedError("listBookingSlots");

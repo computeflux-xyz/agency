@@ -83,6 +83,12 @@ export interface DtosArticleDetailResp {
      * @type {string}
      * @memberof DtosArticleDetailResp
      */
+    lang?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosArticleDetailResp
+     */
     longdesc?: string;
     /**
      * 
@@ -181,6 +187,12 @@ export interface DtosArticleSummaryResp {
      * @memberof DtosArticleSummaryResp
      */
     id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosArticleSummaryResp
+     */
+    lang?: string;
     /**
      * 
      * @type {number}
@@ -401,6 +413,12 @@ export interface DtosIngestBeginReq {
      * @memberof DtosIngestBeginReq
      */
     files: Array<DtosIngestFileReq>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosIngestBeginReq
+     */
+    lang?: string;
     /**
      * 
      * @type {string}
@@ -824,4 +842,347 @@ export interface DtosTopicResp {
      * @memberof DtosTopicResp
      */
     slug?: string;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperCommitReq
+ */
+export interface DtosWhitePaperCommitReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperCommitReq
+     */
+    slug: string;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperIngestReq
+ */
+export interface DtosWhitePaperIngestReq {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    featured?: boolean;
+    /**
+     * 
+     * @type {Array<DtosWhitePaperLocaleSpecReq>}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    locales: Array<DtosWhitePaperLocaleSpecReq>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    publishDate?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    requestedBy?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    slug: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    sourceDir?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DtosWhitePaperIngestReq
+     */
+    topics?: Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperIngestResp
+ */
+export interface DtosWhitePaperIngestResp {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DtosWhitePaperIngestResp
+     */
+    skipped?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperIngestResp
+     */
+    slug?: string;
+    /**
+     * 
+     * @type {Array<DtosWhitePaperUploadResp>}
+     * @memberof DtosWhitePaperIngestResp
+     */
+    uploads?: Array<DtosWhitePaperUploadResp>;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperLocaleSpecReq
+ */
+export interface DtosWhitePaperLocaleSpecReq {
+    /**
+     * 
+     * @type {number}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    byteSize: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    filename: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    lang: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    longdesc?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    pages?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    sha256: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    shortdesc?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperLocaleSpecReq
+     */
+    title: string;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperRequestReq
+ */
+export interface DtosWhitePaperRequestReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    company?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    email: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    lang?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    linkedinProfile?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    message?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    phoneNumber: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    preferredContact: DtosWhitePaperRequestReqPreferredContactEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestReq
+     */
+    surname: string;
+}
+
+
+/**
+ * @export
+ */
+export const DtosWhitePaperRequestReqPreferredContactEnum = {
+    Phone: 'phone',
+    Email: 'email'
+} as const;
+export type DtosWhitePaperRequestReqPreferredContactEnum = typeof DtosWhitePaperRequestReqPreferredContactEnum[keyof typeof DtosWhitePaperRequestReqPreferredContactEnum];
+
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperRequestResp
+ */
+export interface DtosWhitePaperRequestResp {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestResp
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperRequestResp
+     */
+    lang?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosWhitePaperRequestResp
+     */
+    ok?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperResp
+ */
+export interface DtosWhitePaperResp {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosWhitePaperResp
+     */
+    featured?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DtosWhitePaperResp
+     */
+    gated?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    lang?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DtosWhitePaperResp
+     */
+    langs?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    longdesc?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DtosWhitePaperResp
+     */
+    pages?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    publishDate?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    shortdesc?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    slug?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperResp
+     */
+    title?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DtosWhitePaperResp
+     */
+    topics?: Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface DtosWhitePaperUploadResp
+ */
+export interface DtosWhitePaperUploadResp {
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperUploadResp
+     */
+    key?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperUploadResp
+     */
+    lang?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtosWhitePaperUploadResp
+     */
+    putUrl?: string;
 }

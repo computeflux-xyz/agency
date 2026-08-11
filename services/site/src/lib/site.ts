@@ -30,7 +30,7 @@ export const site: SiteConfig = {
   defaultOgImage: "/og/default.png",
   locale: "fr_FR",
   lang: "fr",
-  email: "hello@computeflux.xyz",
+  email: "gabriel.mougard@gmail.com",
   location: "Bordeaux, France · remote worldwide",
   foundingYear: 2026,
   social: {

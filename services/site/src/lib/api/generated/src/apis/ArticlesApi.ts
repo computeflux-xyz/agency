@@ -27,12 +27,14 @@ export interface ArticlesApiApiArticlesGetRequest {
     featured?: boolean;
     q?: string;
     sort?: string;
+    lang?: string;
     page?: number;
     pageSize?: number;
 }
 
 export interface ArticlesApiApiArticlesSlugGetRequest {
     slug: string;
+    lang?: string;
 }
 
 /**
@@ -50,6 +52,7 @@ export interface ArticlesApiInterface {
      * @param {boolean} [featured] Only featured articles
      * @param {string} [q] Full-text search over title/summary/body
      * @param {string} [sort] recent | title | featured (default)
+     * @param {string} [lang] Content language: en (default) | fr
      * @param {number} [page] 1-based page (default 1)
      * @param {number} [pageSize] Items per page (default 12, max 100)
      * @param {*} [options] Override http request option.
@@ -65,9 +68,10 @@ export interface ArticlesApiInterface {
     apiArticlesGet(requestParameters: ArticlesApiApiArticlesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosPaginatedArticlesResp>;
 
     /**
-     * Returns article metadata plus the render manifest (entry URL + R2 blob list).
+     * Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
      * @summary Get a published article
      * @param {string} slug Article slug
+     * @param {string} [lang] Content language: en (default) | fr
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArticlesApiInterface
@@ -75,7 +79,7 @@ export interface ArticlesApiInterface {
     apiArticlesSlugGetRaw(requestParameters: ArticlesApiApiArticlesSlugGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosArticleDetailResp>>;
 
     /**
-     * Returns article metadata plus the render manifest (entry URL + R2 blob list).
+     * Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
      * Get a published article
      */
     apiArticlesSlugGet(requestParameters: ArticlesApiApiArticlesSlugGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosArticleDetailResp>;
@@ -129,6 +133,10 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
             queryParameters['sort'] = requestParameters['sort'];
         }
 
+        if (requestParameters['lang'] != null) {
+            queryParameters['lang'] = requestParameters['lang'];
+        }
+
         if (requestParameters['page'] != null) {
             queryParameters['page'] = requestParameters['page'];
         }
@@ -162,7 +170,7 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
     }
 
     /**
-     * Returns article metadata plus the render manifest (entry URL + R2 blob list).
+     * Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
      * Get a published article
      */
     async apiArticlesSlugGetRaw(requestParameters: ArticlesApiApiArticlesSlugGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosArticleDetailResp>> {
@@ -174,6 +182,10 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters['lang'] != null) {
+            queryParameters['lang'] = requestParameters['lang'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -192,7 +204,7 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
     }
 
     /**
-     * Returns article metadata plus the render manifest (entry URL + R2 blob list).
+     * Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.
      * Get a published article
      */
     async apiArticlesSlugGet(requestParameters: ArticlesApiApiArticlesSlugGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosArticleDetailResp> {

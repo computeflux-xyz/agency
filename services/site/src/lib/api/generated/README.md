@@ -57,11 +57,17 @@ All URIs are relative to *http://localhost*
 *AdminApi* | [**apiAdminArticlesIngestBeginPost**](docs/AdminApi.md#apiadminarticlesingestbeginpost) | **POST** /api/admin/articles/ingest/begin | Begin an article publish
 *AdminApi* | [**apiAdminArticlesIngestCommitPost**](docs/AdminApi.md#apiadminarticlesingestcommitpost) | **POST** /api/admin/articles/ingest/commit | Commit an article publish
 *AdminApi* | [**apiAdminArticlesSlugDelete**](docs/AdminApi.md#apiadminarticlesslugdelete) | **DELETE** /api/admin/articles/{slug} | Delete an article
+*AdminApi* | [**apiAdminWhitepapersIngestBeginPost**](docs/AdminApi.md#apiadminwhitepapersingestbeginpost) | **POST** /api/admin/whitepapers/ingest/begin | Begin a whitepaper publish
+*AdminApi* | [**apiAdminWhitepapersIngestCommitPost**](docs/AdminApi.md#apiadminwhitepapersingestcommitpost) | **POST** /api/admin/whitepapers/ingest/commit | Commit a whitepaper publish
+*AdminApi* | [**apiAdminWhitepapersSlugDelete**](docs/AdminApi.md#apiadminwhitepapersslugdelete) | **DELETE** /api/admin/whitepapers/{slug} | Delete a whitepaper
 *ArticlesApi* | [**apiArticlesGet**](docs/ArticlesApi.md#apiarticlesget) | **GET** /api/articles | List published articles
 *ArticlesApi* | [**apiArticlesSlugGet**](docs/ArticlesApi.md#apiarticlesslugget) | **GET** /api/articles/{slug} | Get a published article
 *ArticlesApi* | [**apiTopicsGet**](docs/ArticlesApi.md#apitopicsget) | **GET** /api/topics | List topics
 *ContactApi* | [**apiContactPost**](docs/ContactApi.md#apicontactpost) | **POST** /api/contact | Submit a contact request
 *MeetingsApi* | [**apiMeetingsPost**](docs/MeetingsApi.md#apimeetingspost) | **POST** /api/meetings | Request a 30-minute meeting
+*WhitepapersApi* | [**apiWhitepapersGet**](docs/WhitepapersApi.md#apiwhitepapersget) | **GET** /api/whitepapers | List published whitepapers
+*WhitepapersApi* | [**apiWhitepapersSlugGet**](docs/WhitepapersApi.md#apiwhitepapersslugget) | **GET** /api/whitepapers/{slug} | Get one published whitepaper
+*WhitepapersApi* | [**apiWhitepapersSlugRequestPost**](docs/WhitepapersApi.md#apiwhitepapersslugrequestpost) | **POST** /api/whitepapers/{slug}/request | Request a whitepaper
 
 
 ### Models
@@ -82,6 +88,14 @@ All URIs are relative to *http://localhost*
 - [DtosMeetingRequestResp](docs/DtosMeetingRequestResp.md)
 - [DtosPaginatedArticlesResp](docs/DtosPaginatedArticlesResp.md)
 - [DtosTopicResp](docs/DtosTopicResp.md)
+- [DtosWhitePaperCommitReq](docs/DtosWhitePaperCommitReq.md)
+- [DtosWhitePaperIngestReq](docs/DtosWhitePaperIngestReq.md)
+- [DtosWhitePaperIngestResp](docs/DtosWhitePaperIngestResp.md)
+- [DtosWhitePaperLocaleSpecReq](docs/DtosWhitePaperLocaleSpecReq.md)
+- [DtosWhitePaperRequestReq](docs/DtosWhitePaperRequestReq.md)
+- [DtosWhitePaperRequestResp](docs/DtosWhitePaperRequestResp.md)
+- [DtosWhitePaperResp](docs/DtosWhitePaperResp.md)
+- [DtosWhitePaperUploadResp](docs/DtosWhitePaperUploadResp.md)
 
 ### Authorization
 

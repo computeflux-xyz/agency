@@ -20,6 +20,10 @@ import type {
   DtosIngestBeginReq,
   DtosIngestBeginResp,
   DtosIngestCommitReq,
+  DtosWhitePaperCommitReq,
+  DtosWhitePaperIngestReq,
+  DtosWhitePaperIngestResp,
+  DtosWhitePaperResp,
 } from '../models/index';
 
 export interface AdminApiApiAdminArticlesIngestBeginPostRequest {
@@ -31,6 +35,18 @@ export interface AdminApiApiAdminArticlesIngestCommitPostRequest {
 }
 
 export interface AdminApiApiAdminArticlesSlugDeleteRequest {
+    slug: string;
+}
+
+export interface AdminApiApiAdminWhitepapersIngestBeginPostRequest {
+    body: DtosWhitePaperIngestReq;
+}
+
+export interface AdminApiApiAdminWhitepapersIngestCommitPostRequest {
+    body: DtosWhitePaperCommitReq;
+}
+
+export interface AdminApiApiAdminWhitepapersSlugDeleteRequest {
     slug: string;
 }
 
@@ -88,6 +104,54 @@ export interface AdminApiInterface {
      * Delete an article
      */
     apiAdminArticlesSlugDelete(requestParameters: AdminApiApiAdminArticlesSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Admin only. Upserts the publication as a draft and returns presigned PUT URLs for the editions whose PDF is not already stored.
+     * @summary Begin a whitepaper publish
+     * @param {DtosWhitePaperIngestReq} body Whitepaper metadata + one entry per language
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AdminApiInterface
+     */
+    apiAdminWhitepapersIngestBeginPostRaw(requestParameters: AdminApiApiAdminWhitepapersIngestBeginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosWhitePaperIngestResp>>;
+
+    /**
+     * Admin only. Upserts the publication as a draft and returns presigned PUT URLs for the editions whose PDF is not already stored.
+     * Begin a whitepaper publish
+     */
+    apiAdminWhitepapersIngestBeginPost(requestParameters: AdminApiApiAdminWhitepapersIngestBeginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosWhitePaperIngestResp>;
+
+    /**
+     * Admin only. Verifies every edition\'s PDF is stored, then publishes the whitepaper.
+     * @summary Commit a whitepaper publish
+     * @param {DtosWhitePaperCommitReq} body Slug to publish
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AdminApiInterface
+     */
+    apiAdminWhitepapersIngestCommitPostRaw(requestParameters: AdminApiApiAdminWhitepapersIngestCommitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosWhitePaperResp>>;
+
+    /**
+     * Admin only. Verifies every edition\'s PDF is stored, then publishes the whitepaper.
+     * Commit a whitepaper publish
+     */
+    apiAdminWhitepapersIngestCommitPost(requestParameters: AdminApiApiAdminWhitepapersIngestCommitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosWhitePaperResp>;
+
+    /**
+     * Admin only. Removes the publication and purges its PDFs. Captured leads are kept.
+     * @summary Delete a whitepaper
+     * @param {string} slug Whitepaper slug
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AdminApiInterface
+     */
+    apiAdminWhitepapersSlugDeleteRaw(requestParameters: AdminApiApiAdminWhitepapersSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Admin only. Removes the publication and purges its PDFs. Captured leads are kept.
+     * Delete a whitepaper
+     */
+    apiAdminWhitepapersSlugDelete(requestParameters: AdminApiApiAdminWhitepapersSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -226,6 +290,138 @@ export class AdminApi extends runtime.BaseAPI implements AdminApiInterface {
      */
     async apiAdminArticlesSlugDelete(requestParameters: AdminApiApiAdminArticlesSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiAdminArticlesSlugDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Admin only. Upserts the publication as a draft and returns presigned PUT URLs for the editions whose PDF is not already stored.
+     * Begin a whitepaper publish
+     */
+    async apiAdminWhitepapersIngestBeginPostRaw(requestParameters: AdminApiApiAdminWhitepapersIngestBeginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosWhitePaperIngestResp>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling apiAdminWhitepapersIngestBeginPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/admin/whitepapers/ingest/begin`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['body'],
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response);
+    }
+
+    /**
+     * Admin only. Upserts the publication as a draft and returns presigned PUT URLs for the editions whose PDF is not already stored.
+     * Begin a whitepaper publish
+     */
+    async apiAdminWhitepapersIngestBeginPost(requestParameters: AdminApiApiAdminWhitepapersIngestBeginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosWhitePaperIngestResp> {
+        const response = await this.apiAdminWhitepapersIngestBeginPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Admin only. Verifies every edition\'s PDF is stored, then publishes the whitepaper.
+     * Commit a whitepaper publish
+     */
+    async apiAdminWhitepapersIngestCommitPostRaw(requestParameters: AdminApiApiAdminWhitepapersIngestCommitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosWhitePaperResp>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling apiAdminWhitepapersIngestCommitPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/admin/whitepapers/ingest/commit`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['body'],
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response);
+    }
+
+    /**
+     * Admin only. Verifies every edition\'s PDF is stored, then publishes the whitepaper.
+     * Commit a whitepaper publish
+     */
+    async apiAdminWhitepapersIngestCommitPost(requestParameters: AdminApiApiAdminWhitepapersIngestCommitPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosWhitePaperResp> {
+        const response = await this.apiAdminWhitepapersIngestCommitPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Admin only. Removes the publication and purges its PDFs. Captured leads are kept.
+     * Delete a whitepaper
+     */
+    async apiAdminWhitepapersSlugDeleteRaw(requestParameters: AdminApiApiAdminWhitepapersSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['slug'] == null) {
+            throw new runtime.RequiredError(
+                'slug',
+                'Required parameter "slug" was null or undefined when calling apiAdminWhitepapersSlugDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/admin/whitepapers/{slug}`;
+        urlPath = urlPath.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Admin only. Removes the publication and purges its PDFs. Captured leads are kept.
+     * Delete a whitepaper
+     */
+    async apiAdminWhitepapersSlugDelete(requestParameters: AdminApiApiAdminWhitepapersSlugDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiAdminWhitepapersSlugDeleteRaw(requestParameters, initOverrides);
     }
 
 }

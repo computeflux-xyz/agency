@@ -10,6 +10,7 @@ import (
 // storage SDK directly.
 type BlobStore interface {
 	ObjectExists(ctx context.Context, key string) (bool, error)
+	GetObject(ctx context.Context, key string) ([]byte, error)
 	// PresignPut returns a time-limited URL that the caller (CI) can PUT to
 	// directly, so R2 write credentials never leave the API.
 	PresignPut(ctx context.Context, key, contentType string, expiry time.Duration) (string, error)

@@ -2,6 +2,7 @@ package blob_storage
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/computeflux-xyz/agency/services/site-api/application/contracts"
@@ -19,6 +20,16 @@ func New(client *basestore.S3Client) contracts.BlobStore {
 
 func (s *store) ObjectExists(ctx context.Context, key string) (bool, error) {
 	return s.client.ObjectExists(ctx, key)
+}
+
+func (s *store) GetObject(ctx context.Context, key string) ([]byte, error) {
+	body, err := s.client.GetObject(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	return io.ReadAll(body)
 }
 
 func (s *store) PresignPut(ctx context.Context, key, contentType string, expiry time.Duration) (string, error) {

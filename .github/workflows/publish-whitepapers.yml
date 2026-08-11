@@ -1,0 +1,75 @@
+name: publish-whitepapers
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'A whitepaper slug (e.g. guide-data-driven-90-jours) or "all"'
+        required: true
+        default: 'all'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options: [production, staging]
+
+concurrency:
+  group: publish-whitepapers-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  WHITEPAPER_DIR: tools/whitepaper
+  OUT_ROOT: tools/whitepaper/out
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Install generator dependencies
+        run: pip install -r "$WHITEPAPER_DIR/requirements.txt"
+
+      - name: Build PDFs
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.target }}" = "all" ]; then
+            python "$WHITEPAPER_DIR/generate.py"
+          else
+            python "$WHITEPAPER_DIR/generate.py" "${{ inputs.target }}"
+          fi
+
+      - name: Publish
+        run: |
+          set -euo pipefail
+          if [ -z "${INGEST_TOKEN:-}" ] || [ -z "${API_BASE_URL:-}" ]; then
+            echo "::error::INGEST_TOKEN secret and API_BASE_URL variable must be set for this environment"
+            exit 1
+          fi
+          if [ "${{ inputs.target }}" = "all" ]; then
+            go run ./tools/whitepaper-publisher -all -root "$OUT_ROOT" \
+              -api "$API_BASE_URL" -token "$INGEST_TOKEN" -actor "${GITHUB_ACTOR}"
+          else
+            dir="$OUT_ROOT/${{ inputs.target }}"
+            [ -d "$dir" ] || { echo "::error::$dir not found"; exit 1; }
+            go run ./tools/whitepaper-publisher -dir "$dir" \
+              -api "$API_BASE_URL" -token "$INGEST_TOKEN" -actor "${GITHUB_ACTOR}"
+          fi

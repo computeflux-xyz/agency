@@ -12,6 +12,7 @@ Name | Type
 `dateUpdated` | string
 `featured` | boolean
 `id` | string
+`lang` | string
 `readingTime` | number
 `shortdesc` | string
 `slug` | string

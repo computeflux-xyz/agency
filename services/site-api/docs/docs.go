@@ -158,6 +158,151 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/admin/whitepapers/ingest/begin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Upserts the publication as a draft and returns presigned PUT URLs for the editions whose PDF is not already stored.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Begin a whitepaper publish",
+                "parameters": [
+                    {
+                        "description": "Whitepaper metadata + one entry per language",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperIngestReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperIngestResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/whitepapers/ingest/commit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Verifies every edition's PDF is stored, then publishes the whitepaper.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Commit a whitepaper publish",
+                "parameters": [
+                    {
+                        "description": "Slug to publish",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperCommitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/whitepapers/{slug}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Removes the publication and purges its PDFs. Captured leads are kept.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Delete a whitepaper",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Whitepaper slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api/articles": {
             "get": {
                 "description": "Paginated list of published articles/studies with topic, type and full-text filters.",
@@ -200,6 +345,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Content language: en (default) | fr",
+                        "name": "lang",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "1-based page (default 1)",
                         "name": "page",
@@ -230,7 +381,7 @@ const docTemplate = `{
         },
         "/api/articles/{slug}": {
             "get": {
-                "description": "Returns article metadata plus the render manifest (entry URL + R2 blob list).",
+                "description": "Returns article metadata plus the render manifest (entry URL + R2 blob list). Falls back to the canonical locale when the requested translation is absent.",
                 "produces": [
                     "application/json"
                 ],
@@ -245,6 +396,12 @@ const docTemplate = `{
                         "name": "slug",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Content language: en (default) | fr",
+                        "name": "lang",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -387,6 +544,148 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/whitepapers": {
+            "get": {
+                "description": "Metadata only. The documents themselves are gated: they are delivered by email after a request.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "whitepapers"
+                ],
+                "summary": "List published whitepapers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Content language (en, fr)",
+                        "name": "lang",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only featured whitepapers",
+                        "name": "featured",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dtos.WhitePaperResp"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/whitepapers/{slug}": {
+            "get": {
+                "description": "Metadata only; never a link to the PDF.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "whitepapers"
+                ],
+                "summary": "Get one published whitepaper",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Whitepaper slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Content language (en, fr)",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/whitepapers/{slug}/request": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Captures the lead and emails the PDF in the requested language, with a notification to the team.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "whitepapers"
+                ],
+                "summary": "Request a whitepaper",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Whitepaper slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Contact details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperRequestReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.WhitePaperRequestResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -433,6 +732,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "lang": {
                     "type": "string"
                 },
                 "longdesc": {
@@ -489,6 +791,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "lang": {
                     "type": "string"
                 },
                 "readingTime": {
@@ -632,6 +937,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dtos.IngestFileReq"
                     }
+                },
+                "lang": {
+                    "type": "string"
                 },
                 "longdesc": {
                     "type": "string"
@@ -884,6 +1192,228 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.WhitePaperCommitReq": {
+            "type": "object",
+            "required": [
+                "slug"
+            ],
+            "properties": {
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.WhitePaperIngestReq": {
+            "type": "object",
+            "required": [
+                "locales",
+                "slug"
+            ],
+            "properties": {
+                "featured": {
+                    "type": "boolean"
+                },
+                "locales": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/dtos.WhitePaperLocaleSpecReq"
+                    }
+                },
+                "publishDate": {
+                    "type": "string"
+                },
+                "requestedBy": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sourceDir": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dtos.WhitePaperIngestResp": {
+            "type": "object",
+            "properties": {
+                "skipped": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "uploads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.WhitePaperUploadResp"
+                    }
+                }
+            }
+        },
+        "dtos.WhitePaperLocaleSpecReq": {
+            "type": "object",
+            "required": [
+                "byteSize",
+                "filename",
+                "lang",
+                "sha256",
+                "title"
+            ],
+            "properties": {
+                "byteSize": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "longdesc": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "sha256": {
+                    "type": "string"
+                },
+                "shortdesc": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.WhitePaperRequestReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "phoneNumber",
+                "preferredContact",
+                "surname"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "linkedinProfile": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "preferredContact": {
+                    "type": "string",
+                    "enum": [
+                        "phone",
+                        "email"
+                    ]
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.WhitePaperRequestResp": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dtos.WhitePaperResp": {
+            "type": "object",
+            "properties": {
+                "featured": {
+                    "type": "boolean"
+                },
+                "gated": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "langs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "longdesc": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "publishDate": {
+                    "type": "string"
+                },
+                "shortdesc": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dtos.WhitePaperUploadResp": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "putUrl": {
                     "type": "string"
                 }
             }

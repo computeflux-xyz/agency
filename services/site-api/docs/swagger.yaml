@@ -30,6 +30,8 @@ definitions:
         type: boolean
       id:
         type: string
+      lang:
+        type: string
       longdesc:
         type: string
       readingTime:
@@ -66,6 +68,8 @@ definitions:
       featured:
         type: boolean
       id:
+        type: string
+      lang:
         type: string
       readingTime:
         type: integer
@@ -158,6 +162,8 @@ definitions:
         items:
           $ref: '#/definitions/dtos.IngestFileReq'
         type: array
+      lang:
+        type: string
       longdesc:
         type: string
       readingMinutes:
@@ -332,6 +338,155 @@ definitions:
       slug:
         type: string
     type: object
+  dtos.WhitePaperCommitReq:
+    properties:
+      slug:
+        type: string
+    required:
+    - slug
+    type: object
+  dtos.WhitePaperIngestReq:
+    properties:
+      featured:
+        type: boolean
+      locales:
+        items:
+          $ref: '#/definitions/dtos.WhitePaperLocaleSpecReq'
+        minItems: 1
+        type: array
+      publishDate:
+        type: string
+      requestedBy:
+        type: string
+      slug:
+        type: string
+      sourceDir:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+    required:
+    - locales
+    - slug
+    type: object
+  dtos.WhitePaperIngestResp:
+    properties:
+      skipped:
+        items:
+          type: string
+        type: array
+      slug:
+        type: string
+      uploads:
+        items:
+          $ref: '#/definitions/dtos.WhitePaperUploadResp'
+        type: array
+    type: object
+  dtos.WhitePaperLocaleSpecReq:
+    properties:
+      byteSize:
+        type: integer
+      filename:
+        type: string
+      lang:
+        type: string
+      longdesc:
+        type: string
+      pages:
+        type: integer
+      sha256:
+        type: string
+      shortdesc:
+        type: string
+      title:
+        type: string
+    required:
+    - byteSize
+    - filename
+    - lang
+    - sha256
+    - title
+    type: object
+  dtos.WhitePaperRequestReq:
+    properties:
+      company:
+        type: string
+      email:
+        type: string
+      lang:
+        type: string
+      linkedinProfile:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      phoneNumber:
+        type: string
+      preferredContact:
+        enum:
+        - phone
+        - email
+        type: string
+      surname:
+        type: string
+    required:
+    - email
+    - name
+    - phoneNumber
+    - preferredContact
+    - surname
+    type: object
+  dtos.WhitePaperRequestResp:
+    properties:
+      id:
+        type: string
+      lang:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  dtos.WhitePaperResp:
+    properties:
+      featured:
+        type: boolean
+      gated:
+        type: boolean
+      id:
+        type: string
+      lang:
+        type: string
+      langs:
+        items:
+          type: string
+        type: array
+      longdesc:
+        type: string
+      pages:
+        type: integer
+      publishDate:
+        type: string
+      shortdesc:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+    type: object
+  dtos.WhitePaperUploadResp:
+    properties:
+      key:
+        type: string
+      lang:
+        type: string
+      putUrl:
+        type: string
+    type: object
 info:
   contact: {}
   description: API for reading agency site resources and triggering contact workflow
@@ -430,6 +585,100 @@ paths:
       summary: Commit an article publish
       tags:
       - admin
+  /api/admin/whitepapers/{slug}:
+    delete:
+      description: Admin only. Removes the publication and purges its PDFs. Captured
+        leads are kept.
+      parameters:
+      - description: Whitepaper slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Delete a whitepaper
+      tags:
+      - admin
+  /api/admin/whitepapers/ingest/begin:
+    post:
+      consumes:
+      - application/json
+      description: Admin only. Upserts the publication as a draft and returns presigned
+        PUT URLs for the editions whose PDF is not already stored.
+      parameters:
+      - description: Whitepaper metadata + one entry per language
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.WhitePaperIngestReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.WhitePaperIngestResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Begin a whitepaper publish
+      tags:
+      - admin
+  /api/admin/whitepapers/ingest/commit:
+    post:
+      consumes:
+      - application/json
+      description: Admin only. Verifies every edition's PDF is stored, then publishes
+        the whitepaper.
+      parameters:
+      - description: Slug to publish
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.WhitePaperCommitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.WhitePaperResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Commit a whitepaper publish
+      tags:
+      - admin
   /api/articles:
     get:
       description: Paginated list of published articles/studies with topic, type and
@@ -454,6 +703,10 @@ paths:
       - description: recent | title | featured (default)
         in: query
         name: sort
+        type: string
+      - description: 'Content language: en (default) | fr'
+        in: query
+        name: lang
         type: string
       - description: 1-based page (default 1)
         in: query
@@ -480,12 +733,17 @@ paths:
   /api/articles/{slug}:
     get:
       description: Returns article metadata plus the render manifest (entry URL +
-        R2 blob list).
+        R2 blob list). Falls back to the canonical locale when the requested translation
+        is absent.
       parameters:
       - description: Article slug
         in: path
         name: slug
         required: true
+        type: string
+      - description: 'Content language: en (default) | fr'
+        in: query
+        name: lang
         type: string
       produces:
       - application/json
@@ -582,6 +840,100 @@ paths:
       summary: List topics
       tags:
       - articles
+  /api/whitepapers:
+    get:
+      description: 'Metadata only. The documents themselves are gated: they are delivered
+        by email after a request.'
+      parameters:
+      - description: Content language (en, fr)
+        in: query
+        name: lang
+        type: string
+      - description: Only featured whitepapers
+        in: query
+        name: featured
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.WhitePaperResp'
+            type: array
+      summary: List published whitepapers
+      tags:
+      - whitepapers
+  /api/whitepapers/{slug}:
+    get:
+      description: Metadata only; never a link to the PDF.
+      parameters:
+      - description: Whitepaper slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Content language (en, fr)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.WhitePaperResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      summary: Get one published whitepaper
+      tags:
+      - whitepapers
+  /api/whitepapers/{slug}/request:
+    post:
+      consumes:
+      - application/json
+      description: Captures the lead and emails the PDF in the requested language,
+        with a notification to the team.
+      parameters:
+      - description: Whitepaper slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Contact details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.WhitePaperRequestReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.WhitePaperRequestResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
+      security:
+      - BearerAuth: []
+      summary: Request a whitepaper
+      tags:
+      - whitepapers
 schemes:
 - https
 - http

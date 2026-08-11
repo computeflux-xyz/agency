@@ -18,6 +18,7 @@ Name | Type
 `entrypoint` | string
 `featured` | boolean
 `id` | string
+`lang` | string
 `longdesc` | string
 `readingTime` | number
 `seoDescription` | string

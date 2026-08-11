@@ -42,6 +42,8 @@ resend:
   first_contact_admin_template_id: "computeflux-first-contact-admin"
   meeting_template_id: "computeflux-30min-request"
   meeting_admin_template_id: "computeflux-30min-request-admin"
+  whitepaper_template_id: "computeflux-whitepaper-response"
+  whitepaper_admin_template_id: "computeflux-whitepaper-response-admin"
   meeting_reply_linkedin: "https://www.linkedin.com/in/gabriel-mougard/"
   meeting_reply_personal_email: "gabriel.mougard@gmail.com"
   meeting_reply_phone: "07 69 28 14 93"

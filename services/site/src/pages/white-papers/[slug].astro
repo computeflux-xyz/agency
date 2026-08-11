@@ -1,0 +1,244 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@atoms/Button.astro";
+import Field from "@atoms/Field.astro";
+import Divider from "@atoms/Divider.astro";
+import Tag from "@atoms/Tag.astro";
+import Icon from "@atoms/Icon.astro";
+import { getLocale, useTranslations, localizedPath } from "@i18n";
+import { createApiClient, type WhitePaper } from "@lib/api";
+
+export const prerender = false;
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const { slug } = Astro.params;
+
+type Runtime = { env?: Record<string, string | undefined> };
+const runtimeEnv = (Astro.locals as { runtime?: Runtime })?.runtime?.env;
+const baseUrl = runtimeEnv?.API_BASE_URL ?? (import.meta.env.API_BASE_URL as string | undefined);
+
+let paper: WhitePaper | null = null;
+if (baseUrl && slug) {
+  try {
+    paper = await createApiClient({ baseUrl, lang: locale, fetch }).getWhitePaper(slug);
+  } catch {
+    paper = null;
+  }
+}
+
+if (!paper) {
+  return new Response(null, { status: 404 });
+}
+
+const langOptions = paper.langs.map((lang) => ({
+  value: lang,
+  label: t(`whitePapers.lang.${lang}`),
+}));
+const defaultLang = paper.langs.includes(locale) ? locale : paper.lang;
+---
+
+<PageLayout title={paper.title} description={paper.shortdesc}>
+  <section class="container-flux pt-28 pb-24">
+    <a
+      href={localizedPath("/white-papers", locale)}
+      class="inline-flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-50"
+    >
+      <Icon name="arrow" size={14} class="rotate-180" />
+      {t("whitePapers.back")}
+    </a>
+
+    <div class="grid gap-12 pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="flex size-11 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-flux-blue">
+            <Icon name="document" size={20} />
+          </span>
+          {
+            paper.pages > 0 && (
+              <span class="font-mono text-[0.7rem] uppercase tracking-wider text-ink-400">
+                {paper.pages} {t("whitePapers.pages")}
+              </span>
+            )
+          }
+          <span class="font-mono text-[0.7rem] uppercase tracking-wider text-ink-400">
+            {t("whitePapers.available")} {paper.langs.map((l) => l.toUpperCase()).join(" · ")}
+          </span>
+        </div>
+
+        <h1 class="text-balance text-3xl font-semibold tracking-tight text-ink-50 md:text-4xl">
+          {paper.title}
+        </h1>
+        <p class="text-pretty text-lg leading-relaxed text-ink-300">{paper.shortdesc}</p>
+        {paper.longdesc && <p class="text-pretty leading-relaxed text-ink-400">{paper.longdesc}</p>}
+
+        {
+          paper.topics.length > 0 && (
+            <div class="flex flex-wrap gap-1.5">
+              {paper.topics.map((topic) => (
+                <Tag size="xs">{topic}</Tag>
+              ))}
+            </div>
+          )
+        }
+
+        <Divider label={t("whitePapers.hero.eyebrow")} />
+        <p class="text-sm leading-relaxed text-ink-400">{t("whitePapers.gatePromise")}</p>
+      </div>
+
+      <div class="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-lg font-semibold text-ink-50">{t("whitePapers.gateTitle")}</h2>
+          <p class="text-sm leading-relaxed text-ink-400">{t("whitePapers.gateLead")}</p>
+        </div>
+
+        <form
+          class="flex flex-col gap-4"
+          data-whitepaper-form
+          data-slug={paper.slug}
+          aria-label={t("whitePapers.gateTitle")}
+          data-msg-sending={t("whitePapers.sending")}
+          data-msg-success={t("whitePapers.sent")}
+          data-msg-error={t("whitePapers.error")}
+          data-msg-network={t("contact.networkError")}
+        >
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label={t("contact.firstName")} name="name" required />
+            <Field label={t("contact.lastName")} name="surname" required />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label={t("contact.email")} name="email" type="email" required />
+            <Field label={t("contact.phoneNumber")} name="phoneNumber" type="tel" required />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <Field label={t("contact.company")} name="company" hint={t("contact.optional")} />
+            <Field
+              label={t("contact.linkedin")}
+              name="linkedinProfile"
+              type="url"
+              placeholder="https://www.linkedin.com/in/…"
+              hint={t("contact.optional")}
+            />
+          </div>
+
+          {
+            langOptions.length > 1 ? (
+              <Field
+                label={t("whitePapers.langChoice")}
+                name="lang"
+                as="select"
+                options={langOptions}
+                required
+              />
+            ) : (
+              <input type="hidden" name="lang" value={defaultLang} />
+            )
+          }
+
+          <fieldset class="flex flex-col gap-2">
+            <legend class="flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-ink-300">
+              {t("contact.reach")}
+              <span class="text-flux-magenta" aria-hidden="true">*</span>
+            </legend>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
+                <input type="radio" name="preferredContact" value="email" required checked style="accent-color: var(--color-flux-blue)" />
+                <span class="text-sm">{t("contact.byEmail")}</span>
+              </label>
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-ink-line)] bg-ink-950 px-4 py-3 text-ink-50 transition-colors has-[:checked]:border-flux-blue has-[:checked]:bg-ink-900">
+                <input type="radio" name="preferredContact" value="phone" required style="accent-color: var(--color-flux-blue)" />
+                <span class="text-sm">{t("contact.byPhone")}</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <Field
+            label={t("whitePapers.context")}
+            name="message"
+            as="textarea"
+            rows={3}
+            hint={t("contact.optional")}
+          />
+
+          <Button type="submit" variant="primary" fullWidth arrow>{t("whitePapers.send")}</Button>
+
+          <p data-whitepaper-status role="status" aria-live="polite" hidden class="text-sm text-ink-400"></p>
+          <p class="text-[0.78rem] leading-relaxed text-ink-500">{t("whitePapers.privacy")}</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+
+  const form = document.querySelector<HTMLFormElement>("[data-whitepaper-form]");
+
+  if (form) {
+    const statusEl = form.querySelector<HTMLElement>("[data-whitepaper-status]");
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phoneNumber"]');
+    if (phoneInput) enhancePhoneInput(phoneInput);
+
+    const msg = {
+      sending: form.dataset.msgSending ?? "",
+      success: form.dataset.msgSuccess ?? "",
+      error: form.dataset.msgError ?? "",
+      network: form.dataset.msgNetwork ?? "",
+    };
+
+    const setStatus = (message: string, tone: "idle" | "error" | "success") => {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.hidden = message === "";
+      statusEl.className =
+        "text-sm " +
+        (tone === "error"
+          ? "text-flux-magenta"
+          : tone === "success"
+            ? "text-flux-blue"
+            : "text-ink-400");
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus(msg.sending, "idle");
+
+      const data = new FormData(form);
+      const payload = {
+        slug: form.dataset.slug ?? "",
+        lang: String(data.get("lang") ?? ""),
+        name: String(data.get("name") ?? ""),
+        surname: String(data.get("surname") ?? ""),
+        email: String(data.get("email") ?? ""),
+        phoneNumber: phoneInput ? getPhoneE164(phoneInput) : String(data.get("phoneNumber") ?? ""),
+        preferredContact: String(data.get("preferredContact") ?? ""),
+        company: String(data.get("company") ?? ""),
+        linkedinProfile: String(data.get("linkedinProfile") ?? ""),
+        message: String(data.get("message") ?? ""),
+      };
+
+      try {
+        const res = await fetch("/api/whitepaper-request", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string };
+
+        if (res.ok && body.ok) {
+          form.reset();
+          setStatus(msg.success, "success");
+        } else {
+          setStatus(body.message ?? msg.error, "error");
+        }
+      } catch {
+        setStatus(msg.network, "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

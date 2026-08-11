@@ -50,6 +50,9 @@ type Resend struct {
 	MeetingReplyLinkedIn      string `mapstructure:"meeting_reply_linkedin"`
 	MeetingReplyPersonalEmail string `mapstructure:"meeting_reply_personal_email"`
 	MeetingReplyPhone         string `mapstructure:"meeting_reply_phone"`
+
+	WhitePaperTemplateID      string `mapstructure:"whitepaper_template_id"`
+	WhitePaperAdminTemplateID string `mapstructure:"whitepaper_admin_template_id"`
 }
 
 func (c *Config) Validate() error {
@@ -128,6 +131,14 @@ func (c *Config) Validate() error {
 
 		if c.Resend.MeetingAdminTemplateID == "" {
 			errors = append(errors, "resend.meeting_admin_template_id is required when resend is enabled")
+		}
+
+		if c.Resend.WhitePaperTemplateID == "" {
+			errors = append(errors, "resend.whitepaper_template_id is required when resend is enabled")
+		}
+
+		if c.Resend.WhitePaperAdminTemplateID == "" {
+			errors = append(errors, "resend.whitepaper_admin_template_id is required when resend is enabled")
 		}
 	}
 

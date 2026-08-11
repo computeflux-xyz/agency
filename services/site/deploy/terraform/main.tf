@@ -54,3 +54,25 @@ resource "cloudflare_ruleset" "assets_cache" {
     }
   ]
 }
+
+# Gated whitepapers share this bucket but must NOT be reachable through the
+# public custom domain. This is handed out by site-api as an
+# email attachment once a visitor has identified themselves. The object keys are
+# unguessable (content-addressed by sha256), but "hard to guess" is not access
+# control, so the edge blocks the prefix outright.
+resource "cloudflare_ruleset" "assets_block_whitepapers" {
+  zone_id     = var.cloudflare_zone_id
+  name        = "R2 ${var.assets_bucket_name} block gated whitepapers"
+  description = "Keep gated whitepaper PDFs off ${var.assets_domain}"
+  kind        = "zone"
+  phase       = "http_request_firewall_custom"
+
+  rules = [
+    {
+      action      = "block"
+      expression  = "(http.host eq \"${var.assets_domain}\" and http.request.uri.path contains \"/whitepapers/\")"
+      description = "Whitepaper PDFs are delivered by email, never over HTTP"
+      enabled     = true
+    }
+  ]
+}
