@@ -19,6 +19,9 @@ const { job, href, cta, class: className = "" } = Astro.props;
     className,
   ]}
   data-reveal
+  data-analytics="job_card_click"
+  data-analytics-job={job.slug}
+  data-analytics-team={job.team}
 >
   <div class="flex flex-col gap-3">
     <div class="flex flex-wrap items-center gap-1.5">

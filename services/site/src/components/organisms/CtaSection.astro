@@ -21,7 +21,11 @@ const bookHref = localizedPath("/book", locale);
 const studiesHref = localizedPath("/studies", locale);
 ---
 
-<section class:list={["container-flux py-20 md:py-28", className]}>
+<section
+  class:list={["container-flux py-20 md:py-28", className]}
+  data-analytics-section="cta"
+  data-analytics-view="cta"
+>
   <NotchedPanel bg="#157493" data-reveal>
     <div class="relative px-6 py-14 md:px-16 md:py-20">
       <div
@@ -48,8 +52,24 @@ const studiesHref = localizedPath("/studies", locale);
             shows first. Matches the body copy on the other dark panels. */}
         <p class="text-pretty text-lg leading-relaxed text-white/[0.88]">{leadText}</p>
         <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-          <Button href={bookHref} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>
-          <Button href={studiesHref} variant="outline" size="lg" onDark>{t("cta.studies")}</Button>
+          <Button
+            href={bookHref}
+            variant="primary"
+            size="lg"
+            arrow
+            data-analytics="cta_click"
+            data-analytics-cta="section_book"
+            data-analytics-to={bookHref}
+          >{t("nav.bookCall")}</Button>
+          <Button
+            href={studiesHref}
+            variant="outline"
+            size="lg"
+            onDark
+            data-analytics="cta_click"
+            data-analytics-cta="section_studies"
+            data-analytics-to={studiesHref}
+          >{t("cta.studies")}</Button>
         </div>
       </div>
     </div>

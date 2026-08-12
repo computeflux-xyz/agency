@@ -15,6 +15,11 @@ interface Props {
   modifiedTime?: string;
   canonical?: string;
   dragon?: boolean;
+  /** Analytics context, forwarded to BaseLayout (see @lib/analytics). */
+  pageType?: string;
+  contentKind?: string;
+  contentTopics?: string[];
+  contentReadingTime?: number;
 }
 const { dragon = false, ...rest } = Astro.props;
 ---

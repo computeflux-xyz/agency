@@ -26,7 +26,12 @@ const accentBg: Record<string, string> = {
 const bookHref = localizedPath("/book", locale);
 ---
 
-<section id="problematiques" class="container-flux scroll-mt-24">
+<section
+  id="problematiques"
+  class="container-flux scroll-mt-24"
+  data-analytics-section="problems"
+  data-analytics-view="problems"
+>
   <SectionHeader
     eyebrow={t("vostro.eyebrow")}
     title={t("vostro.title")}

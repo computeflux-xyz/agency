@@ -82,7 +82,11 @@ const hasCards = cards.length > 0;
 
 {
   hasCards && (
-    <section class:list={["container-flux", className]}>
+    <section
+      class:list={["container-flux", className]}
+      data-analytics-section="home_studies"
+      data-analytics-view="home_studies"
+    >
       <div class="mb-14 flex flex-wrap items-end justify-between gap-6">
         <SectionHeader
           eyebrow={t("home.work.eyebrow")}
@@ -94,13 +98,15 @@ const hasCards = cards.length > 0;
           variant="primary"
           arrow
           class="shrink-0"
+          data-analytics="see_all"
+          data-analytics-to={localizedPath("/studies", locale)}
         >
           {t("home.work.all")}
         </Button>
       </div>
 
       <div class="grid gap-4 md:grid-cols-3" data-reveal-stagger="90">
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <ArticleCard
             href={card.href}
             title={card.title}
@@ -110,6 +116,8 @@ const hasCards = cards.length > 0;
             date={card.date}
             readingTime={card.readingTime}
             cover={card.cover}
+            origin="home_studies"
+            position={index + 1}
           />
         ))}
       </div>

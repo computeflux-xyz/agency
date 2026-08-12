@@ -23,6 +23,9 @@ const { index, title, body, href, class: className = "" } = Astro.props;
 <li class:list={["border-b border-[var(--color-ink-line)]", className]} data-reveal>
   <a
     href={href}
+    data-analytics="practice_row_click"
+    data-analytics-practice={index}
+    data-analytics-to={href}
     class="group grid grid-cols-[2.25rem_minmax(0,1fr)_1.5rem] items-baseline gap-x-3 gap-y-2 py-7 md:grid-cols-[3.5rem_minmax(0,19rem)_minmax(0,1fr)_1.75rem] md:gap-x-8 md:py-9"
   >
     <span

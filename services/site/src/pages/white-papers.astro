@@ -59,8 +59,12 @@ const noticeParts = t("whitePapers.notice").split("{email}");
       papers.length === 0 ? (
         <p class="py-12 text-ink-300">{t("whitePapers.empty")}</p>
       ) : (
-        <div class="grid gap-4 py-12 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
-          {papers.map((paper) => (
+        <div
+          class="grid gap-4 py-12 md:grid-cols-2 lg:grid-cols-3"
+          data-reveal-stagger="80"
+          data-analytics-section="whitepapers_grid"
+        >
+          {papers.map((paper, index) => (
             <article
               class="group flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/50 p-7 transition-colors hover:border-[var(--color-border-strong)]"
               data-reveal
@@ -89,6 +93,9 @@ const noticeParts = t("whitePapers.notice").split("{email}");
 
               <a
                 href={localizedPath(`/white-papers/${paper.slug}`, locale)}
+                data-analytics="whitepaper_open"
+                data-analytics-paper={paper.slug}
+                data-analytics-position={String(index + 1)}
                 class="flex items-center justify-center gap-2 rounded-full border border-[var(--color-border-strong)] px-5 py-2.5 text-sm font-medium text-ink-50 transition-colors hover:bg-ink-800"
               >
                 <Icon name="arrow" size={15} />

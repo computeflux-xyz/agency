@@ -62,6 +62,8 @@ const { src, title } = Astro.props;
 </div>
 
 <script>
+  import { track } from "@lib/client/analytics";
+
   interface TocItem {
     id: string;
     text: string;
@@ -88,8 +90,8 @@ const { src, title } = Astro.props;
 
     const frameTop = () => frame.getBoundingClientRect().top + window.scrollY;
 
-    const umami = () =>
-      (window as unknown as { umami?: { track?: (n: string, d?: unknown) => void } }).umami;
+    /** Deepest section index reached, reported once on the way out. */
+    let deepest = -1;
 
     function positionMarker(link: HTMLAnchorElement | undefined) {
       if (!marker || !toc) return;
@@ -125,6 +127,7 @@ const { src, title } = Astro.props;
           a.textContent = it.text;
           a.addEventListener("click", (e) => {
             e.preventDefault();
+            track("article_toc_click", { section_title: it.text, level: it.level });
             const y = frameTop() + it.top - HEADER_OFFSET;
             const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
@@ -143,8 +146,13 @@ const { src, title } = Astro.props;
       links[activeIndex]?.removeAttribute("aria-current");
       links[idx]?.setAttribute("aria-current", "true");
       activeIndex = idx;
-      if (idx >= 0 && items[idx]) {
-        umami()?.track?.("article_section", { title: document.title, section: items[idx].text });
+      if (idx >= 0 && items[idx] && idx > deepest) {
+        deepest = idx;
+        track("article_section", {
+          section_title: items[idx].text,
+          position: idx + 1,
+          of: items.length,
+        });
       }
     }
 
@@ -210,11 +218,27 @@ const { src, title } = Astro.props;
 
           break;
         case "cf-article-toc":
-          if (Array.isArray(data.items)) renderToc(data.items);
+          if (Array.isArray(data.items)) {
+            if (!list!.dataset.sig) {
+              track("article_embed_ready", { sections: data.items.length });
+            }
+            renderToc(data.items);
+          }
           break;
-        case "cf-article-event":
-          umami()?.track?.(String(data.name ?? "article_event"), data.data ?? {});
+        case "cf-article-event": {
+          // Forwarded from the sandboxed frame. Values are whatever the framed
+          // document sent, so keep only flat scalars. The tracker's own
+          // sanitiser cannot reach inside an unknown object.
+          const raw = (data.data ?? {}) as Record<string, unknown>;
+          const flat: Record<string, string | number | boolean> = {};
+          for (const [key, value] of Object.entries(raw)) {
+            if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+              flat[key] = value;
+            }
+          }
+          track(String(data.name ?? "article_event"), flat);
           break;
+        }
       }
     });
 

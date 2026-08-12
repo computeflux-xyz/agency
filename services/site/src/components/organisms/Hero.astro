@@ -17,7 +17,11 @@ const locale = getLocale(Astro);
 const t = useTranslations(locale);
 ---
 
-<section class="relative overflow-hidden pt-24 md:pt-32" aria-label="Introduction">
+<section
+  class="relative overflow-hidden pt-24 md:pt-32"
+  aria-label="Introduction"
+  data-analytics-section="hero"
+>
   <div class="container-flux flex flex-col items-center gap-7 text-center">
     <p class="eyebrow text-ink-50" data-reveal>{t("hero.top")}</p>
 
@@ -44,8 +48,22 @@ const t = useTranslations(locale);
     </div>
 
     <div class="flex flex-col items-center gap-3 sm:flex-row" data-reveal>
-      <Button href={localizedPath("/book", locale)} variant="primary" size="lg" arrow>{t("nav.bookCall")}</Button>
-      <Button href="#practices" variant="secondary" size="lg">{t("hero.ctaExplore")}</Button>
+      <Button
+        href={localizedPath("/book", locale)}
+        variant="primary"
+        size="lg"
+        arrow
+        data-analytics="cta_click"
+        data-analytics-cta="hero_book"
+        data-analytics-to={localizedPath("/book", locale)}
+      >{t("nav.bookCall")}</Button>
+      <Button
+        href="#practices"
+        variant="secondary"
+        size="lg"
+        data-analytics="cta_click"
+        data-analytics-cta="hero_explore"
+      >{t("hero.ctaExplore")}</Button>
     </div>
 
     <p

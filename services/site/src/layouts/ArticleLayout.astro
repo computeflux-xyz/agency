@@ -88,12 +88,15 @@ const jsonLd = [
   publishedTime={isoDate(publishDate)}
   modifiedTime={updatedDate ? isoDate(updatedDate) : isoDate(publishDate)}
   jsonLd={jsonLd}
+  contentKind={kind}
+  contentTopics={topics}
+  contentReadingTime={readingTime}
 >
   {/* `cover` is metadata only: it feeds og:image and the JSON-LD above, and it
       is what ArticleCard renders in listings. It is deliberately NOT drawn at
       the top of the page — an article opens on its own title, and a study opens
       on the embedded document's own hero. */}
-  <article class="pt-28 md:pt-36">
+  <article class="pt-28 md:pt-36" data-analytics-section={kind}>
     <header class="container-prose flex flex-col gap-6">
       <nav class="flex items-center gap-2 font-mono text-xs text-ink-400" aria-label="Breadcrumb">
         <a href={sectionRoot} class="transition-colors hover:text-ink-50">{sectionLabel}</a>
@@ -129,7 +132,13 @@ const jsonLd = [
         topics.length > 0 && (
           <div class="flex flex-wrap gap-1.5">
             {topics.map((t) => (
-              <Tag size="xs" href={`${sectionRoot}?topic=${slugify(t)}`}>
+              <Tag
+                size="xs"
+                href={`${sectionRoot}?topic=${slugify(t)}`}
+                data-analytics="topic_click"
+                data-analytics-topic={slugify(t)}
+                data-analytics-origin="content_header"
+              >
                 {t}
               </Tag>
             ))}
@@ -157,10 +166,15 @@ const jsonLd = [
       <slot />
     </div>
 
-    <div class="container-prose">
+    <div class="container-prose" data-analytics-view="content_end">
       <Divider class="my-10" label="END" />
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <a href={sectionRoot} class="flex items-center gap-2 text-sm text-ink-200 transition-colors hover:text-ink-50">
+        <a
+          href={sectionRoot}
+          class="flex items-center gap-2 text-sm text-ink-200 transition-colors hover:text-ink-50"
+          data-analytics="content_back"
+          data-analytics-to={sectionRoot}
+        >
           ← Back to {sectionLabel.toLowerCase()}
         </a>
         <div class="flex items-center gap-3 font-mono text-xs text-ink-400">
@@ -169,11 +183,15 @@ const jsonLd = [
             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`}
             target="_blank" rel="noopener"
             class="transition-colors hover:text-ink-50"
+            data-analytics="content_share"
+            data-analytics-network="linkedin"
           >LinkedIn</a>
           <a
             href={`https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
             target="_blank" rel="noopener"
             class="transition-colors hover:text-ink-50"
+            data-analytics="content_share"
+            data-analytics-network="x"
           >X</a>
         </div>
       </div>

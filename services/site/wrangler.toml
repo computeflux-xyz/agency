@@ -26,12 +26,11 @@ binding = "ASSETS"
 PUBLIC_SITE_URL = "https://computeflux.xyz"
 # Backend (agency-api) behind the shared API gateway.
 API_BASE_URL = "https://apigateway.computeflux.xyz/agency-api"
-# Cookieless analytics (self-hosted Umami on the shared cluster). Uncomment and
-# set the website id (create the site in the Umami dashboard). Umami runs under a
-# subpath, so the embed must also pin where events go with
-# data-host-url="https://apigateway.computeflux.xyz/push-analytics".
-# PUBLIC_UMAMI_SRC = "https://apigateway.computeflux.xyz/push-analytics/script.js"
-# PUBLIC_UMAMI_WEBSITE_ID = "00000000-0000-0000-0000-000000000000"
+# Cookieless analytics.
+PUBLIC_UMAMI_SRC = "https://apigateway.computeflux.xyz/push-analytics/script.js"
+PUBLIC_UMAMI_HOST_URL = "https://apigateway.computeflux.xyz/push-analytics"
+PUBLIC_UMAMI_WEBSITE_ID = "38e1c36a-f114-46f0-a870-46554f6b59c9"
+PUBLIC_UMAMI_TAG = "production"
 
 # Server-side access to the article-artifacts bucket (Terraform-managed, see
 # deploy/terraform). Needed only if the worker reads/writes R2 in code via

@@ -14,6 +14,7 @@ import {
   useTranslations,
   type Alternate,
 } from "@i18n";
+import { pageContextFor } from "@lib/analytics";
 
 interface Props {
   title?: string;
@@ -30,6 +31,17 @@ interface Props {
   alternates?: Alternate[];
   /** Suppress hreflang alternates entirely (e.g. 404). */
   noAlternates?: boolean;
+  /**
+   * Analytics page type. Derived from the URL when omitted (see
+   * `@lib/analytics`). Pass it only when the URL under-describes the page.
+   */
+  pageType?: string;
+  /** Analytics: "article" | "study" | ... for content pages. */
+  contentKind?: string;
+  /** Analytics: topics of the content being read. */
+  contentTopics?: string[];
+  /** Analytics: declared reading time, in minutes. */
+  contentReadingTime?: number;
 }
 
 const locale = getLocale(Astro);
@@ -49,6 +61,10 @@ const {
   minimalSchema = false,
   alternates: alternatesOverride,
   noAlternates = false,
+  pageType: pageTypeOverride,
+  contentKind,
+  contentTopics = [],
+  contentReadingTime,
 } = Astro.props;
 
 const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
@@ -74,8 +90,22 @@ const alternateLinks = noAlternates
 // embed forwards in-iframe interactions to window.umami.track (see
 // ObservableEmbed.astro), so engagement inside the sandboxed article is
 // measurable too.
+//
+// PUBLIC_UMAMI_HOST_URL is needed whenever the collect endpoint does not live
+// next to script.js. Which is our case: the gateway exposes only
+// /push-analytics/script.js and /push-analytics/api/send, never the Umami
+// login portal. PUBLIC_UMAMI_TAG (optional) labels every event with the
+// environment so preview traffic can be filtered out of the dashboard.
 const umamiSrc = runtimeEnv?.PUBLIC_UMAMI_SRC ?? import.meta.env.PUBLIC_UMAMI_SRC;
 const umamiWebsiteId = runtimeEnv?.PUBLIC_UMAMI_WEBSITE_ID ?? import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const umamiHostUrl = runtimeEnv?.PUBLIC_UMAMI_HOST_URL ?? import.meta.env.PUBLIC_UMAMI_HOST_URL;
+const umamiTag = runtimeEnv?.PUBLIC_UMAMI_TAG ?? import.meta.env.PUBLIC_UMAMI_TAG;
+
+// Page context published on <body>. Every custom event carries these fields
+// (see @lib/client/analytics), so any interaction can be broken down by page
+// type, slug, locale or topic without joining anything in the dashboard.
+const derived = pageContextFor(canonicalPath);
+const pageType = pageTypeOverride ?? derived.pageType;
 
 const graphNodes: (Record<string, unknown> | Record<string, unknown>[])[] = [
   organizationSchema(),
@@ -141,11 +171,25 @@ const structuredData = jsonLdGraph(...graphNodes);
 
     {
       umamiSrc && umamiWebsiteId && (
-        <script defer src={umamiSrc} data-website-id={umamiWebsiteId} is:inline />
+        <script
+          defer
+          src={umamiSrc}
+          data-website-id={umamiWebsiteId}
+          data-host-url={umamiHostUrl || undefined}
+          data-tag={umamiTag || undefined}
+          is:inline
+        />
       )
     }
   </head>
-  <body>
+  <body
+    data-page-type={pageType}
+    data-page-slug={derived.slug || undefined}
+    data-locale={locale}
+    data-content-kind={contentKind || undefined}
+    data-content-topics={contentTopics.length ? contentTopics.join(",") : undefined}
+    data-content-reading-time={contentReadingTime ? String(contentReadingTime) : undefined}
+  >
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink-50 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink-950"
@@ -159,11 +203,13 @@ const structuredData = jsonLdGraph(...graphNodes);
       import { initReveal } from "@lib/client/reveal";
       import { initScramble } from "@lib/client/scramble";
       import { initTabs } from "@lib/client/tabs";
+      import { initAnalytics } from "@lib/client/analytics";
 
       function boot() {
         initReveal();
         initScramble();
         initTabs();
+        initAnalytics();
       }
       boot();
       document.addEventListener("astro:after-swap", boot);

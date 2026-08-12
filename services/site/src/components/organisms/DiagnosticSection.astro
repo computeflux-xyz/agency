@@ -54,6 +54,8 @@ const items = cases.map((c, i) => ({
   class="container-flux scroll-mt-24 py-20 md:py-28"
   data-diag
   data-reveal-stagger="60"
+  data-analytics-section="diagnostic"
+  data-analytics-view="diagnostic"
 >
   <div class="diag-layout">
     <MorphPanel as="header" class="diag-head-panel" data-reveal>
@@ -552,6 +554,7 @@ const items = cases.map((c, i) => ({
 
 <script>
   import Vivus from "vivus";
+  import { track } from "@lib/client/analytics";
 
   const DURATION = 10000;
 
@@ -815,8 +818,16 @@ const items = cases.map((c, i) => ({
         }
       }
     };
+    // Only `select` is instrumented, never `open`: the section rotates on a
+    // timer, and an auto-advance is not a visitor telling us which problem is
+    // theirs. This is the strongest self-qualification signal on the home page.
     const select = (index: number, focus = false) => {
       if (index === idx) return;
+      track("diagnostic_select", {
+        case: chips[index]?.textContent?.trim() ?? "",
+        position: index + 1,
+        section: "diagnostic",
+      });
       open(index, focus);
     };
 

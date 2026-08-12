@@ -19,6 +19,8 @@
  * Moving focus with the arrow keys also selects (automatic activation), so
  * `aria-selected` and the focused tab never disagree.
  */
+import { track } from "@lib/client/analytics";
+
 export function initTabs(root: ParentNode = document): void {
   const groups = Array.from(root.querySelectorAll<HTMLElement>("[data-tabs]"));
   if (!groups.length) return;
@@ -74,9 +76,23 @@ export function initTabs(root: ParentNode = document): void {
       if (moveFocus) tabs[target].focus();
     };
 
+    // Reported here rather than in `select()` so the normalising call below
+    // and the arrow-key walk it performs, do not read as user intent.
+    const report = (index: number, via: "click" | "keyboard") => {
+      track("tab_select", {
+        group: group.dataset.tabs ?? "",
+        tab: tabs[index]?.textContent?.trim() ?? String(index + 1),
+        position: index + 1,
+        via,
+      });
+    };
+
     tabs.forEach((tab, i) => {
       // `Enter` / `Space` arrive here for free — these are real buttons.
-      tab.addEventListener("click", () => select(i, false));
+      tab.addEventListener("click", () => {
+        select(i, false);
+        report(i, "click");
+      });
     });
 
     tablist.addEventListener("keydown", (event) => {
@@ -99,6 +115,7 @@ export function initTabs(root: ParentNode = document): void {
       }
       event.preventDefault(); // Home/End would otherwise scroll the page
       select(next, true);
+      report(((next % tabs.length) + tabs.length) % tabs.length, "keyboard");
     });
 
     // Normalise whatever the server rendered (without stealing focus), so

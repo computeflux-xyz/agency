@@ -41,7 +41,12 @@ const logoCls: Record<"mark" | "lockup", string> = {
 };
 ---
 
-<section id="systems" class="container-flux scroll-mt-24 py-20 md:py-28">
+<section
+  id="systems"
+  class="container-flux scroll-mt-24 py-20 md:py-28"
+  data-analytics-section="systems"
+  data-analytics-view="systems"
+>
   <SectionHeader eyebrow={t("systems.eyebrow")} accent="amber" class="mb-12 md:mb-16">
     <Fragment slot="title">
       {t("systems.title.a")} <Highlight>{t("systems.title.hl")}</Highlight>.

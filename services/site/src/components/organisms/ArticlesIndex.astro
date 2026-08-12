@@ -139,7 +139,12 @@ const chipBase =
 
   <section class="container-flux pb-24">
     <div class="flex flex-col gap-5 border-b border-[var(--color-border)] pb-6">
-      <form method="GET" action={articlesPath} class="flex w-full max-w-xl items-center gap-2">
+      <form
+        method="GET"
+        action={articlesPath}
+        class="flex w-full max-w-xl items-center gap-2"
+        data-analytics-form="articles_search"
+      >
         {activeTopic && <input type="hidden" name="topic" value={activeTopic} />}
         <input
           type="search"
@@ -157,9 +162,11 @@ const chipBase =
         </button>
       </form>
 
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2" data-analytics-section="articles_filters">
         <a
           href={buildUrl({ topic: null, page: null })}
+          data-analytics="topic_filter"
+          data-analytics-topic="all"
           class:list={[chipBase, !activeTopic ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
         >
           {t("articles.filterAll")}
@@ -168,6 +175,8 @@ const chipBase =
           topics.map((tp) => (
             <a
               href={buildUrl({ topic: tp.slug, page: null })}
+              data-analytics="topic_filter"
+              data-analytics-topic={tp.slug}
               class:list={[chipBase, activeTopic === tp.slug ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
             >
               {tp.name}
@@ -178,6 +187,7 @@ const chipBase =
         {hasFilters && (
           <a
             href={articlesPath}
+            data-analytics="filters_clear"
             class:list={[chipBase, "gap-1.5 border-dashed border-ink-400 text-ink-400 hover:border-ink-50 hover:text-ink-50"]}
           >
             <Icon name="close" size={11} />
@@ -195,7 +205,7 @@ const chipBase =
     {
       cards.length > 0 ? (
         <div class="grid gap-4 py-10 md:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
-          {cards.map((article) => (
+          {cards.map((article, index) => (
             <ArticleCard
               href={article.href}
               title={article.title}
@@ -205,6 +215,8 @@ const chipBase =
               date={article.date}
               readingTime={article.readingTime}
               cover={article.cover}
+              origin="articles_index"
+              position={(page - 1) * PAGE_SIZE + index + 1}
             />
           ))}
         </div>
@@ -220,10 +232,17 @@ const chipBase =
 
     {
       totalPages > 1 && (
-        <nav class="flex items-center justify-center gap-2 pt-4" aria-label={t("articles.pagination")}>
+        <nav
+          class="flex items-center justify-center gap-2 pt-4"
+          aria-label={t("articles.pagination")}
+          data-analytics-section="articles_pagination"
+        >
           <a
             href={buildUrl({ page: page - 1 })}
             aria-disabled={page <= 1}
+            data-analytics="pagination"
+            data-analytics-direction="prev"
+            data-analytics-page={String(page - 1)}
             class:list={["rounded-[var(--radius-md)] border border-[var(--color-ink-line)] px-3 py-2 font-mono text-xs uppercase tracking-widest", page <= 1 ? "pointer-events-none opacity-40" : "text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
           >
             {t("articles.prev")}
@@ -232,6 +251,9 @@ const chipBase =
             <a
               href={buildUrl({ page: n })}
               aria-current={n === page ? "page" : undefined}
+              data-analytics="pagination"
+              data-analytics-direction="jump"
+              data-analytics-page={String(n)}
               class:list={["rounded-[var(--radius-md)] border px-3.5 py-2 font-mono text-xs", n === page ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
             >
               {n}
@@ -240,6 +262,9 @@ const chipBase =
           <a
             href={buildUrl({ page: page + 1 })}
             aria-disabled={page >= totalPages}
+            data-analytics="pagination"
+            data-analytics-direction="next"
+            data-analytics-page={String(page + 1)}
             class:list={["rounded-[var(--radius-md)] border border-[var(--color-ink-line)] px-3 py-2 font-mono text-xs uppercase tracking-widest", page >= totalPages ? "pointer-events-none opacity-40" : "text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
           >
             {t("articles.next")}

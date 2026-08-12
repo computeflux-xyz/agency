@@ -95,6 +95,7 @@ const defaultLang = paper.langs.includes(locale) ? locale : paper.lang;
         <form
           class="flex flex-col gap-4"
           data-whitepaper-form
+          data-analytics-form="whitepaper_gate"
           data-slug={paper.slug}
           aria-label={t("whitePapers.gateTitle")}
           data-msg-sending={t("whitePapers.sending")}
@@ -172,6 +173,7 @@ const defaultLang = paper.langs.includes(locale) ? locale : paper.lang;
 
 <script>
   import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+  import { track, trackFormResult } from "@lib/client/analytics";
 
   const form = document.querySelector<HTMLFormElement>("[data-whitepaper-form]");
 
@@ -231,11 +233,19 @@ const defaultLang = paper.langs.includes(locale) ? locale : paper.lang;
         if (res.ok && body.ok) {
           form.reset();
           setStatus(msg.success, "success");
+          trackFormResult(form, true);
+          track("lead", {
+            channel: "whitepaper",
+            paper: payload.slug,
+            paper_lang: payload.lang,
+          });
         } else {
           setStatus(body.message ?? msg.error, "error");
+          trackFormResult(form, false, `http_${res.status}`);
         }
       } catch {
         setStatus(msg.network, "error");
+        trackFormResult(form, false, "network");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

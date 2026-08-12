@@ -1,3 +1,5 @@
+import { track } from "@lib/client/analytics";
+
 export function initHeader(): void {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return;
@@ -23,8 +25,16 @@ export function initHeader(): void {
     header.classList.remove("has-open-menu");
   };
 
+  const menusSeen = new Set<string>();
+
   const open = (item: HTMLElement) => {
     closeAll();
+    const label = item.querySelector("[data-nav-trigger]")?.textContent?.trim() ?? "";
+    if (label && !menusSeen.has(label)) {
+      menusSeen.add(label);
+      track("menu_open", { menu: label, section: "header" });
+    }
+
     item.classList.add("is-open");
     item.querySelector("[data-nav-trigger]")?.setAttribute(
       "aria-expanded",
@@ -62,6 +72,10 @@ export function initHeader(): void {
   const toggles = document.querySelectorAll<HTMLElement>("[data-menu-toggle]");
 
   const setDrawer = (open: boolean) => {
+    if (open !== drawer?.classList.contains("is-open")) {
+      track(open ? "mobile_menu_open" : "mobile_menu_close", { section: "header" });
+    }
+
     drawer?.classList.toggle("is-open", open);
     openBtn?.setAttribute("aria-expanded", String(open));
     document.documentElement.style.overflow = open ? "hidden" : "";
@@ -83,6 +97,12 @@ export function initHeader(): void {
       btn?.addEventListener("click", () => {
         const expanded = acc.classList.toggle("is-open");
         btn.setAttribute("aria-expanded", String(expanded));
+        if (expanded) {
+          track("menu_open", {
+            menu: btn.textContent?.trim() ?? "",
+            section: "mobile-menu",
+          });
+        }
       });
     },
   );

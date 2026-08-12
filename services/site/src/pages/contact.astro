@@ -58,6 +58,7 @@ const channels = [
         <form
           class="flex flex-col gap-4"
           data-contact-form
+          data-analytics-form="contact"
           aria-label={t("contact.formTitle")}
           data-msg-sending={t("contact.sending")}
           data-msg-success={t("contact.sent")}
@@ -120,6 +121,7 @@ const channels = [
 
 <script>
   import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+  import { track, trackFormResult } from "@lib/client/analytics";
 
   const form = document.querySelector<HTMLFormElement>("[data-contact-form]");
 
@@ -177,11 +179,15 @@ const channels = [
         if (res.ok && body.ok) {
           form.reset();
           setStatus(msg.success, "success");
+          trackFormResult(form, true);
+          track("lead", { channel: "contact", contact_preference: payload.preferredContact });
         } else {
           setStatus(body.message ?? msg.error, "error");
+          trackFormResult(form, false, `http_${res.status}`);
         }
       } catch {
         setStatus(msg.network, "error");
+        trackFormResult(form, false, "network");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

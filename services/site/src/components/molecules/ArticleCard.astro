@@ -15,6 +15,10 @@ interface Props {
   cover?: string | null;
   featured?: boolean;
   class?: string;
+  /** Analytics: where the card is rendered (index grid, home rail, related...). */
+  origin?: string;
+  /** Analytics: 1-based rank within its list (click position is half the story). */
+  position?: number;
 }
 const {
   href,
@@ -27,6 +31,8 @@ const {
   cover,
   featured = false,
   class: className = "",
+  origin = "list",
+  position,
 } = Astro.props;
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
@@ -40,6 +46,13 @@ const t = useTranslations(locale);
     className,
   ]}
   data-reveal
+  data-analytics="content_card_click"
+  data-analytics-kind={kind}
+  data-analytics-card-slug={href.split("/").filter(Boolean).pop()}
+  data-analytics-origin={origin}
+  data-analytics-position={position !== undefined ? String(position) : undefined}
+  data-analytics-featured={featured ? "true" : "false"}
+  data-analytics-topics={topics.slice(0, 3).join(",") || undefined}
 >
   <div
     class:list={[

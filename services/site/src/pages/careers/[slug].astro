@@ -92,7 +92,12 @@ const jsonLd = [
 
           <ApiNotice />
 
-          <form class="flex flex-col gap-4" data-apply-form aria-label={`${t("careers.applyTitle")} — ${job.title}`}>
+          <form
+            class="flex flex-col gap-4"
+            data-apply-form
+            data-analytics-form="job_apply"
+            aria-label={`${t("careers.applyTitle")} — ${job.title}`}
+          >
             <input type="hidden" name="role" value={job.title} />
             <Field label={t("careers.applyName")} name="name" required disabled />
             <Field label={t("careers.applyEmail")} name="email" type="email" required disabled />

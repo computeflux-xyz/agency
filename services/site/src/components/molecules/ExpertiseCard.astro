@@ -37,6 +37,9 @@ const icon = ICONS[item.index] ?? "spark";
     className,
   ]}
   data-reveal
+  data-analytics="expertise_card_click"
+  data-analytics-practice={item.index}
+  data-analytics-to={href}
 >
   <div class="flex flex-col gap-5">
     <div class="flex items-center justify-between">

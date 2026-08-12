@@ -12,7 +12,10 @@ const footerNav = getFooterNav(t, locale);
 const year = new Date().getFullYear();
 ---
 
-<footer class="relative border-t border-[var(--color-ink-line)] bg-surface">
+<footer
+  class="relative border-t border-[var(--color-ink-line)] bg-surface"
+  data-analytics-section="footer"
+>
   <div class="container-flux py-16 md:py-20">
     <div class="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
       <div class="flex flex-col gap-6">
@@ -21,7 +24,14 @@ const year = new Date().getFullYear();
           {localizedSite.description}
         </p>
         <div>
-          <Button href={localizedPath("/book", locale)} variant="primary" arrow>
+          <Button
+            href={localizedPath("/book", locale)}
+            variant="primary"
+            arrow
+            data-analytics="cta_click"
+            data-analytics-cta="footer_book"
+            data-analytics-to={localizedPath("/book", locale)}
+          >
             {t("nav.bookCall")}
           </Button>
         </div>

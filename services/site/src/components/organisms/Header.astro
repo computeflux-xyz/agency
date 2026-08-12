@@ -16,6 +16,7 @@ const bookHref = localizedPath("/book", locale);
 
 <header
   data-header
+  data-analytics-section="header"
   class="fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-300"
 >
   <div
@@ -51,6 +52,7 @@ const bookHref = localizedPath("/book", locale);
 
               {item.mega && (
                 <div
+                  data-analytics-section={`megamenu:${item.label}`}
                   class="invisible fixed inset-x-0 top-[3.1rem] z-10 mx-auto w-[min(52rem,92vw)] translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:top-[3.6rem] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100"
                 >
                   <div class="overflow-hidden rounded-[var(--radius-lg)] border border-ink-50 bg-surface shadow-[6px_8px_0_0_var(--color-ink-50)]">
@@ -58,6 +60,9 @@ const bookHref = localizedPath("/book", locale);
                       {item.mega.feature ? (
                         <a
                           href={item.mega.feature.href}
+                          data-analytics="megamenu_feature"
+                          data-analytics-menu={item.label}
+                          data-analytics-to={item.mega.feature.href}
                           class:list={[
                             "group/feat relative flex flex-col justify-between gap-6 overflow-hidden border-r border-[var(--color-ink-line)] p-7",
                             item.mega.feature.image ? "bg-[var(--color-invert-bg)]" : "bg-ink-850",
@@ -174,7 +179,16 @@ const bookHref = localizedPath("/book", locale);
         >
           {t("cta.contact")}
         </a>
-        <Button href={headerCta.href} size="sm" variant="primary" class="max-sm:hidden" arrow>
+        <Button
+          href={headerCta.href}
+          size="sm"
+          variant="primary"
+          class="max-sm:hidden"
+          arrow
+          data-analytics="cta_click"
+          data-analytics-cta="header_primary"
+          data-analytics-to={headerCta.href}
+        >
           {headerCta.label}
         </Button>
 

@@ -60,6 +60,7 @@ const expect = [t("book.expect1"), t("book.expect2"), t("book.expect3")];
         <form
           class="flex flex-col gap-4"
           data-book-form
+          data-analytics-form="book"
           aria-label={t("book.formTitle")}
           data-msg-sending={t("book.sending")}
           data-msg-success={t("book.sent")}
@@ -114,6 +115,7 @@ const expect = [t("book.expect1"), t("book.expect2"), t("book.expect3")];
 
 <script>
   import { enhancePhoneInput, getPhoneE164 } from "@lib/client/phone";
+  import { track, trackFormResult } from "@lib/client/analytics";
 
   const form = document.querySelector<HTMLFormElement>("[data-book-form]");
 
@@ -159,6 +161,7 @@ const expect = [t("book.expect1"), t("book.expect2"), t("book.expect3")];
 
       if (start && end && new Date(end) <= new Date(start)) {
         setStatus(msg.window, "error");
+        trackFormResult(form, false, "invalid_window");
         return;
       }
 
@@ -188,11 +191,15 @@ const expect = [t("book.expect1"), t("book.expect2"), t("book.expect3")];
         if (res.ok && body.ok) {
           form.reset();
           setStatus(msg.success, "success");
+          trackFormResult(form, true);
+          track("lead", { channel: "book_call" });
         } else {
           setStatus(body.message ?? msg.error, "error");
+          trackFormResult(form, false, `http_${res.status}`);
         }
       } catch {
         setStatus(msg.network, "error");
+        trackFormResult(form, false, "network");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }
