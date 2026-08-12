@@ -20,15 +20,12 @@ interface Props {
 }
 const { item, href, cta, startHere, class: className = "" } = Astro.props;
 
-/* One glyph per practice, keyed by its ordinal — there are six practices and the
-   icon set has to cover all of them, or 05 and 06 silently reuse 01 and 02. */
 const ICONS: Record<string, string> = {
   "01": "spark", // AI engineering
   "02": "gauge", // inference
   "03": "bolt", // agentic systems
   "04": "layers", // data engineering
   "05": "cpu", // bare metal
-  "06": "document", // sovereignty
 };
 const icon = ICONS[item.index] ?? "spark";
 ---

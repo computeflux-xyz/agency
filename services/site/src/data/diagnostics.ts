@@ -1,42 +1,16 @@
-/**
- * Homepage diagnostic cases — the N→P situations we are actually called for.
- *
- * These are the problems that come up in a loop, or are simply hard to solve:
- * data quality/drift, unstructured data, lineage & governance, real-time
- * streaming, RAG & context engineering, agent observability, evaluation &
- * guardrails, compute costs, legacy integration, and GenAI serving economics.
- *
- * Copy lives here (French-first, English mirror) because it is long-form content
- * owned with its chart geometry, exactly like `expertise.ts` / `systems.ts`.
- * Each case drives a tab in `organisms/DiagnosticSection.astro`.
- *
- * Each case carries a `tools` list — every tool/language we reach for on that
- * problem, with a one-line *why*. Tools are chosen to be modern & recognizable
- * (RAG, vector DBs, observability, GPU orchestration) so the stack sells itself.
- * Every tool renders as a real Simple Icons SVG (`atoms/TechMark.astro`); only
- * the hero carousel's old text monograms are gone. Icons appear inside the
- * active quadtree region and explain themselves in a popup on hover.
- */
-
 import type { Locale } from "@i18n";
 
 export type ChartKind = "bars" | "spark" | "split";
 
 export type CaseChart = {
   kind: ChartKind;
-  /** Values. `bars`: per-bar ratios; `spark`: a time series; `split`: `[before, after]`. */
   data: number[];
-  /** Series labels, matching `data` positionally (empty when decorative). */
   labels: string[];
 };
 
-/** A tool/language used to solve a case, with the reason it is the right one. */
 export type CaseTool = {
-  /** Brand name. */
   name: string;
-  /** Simple Icons slug (see `atoms/TechMark.astro`). */
   si: string;
-  /** Localized "why we reach for this" explanation (shown on hover). */
   reason: string;
 };
 
@@ -48,9 +22,7 @@ export type DiagCase = {
   action: string;
   actionChart?: CaseChart;
   cta: string;
-  /** Tools we use on this case; rendered in the active quadtree region. */
   tools: CaseTool[];
-  /** Canonical expertise page this case deep-links to. */
   morePath: string;
 };
 
@@ -59,7 +31,7 @@ const fr: DiagCase[] = [
     slug: "data-quality",
     label: "Des données sales qui dérivent",
     cause:
-      "Les schémas changent, les sources renvoient du vide, et les motifs du monde réel bougent sans prévenir. Les modèles apprennent sur un passé qui n'existe déjà plus — personne ne voit la dérive arriver.",
+      "Les schémas changent, les sources renvoient du vide, et les motifs du monde réel bougent sans prévenir. Les modèles apprennent sur un passé qui n'existe déjà plus, et personne ne voit la dérive arriver.",
     causeChart: {
       kind: "bars",
       data: [18, 12, 61, 6, 43, 28, 9, 33, 54, 11],
@@ -72,7 +44,7 @@ const fr: DiagCase[] = [
       {
         name: "Kafka",
         si: "Apachekafka",
-        reason: "Chaque événement porte son schéma et son historique — quand le monde change, on le voit, et on peut rejouer.",
+        reason: "Chaque événement porte son schéma et son historique : quand le monde change, on le voit, et on peut rejouer.",
       },
       {
         name: "DuckDB",
@@ -119,7 +91,7 @@ const fr: DiagCase[] = [
       {
         name: "Hugging Face",
         si: "Huggingface",
-        reason: "Modèles de transcription, d'embedding et de vision prêts à l'emploi — on choisit les meilleurs, on ne les entraîne pas.",
+        reason: "Modèles de transcription, d'embedding et de vision prêts à l'emploi : on choisit les meilleurs, on ne les entraîne pas.",
       },
       {
         name: "PyTorch",
@@ -139,7 +111,7 @@ const fr: DiagCase[] = [
     slug: "governance",
     label: "On ne sait plus d'où viennent nos données",
     cause:
-      "Chaque chiffre a un pedigree trouble, et chaque suppression devrait obéir à un RGPD que personne ne peut prouver. Les auditeurs posent des questions — la réponse est : on ne sait pas.",
+      "Chaque chiffre a un pedigree trouble, et chaque suppression devrait obéir à un RGPD que personne ne peut prouver. Les auditeurs posent des questions, et la réponse est : on ne sait pas.",
     causeChart: {
       kind: "bars",
       data: [82, 51],
@@ -180,7 +152,7 @@ const fr: DiagCase[] = [
       "Le batch livre des données déjà périmées : les décisions se prennent sur un instantané d'hier. Les événements ne passent nulle part entre deux jobs, et personne ne garantit l'ordre ni l'exactitude.",
     causeChart: { kind: "spark", data: [10, 30, 55, 88, 100, 96, 100], labels: [] },
     action:
-      "On bascule sur un streaming par contrat : événement unique, traitement avec état et exactly-once, agrégation continue. La fraîcheur passe en secondes, pas en jours — sans perdre l'exactitude.",
+      "On bascule sur un streaming par contrat : événement unique, traitement avec état et exactly-once, agrégation continue. La fraîcheur passe en secondes, pas en jours, sans perdre l'exactitude.",
     actionChart: {
       kind: "split",
       data: [100, 24],
@@ -253,7 +225,7 @@ const fr: DiagCase[] = [
     slug: "agent-observability",
     label: "Nos agents agissent… on ignore comment",
     cause:
-      "Un agent multi-étapes décide seul : il appelle des outils, change d'avis, fait des boucles. Personne ne voit quoi, quand, pourquoi — donc personne ne peut corriger une trajectoire perdante.",
+      "Un agent multi-étapes décide seul : il appelle des outils, change d'avis, fait des boucles. Personne ne voit quoi, quand, pourquoi, donc personne ne peut corriger une trajectoire perdante.",
     causeChart: {
       kind: "split",
       data: [98, 61],
@@ -281,7 +253,7 @@ const fr: DiagCase[] = [
       {
         name: "Elasticsearch",
         si: "Elasticsearch",
-        reason: "Les traces et messages deviennent full-text searchables — on retrouve un incident en tapant une phrase.",
+        reason: "Les traces et messages deviennent full-text searchables : on retrouve un incident en tapant une phrase.",
       },
     ],
     cta: "Parler d'observabilité",
@@ -393,7 +365,7 @@ const fr: DiagCase[] = [
       {
         name: "TypeScript",
         si: "Typescript",
-        reason: "API et clients invariants par le typage — les contrats entre l'IA et les vieux systèmes se vérifient au compile.",
+        reason: "API et clients invariants par le typage : les contrats entre l'IA et les vieux systèmes se vérifient au compile.",
       },
       {
         name: "Neo4j",
@@ -411,7 +383,7 @@ const fr: DiagCase[] = [
       "Le coût par requête explose dès que l'usage grandit : générations lentes, throughput gâché, modèles surdimensionnés. La marge et la latence se dégradent en même temps.",
     causeChart: { kind: "spark", data: [12, 18, 30, 46, 71, 100], labels: [] },
     action:
-      "On sert les modèles avec du batching continu, de la quantification et un routage adapté à la tâche. Le coût par requête baisse, la latence aussi — sans dégrader la qualité.",
+      "On sert les modèles avec du batching continu, de la quantification et un routage adapté à la tâche. Le coût par requête baisse, la latence aussi, sans dégrader la qualité.",
     actionChart: {
       kind: "split",
       data: [100, 28],
@@ -426,7 +398,7 @@ const fr: DiagCase[] = [
       {
         name: "Ollama",
         si: "Ollama",
-        reason: "Des modèles locaux et quantifiés pour les usages sensibles ou hors ligne — coût à la requête quasi nul.",
+        reason: "Des modèles locaux et quantifiés pour les usages sensibles ou hors ligne : coût à la requête quasi nul.",
       },
       {
         name: "BentoML",
@@ -444,7 +416,7 @@ const en: DiagCase[] = [
     slug: "data-quality",
     label: "Dirty data that quietly drifts",
     cause:
-      "Schemas change, sources return blanks, and real-world patterns move without warning. Models train on a past that no longer exists — and nobody sees the drift coming.",
+      "Schemas change, sources return blanks, and real-world patterns move without warning. Models train on a past that no longer exists, and nobody sees the drift coming.",
     causeChart: {
       kind: "bars",
       data: [18, 12, 61, 6, 43, 28, 9, 33, 54, 11],
@@ -457,12 +429,12 @@ const en: DiagCase[] = [
       {
         name: "Kafka",
         si: "Apachekafka",
-        reason: "Every event carries its schema and history — when the world changes, you see it, and you can replay.",
+        reason: "Every event carries its schema and history: when the world changes, you see it, and you can replay.",
       },
       {
         name: "DuckDB",
         si: "Duckdb",
-        reason: "Instant shadow validation — a schema change is approved in seconds, not days.",
+        reason: "Instant shadow validation: a schema change is approved in seconds, not days.",
       },
       {
         name: "Polars",
@@ -499,12 +471,12 @@ const en: DiagCase[] = [
       {
         name: "Python",
         si: "Python",
-        reason: "The audio/vision/text ecosystem is Python-first — we prototype the chain in days, not sprints.",
+        reason: "The audio/vision/text ecosystem is Python-first, so we prototype the chain in days, not sprints.",
       },
       {
         name: "Hugging Face",
         si: "Huggingface",
-        reason: "Ready transcription, embedding and vision models — we pick the best, we don't train them.",
+        reason: "Ready transcription, embedding and vision models: we pick the best, we don't train them.",
       },
       {
         name: "PyTorch",
@@ -524,7 +496,7 @@ const en: DiagCase[] = [
     slug: "governance",
     label: "We no longer know where our data came from",
     cause:
-      "Every number has a murky pedigree, and every deletion should obey GDPR rules nobody can prove. Auditors ask questions — the answer is: we don't know.",
+      "Every number has a murky pedigree, and every deletion should obey GDPR rules nobody can prove. Auditors ask questions, and the answer is: we don't know.",
     causeChart: {
       kind: "bars",
       data: [82, 51],
@@ -537,17 +509,17 @@ const en: DiagCase[] = [
       {
         name: "Trino",
         si: "Trino",
-        reason: "One federated entry point — every query crosses a single governance layer, whatever the source.",
+        reason: "One federated entry point: every query crosses a single governance layer, whatever the source.",
       },
       {
         name: "Snowflake",
         si: "Snowflake",
-        reason: "Time travel and native retention — history and legal holds in SQL, no copies.",
+        reason: "Time travel and native retention: history and legal holds in SQL, no copies.",
       },
       {
         name: "OpenTelemetry",
         si: "Opentelemetry",
-        reason: "Data becomes traceable like code — every access and transform leaves a footprint.",
+        reason: "Data becomes traceable like code: every access and transform leaves a footprint.",
       },
       {
         name: "MongoDB",
@@ -565,7 +537,7 @@ const en: DiagCase[] = [
       "Batch delivers data that is already stale: decisions run on yesterday's snapshot. Events sit nowhere between jobs, and nobody guarantees order or exactness.",
     causeChart: { kind: "spark", data: [10, 30, 55, 88, 100, 96, 100], labels: [] },
     action:
-      "We move to streaming by contract: one event handled once, stateful exactly-once processing, continuous aggregation. Freshness drops to seconds, not days — without losing accuracy.",
+      "We move to streaming by contract: one event handled once, stateful exactly-once processing, continuous aggregation. Freshness drops to seconds, not days, without losing accuracy.",
     actionChart: {
       kind: "split",
       data: [100, 24],
@@ -575,7 +547,7 @@ const en: DiagCase[] = [
       {
         name: "Flink",
         si: "Apacheflink",
-        reason: "A stateful exactly-once stream engine — aggregations stay exact even mid-outage.",
+        reason: "A stateful exactly-once stream engine: aggregations stay exact even mid-outage.",
       },
       {
         name: "Redis",
@@ -590,7 +562,7 @@ const en: DiagCase[] = [
       {
         name: "Apache Pulsar",
         si: "Apachepulsar",
-        reason: "A multi-tenant event backbone — replay, ordering and isolation without the broker ceiling.",
+        reason: "A multi-tenant event backbone: replay, ordering and isolation without the broker ceiling.",
       },
     ],
     cta: "Talk about streaming",
@@ -628,7 +600,7 @@ const en: DiagCase[] = [
       {
         name: "PostgreSQL",
         si: "Postgresql",
-        reason: "pgvector inside your existing database — a clean start with nothing new to operate.",
+        reason: "pgvector inside your existing database: a clean start with nothing new to operate.",
       },
     ],
     cta: "Talk about RAG",
@@ -638,7 +610,7 @@ const en: DiagCase[] = [
     slug: "agent-observability",
     label: "Our agents act… we don't know how",
     cause:
-      "A multi-step agent decides alone: it calls tools, changes its mind, loops. Nobody sees what, when, why — so nobody can fix a losing trajectory.",
+      "A multi-step agent decides alone: it calls tools, changes its mind, loops. Nobody sees what, when, why, so nobody can fix a losing trajectory.",
     causeChart: {
       kind: "split",
       data: [98, 61],
@@ -651,12 +623,12 @@ const en: DiagCase[] = [
       {
         name: "Datadog",
         si: "Datadog",
-        reason: "Unified APM and logs — the agent loop viewed as a distributed integration, with alerts.",
+        reason: "Unified APM and logs: the agent loop viewed as a distributed integration, with alerts.",
       },
       {
         name: "Grafana",
         si: "Grafana",
-        reason: "Shared dashboards over every trajectory — the team sees agent health without asking.",
+        reason: "Shared dashboards over every trajectory: the team sees agent health without asking.",
       },
       {
         name: "Prometheus",
@@ -666,7 +638,7 @@ const en: DiagCase[] = [
       {
         name: "Elasticsearch",
         si: "Elasticsearch",
-        reason: "Traces and messages become full-text searchable — find an incident by typing a phrase.",
+        reason: "Traces and messages become full-text searchable: find an incident by typing a phrase.",
       },
     ],
     cta: "Talk about observability",
@@ -693,7 +665,7 @@ const en: DiagCase[] = [
       {
         name: "MLflow",
         si: "Mlflow",
-        reason: "The evaluation registry — every model version runs the same tests, results stay comparable.",
+        reason: "The evaluation registry: every model version runs the same tests, results stay comparable.",
       },
       {
         name: "Weights & Biases",
@@ -703,7 +675,7 @@ const en: DiagCase[] = [
       {
         name: "Gradio",
         si: "Gradio",
-        reason: "A human evaluation harness — anyone can probe responses and label them without code.",
+        reason: "A human evaluation harness: anyone can probe responses and label them without code.",
       },
       {
         name: "NumPy",
@@ -740,7 +712,7 @@ const en: DiagCase[] = [
       {
         name: "Ray",
         si: "Ray",
-        reason: "Training and serving spread automatically across the cluster — the right card on the right job.",
+        reason: "Training and serving spread automatically across the cluster: the right card on the right job.",
       },
       {
         name: "Terraform",
@@ -778,7 +750,7 @@ const en: DiagCase[] = [
       {
         name: "TypeScript",
         si: "Typescript",
-        reason: "Typed API contracts — the boundaries between AI and legacy systems check at compile time.",
+        reason: "Typed API contracts: the boundaries between AI and legacy systems check at compile time.",
       },
       {
         name: "Neo4j",
@@ -796,7 +768,7 @@ const en: DiagCase[] = [
       "Cost per request explodes as usage grows: slow generation, wasted throughput, oversized models. Margin and latency degrade at the same time.",
     causeChart: { kind: "spark", data: [12, 18, 30, 46, 71, 100], labels: [] },
     action:
-      "We serve the models with continuous batching, quantisation and task-aware routing. Cost per request drops, latency drops too — without hurting quality.",
+      "We serve the models with continuous batching, quantisation and task-aware routing. Cost per request drops, latency drops too, without hurting quality.",
     actionChart: {
       kind: "split",
       data: [100, 28],
@@ -806,12 +778,12 @@ const en: DiagCase[] = [
       {
         name: "vLLM",
         si: "Vllm",
-        reason: "Continuous batching and PagedAttention — throughput per card rises, cost per token falls.",
+        reason: "Continuous batching and PagedAttention: throughput per card rises, cost per token falls.",
       },
       {
         name: "Ollama",
         si: "Ollama",
-        reason: "Local, quantised models for sensitive or offline use — near-zero cost per request.",
+        reason: "Local, quantised models for sensitive or offline use: near-zero cost per request.",
       },
       {
         name: "BentoML",

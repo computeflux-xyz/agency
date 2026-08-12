@@ -20,6 +20,8 @@ export type NavItem = {
       description: string;
       href: string;
       cta: string;
+      image?: string;
+      image2x?: string;
     };
     columns: MegaColumn[];
   };
@@ -43,6 +45,8 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
           description: t("expertise.metaDescription"),
           href: p("/expertise"),
           cta: t("hero.ctaExplore"),
+          image: "/photos/mega-expertise-640.webp",
+          image2x: "/photos/mega-expertise-1280.webp",
         },
         columns: [
           {
@@ -52,14 +56,14 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
               { label: t("nav.expertise.inference"), href: p("/expertise/inference-optimization"), description: t("nav.expertise.inferenceDesc") },
               { label: t("nav.expertise.agents"), href: p("/expertise/agentic-systems"), description: t("nav.expertise.agentsDesc") },
               { label: t("nav.expertise.data"), href: p("/expertise/data-engineering"), description: t("nav.expertise.dataDesc") },
+              { label: t("nav.expertise.bareMetal"), href: p("/expertise/bare-metal"), description: t("nav.expertise.bareMetalDesc") },
             ],
           },
           {
             heading: t("approach.eyebrow"),
             links: [
               { label: t("nav.engagements"), href: p("/expertise#engagements"), description: t("nav.engagementsDesc") },
-              { label: t("nav.caseStudies"), href: p("/studies"), description: t("nav.caseStudiesDesc") },
-              { label: t("nav.whitePapers"), href: p("/white-papers"), description: t("nav.whitePapersDesc") },
+              { label: t("nav.bookCall"), href: p("/book"), description: t("nav.bookCallDesc") },
             ],
           },
         ],
@@ -75,22 +79,14 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
           description: t("studies.metaDescription"),
           href: p("/studies"),
           cta: t("home.work.all"),
+          image: "/photos/mega-studies-640.webp",
+          image2x: "/photos/mega-studies-1280.webp",
         },
         columns: [
-          {
-            heading: t("nav.byTopic"),
-            links: [
-              { label: t("nav.topic.inference"), href: p("/studies?topic=inference") },
-              { label: t("nav.topic.agentic"), href: p("/studies?topic=agentic") },
-              { label: t("nav.topic.data"), href: p("/studies?topic=data") },
-              { label: t("nav.topic.performance"), href: p("/studies?topic=performance") },
-            ],
-          },
           {
             heading: t("nav.read"),
             links: [
               { label: t("nav.articles"), href: p("/articles"), description: t("nav.articlesDesc") },
-              { label: t("nav.whitePapers"), href: p("/white-papers"), description: t("nav.whitePapersDesc2") },
             ],
           },
         ],
@@ -100,6 +96,15 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
       label: t("nav.company"),
       href: p("/about"),
       mega: {
+        feature: {
+          eyebrow: t("about.hero.eyebrow"),
+          title: t("about.hero.title"),
+          description: t("about.metaDescription"),
+          href: p("/about"),
+          cta: t("nav.company.cta"),
+          image: "/photos/mega-company-640.webp",
+          image2x: "/photos/mega-company-1280.webp",
+        },
         columns: [
           {
             heading: t("nav.company"),
@@ -108,14 +113,6 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
               { label: t("nav.careers"), href: p("/careers"), description: t("nav.careersDesc") },
               { label: t("nav.faq"), href: p("/faq"), description: t("nav.faqDesc") },
               { label: t("nav.contact"), href: p("/contact"), description: t("nav.contactDesc") },
-            ],
-          },
-          {
-            heading: t("nav.resources"),
-            links: [
-              { label: t("nav.whitePapers"), href: p("/white-papers") },
-              { label: t("nav.newsletter"), href: p("/newsletter") },
-              { label: t("nav.bookCall"), href: p("/book") },
             ],
           },
         ],
@@ -128,12 +125,10 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
   ];
 }
 
-/** Primary CTA at the end of the header, localized. */
 export function getHeaderCta(t: T, locale: Locale): NavLink {
   return { label: t("nav.bookCall"), href: localizedPath("/book", locale) };
 }
 
-/** Localized footer navigation. */
 export function getFooterNav(t: T, locale: Locale): MegaColumn[] {
   const p = (href: string) => localizedPath(href, locale);
   return [
@@ -144,6 +139,7 @@ export function getFooterNav(t: T, locale: Locale): MegaColumn[] {
         { label: t("nav.expertise.inference"), href: p("/expertise/inference-optimization") },
         { label: t("nav.expertise.agents"), href: p("/expertise/agentic-systems") },
         { label: t("nav.expertise.data"), href: p("/expertise/data-engineering") },
+        { label: t("nav.expertise.bareMetal"), href: p("/expertise/bare-metal") },
       ],
     },
     {
@@ -167,7 +163,7 @@ export function getFooterNav(t: T, locale: Locale): MegaColumn[] {
       heading: t("footer.engage"),
       links: [
         { label: t("nav.bookCall"), href: p("/book") },
-        { label: t("nav.newsletter"), href: p("/newsletter") },
+        { label: t("cta.contact"), href: p("/contact") },
       ],
     },
   ];

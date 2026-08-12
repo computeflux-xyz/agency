@@ -1,6 +1,6 @@
 ---
 title: "Five inference optimizations that actually move the numbers"
-description: "A field guide to the inference optimizations we reach for first — ranked by how reliably they cut cost and latency without hurting quality."
+description: "A field guide to the inference optimizations we reach for first, ranked by how reliably they cut cost and latency without hurting quality."
 publishDate: 2026-01-12
 topics: ["Inference", "Performance"]
 featured: false
@@ -27,7 +27,7 @@ Shared prompt prefixes, system prompts and retrieved context get re-encoded on
 every call unless you cache them. Prefix/KV caching turns repeated work into a
 lookup.
 
-## 4. Quantize — but gate on evals
+## 4. Quantize, but gate on evals
 
 INT8/FP8 quantization shrinks memory and speeds up serving. The catch is
 quality: **always** benchmark before and after on a fixed eval set so you know

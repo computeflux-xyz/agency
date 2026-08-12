@@ -67,7 +67,7 @@ const bmFr: PracticeContent = {
      GPU, donc on a réglé le problème ». */
   overviewTitle: "Acheter du matériel ne suffit pas.",
   overviewBullets: [
-    "La mesure d'abord : profil de charge réel — CPU, mémoire, entrées-sorties, GPU — avant tout arbitrage entre cloud, hébergement dédié et machines en propre.",
+    "La mesure d'abord : profil de charge réel (CPU, mémoire, entrées-sorties, GPU) avant tout arbitrage entre cloud, hébergement dédié et machines en propre.",
     "Exploitation système : placement NUMA, réglage réseau et stockage, ordonnancement des tâches. C'est là que se creuse l'écart entre matériel acheté et matériel utilisé.",
     "GPU partagés proprement : files d'attente, quotas et suivi d'occupation, pour que les cartes travaillent au lieu d'attendre.",
     "Continuité : sauvegardes, bascule et supervision, pour qu'une panne matérielle reste un incident et non un arrêt.",
@@ -84,7 +84,7 @@ const bmFr: PracticeContent = {
   flowLegendDefault: "Le chemin",
   darkTitle: "Le cloud n'est pas un camp.",
   darkLead:
-    "Nous exploitons les deux modèles, donc nous n'avons aucun intérêt à vous pousser vers l'un. Sur une charge irrégulière, le cloud gagne. Sur une charge lourde et régulière, la facture à l'usage finit par dépasser le prix du matériel — et c'est un calcul, pas une opinion.",
+    "Nous exploitons les deux modèles, donc nous n'avons aucun intérêt à vous pousser vers l'un. Sur une charge irrégulière, le cloud gagne. Sur une charge lourde et régulière, la facture à l'usage finit par dépasser le prix du matériel, et c'est un calcul, pas une opinion.",
   pipelineTools: [
     { name: "Linux", si: "Linux" },
     { name: "Kubernetes", si: "Kubernetes" },
@@ -126,7 +126,7 @@ const bmEn: PracticeContent = {
   overviewEyebrow: "Overview",
   overviewTitle: "Buying hardware is not the hard part.",
   overviewBullets: [
-    "Measurement first: a real load profile — CPU, memory, I/O, GPU — before any call between cloud, dedicated hosting and hardware you own.",
+    "Measurement first: a real load profile (CPU, memory, I/O, GPU) before any call between cloud, dedicated hosting and hardware you own.",
     "Systems operation: NUMA placement, network and storage tuning, job scheduling. This is where the gap between hardware bought and hardware used opens up.",
     "GPUs shared properly: queues, quotas and occupancy tracking, so the cards work instead of waiting.",
     "Continuity: backups, failover and monitoring, so a hardware failure stays an incident rather than an outage.",
@@ -143,7 +143,7 @@ const bmEn: PracticeContent = {
   flowLegendDefault: "The path",
   darkTitle: "The cloud is not a side to pick.",
   darkLead:
-    "We operate both models, so we have no stake in pushing you towards either. On spiky load, the cloud wins. On heavy, steady load, the metered bill eventually passes the price of the hardware — and that is arithmetic, not an opinion.",
+    "We operate both models, so we have no stake in pushing you towards either. On spiky load, the cloud wins. On heavy, steady load, the metered bill eventually passes the price of the hardware, and that is arithmetic, not an opinion.",
   pipelineTools: [
     { name: "Linux", si: "Linux" },
     { name: "Kubernetes", si: "Kubernetes" },

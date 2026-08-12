@@ -1,11 +1,3 @@
-/**
- * "Vos problématiques" — the sticky deck on the home page.
- *
- * Six problems that map to real 2026 market needs. Each card links to a booking
- * with a `sujet` value or to an expertise page. Copy is French-first; English
- * mirrors it, via getProblems(locale).
- */
-
 import type { Locale } from "@i18n";
 
 export type Problem = {
@@ -14,7 +6,6 @@ export type Problem = {
   title: string;
   body: string;
   tag: string;
-  /** Where the card's CTA goes. */
   href: "/book" | string;
   booking: boolean;
 };
@@ -71,7 +62,7 @@ const fr: Problem[] = [
     title: "Gagner en souveraineté sans sacrifier la vitesse",
     body: "Vos données n'ont aucune raison de traverser l'Atlantique. On conçoit des systèmes portables chez des hébergeurs européens ou sur votre matériel, sans ralentir votre déploiement.",
     tag: "Souveraineté",
-    href: "/expertise/sovereignty",
+    href: "/expertise/bare-metal",
     booking: false,
   },
 ];
@@ -128,7 +119,7 @@ const en: Problem[] = [
     title: "Gaining sovereignty without losing speed",
     body: "Your data has no reason to cross the Atlantic. We design portable systems at European providers or on your own hardware, without slowing your rollout.",
     tag: "Sovereignty",
-    href: "/expertise/sovereignty",
+    href: "/expertise/bare-metal",
     booking: false,
   },
 ];

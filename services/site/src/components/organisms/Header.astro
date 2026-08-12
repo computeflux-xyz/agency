@@ -51,26 +51,72 @@ const bookHref = localizedPath("/book", locale);
 
               {item.mega && (
                 <div
-                  class="invisible absolute left-1/2 top-full z-10 w-[min(52rem,90vw)] -translate-x-1/2 translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100"
+                  class="invisible fixed inset-x-0 top-[3.1rem] z-10 mx-auto w-[min(52rem,92vw)] translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:top-[3.6rem] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100"
                 >
                   <div class="overflow-hidden rounded-[var(--radius-lg)] border border-ink-50 bg-surface shadow-[6px_8px_0_0_var(--color-ink-50)]">
                     <div class="grid grid-cols-[1.1fr_1fr] gap-0">
                       {item.mega.feature ? (
                         <a
                           href={item.mega.feature.href}
-                          class="group/feat relative flex flex-col justify-between gap-6 border-r border-[var(--color-ink-line)] bg-ink-850 p-7"
+                          class:list={[
+                            "group/feat relative flex flex-col justify-between gap-6 overflow-hidden border-r border-[var(--color-ink-line)] p-7",
+                            item.mega.feature.image ? "bg-[var(--color-invert-bg)]" : "bg-ink-850",
+                          ]}
                         >
-                          <div class="grid-backdrop pointer-events-none absolute inset-0" aria-hidden="true" />
+                          {item.mega.feature.image && (
+                            <img
+                              src={item.mega.feature.image}
+                              srcset={
+                                item.mega.feature.image2x
+                                  ? `${item.mega.feature.image} 1x, ${item.mega.feature.image2x} 2x`
+                                  : undefined
+                              }
+                              alt=""
+                              aria-hidden="true"
+                              loading="lazy"
+                              decoding="async"
+                              class="pointer-events-none absolute inset-0 size-full object-contain object-right opacity-95 transition-transform duration-500 group-hover/feat:scale-[1.03]"
+                            />
+                          )}
+                          {item.mega.feature.image && (
+                            <div
+                              class="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--color-invert-bg)_0%,var(--color-invert-bg)_42%,color-mix(in_srgb,var(--color-invert-bg)_75%,transparent)_58%,color-mix(in_srgb,var(--color-invert-bg)_20%,transparent)_82%,transparent_100%)]"
+                              aria-hidden="true"
+                            />
+                          )}
+                          {!item.mega.feature.image && (
+                            <div class="grid-backdrop pointer-events-none absolute inset-0" aria-hidden="true" />
+                          )}
                           <div class="relative flex flex-col gap-3">
-                            <span class="eyebrow">{item.mega.feature.eyebrow}</span>
-                            <h3 class="text-pretty text-lg font-semibold leading-snug text-ink-50">
+                            <span
+                              class:list={["eyebrow", item.mega.feature.image ? "text-ink-600" : ""]}
+                            >
+                              {item.mega.feature.eyebrow}
+                            </span>
+                            <h3
+                              class:list={[
+                                "text-pretty text-lg font-semibold leading-snug",
+                                item.mega.feature.image ? "text-ink-900" : "text-ink-50",
+                              ]}
+                            >
                               {item.mega.feature.title}
                             </h3>
-                            <p class="text-sm leading-relaxed text-ink-300">
+                            <p
+                              class:list={[
+                                "text-sm leading-relaxed",
+                                item.mega.feature.image ? "text-ink-600" : "text-ink-300",
+                              ]}
+                            >
                               {item.mega.feature.description}
                             </p>
                           </div>
-                          <span class="relative flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider text-flux-blue">
+
+                          <span
+                            class:list={[
+                              "relative flex items-center gap-1.5 font-mono text-[0.72rem] font-medium uppercase tracking-wider",
+                              item.mega.feature.image ? "text-flux-amber" : "text-flux-blue",
+                            ]}
+                          >
                             {item.mega.feature.cta}
                             <Icon name="arrow" size={14} class="transition-transform duration-300 group-hover/feat:translate-x-0.5" />
                           </span>
@@ -128,11 +174,6 @@ const bookHref = localizedPath("/book", locale);
         >
           {t("cta.contact")}
         </a>
-        {/* `max-sm:hidden`, not `hidden sm:inline-flex`: Button's base class
-            already sets `inline-flex`, and an unvariant `hidden` alongside it
-            is a coin toss on utility order — it lost, so the 168px CTA stayed
-            in the bar next to the burger and pushed the cluster 6px past the
-            viewport. A media-query variant always wins over the base. */}
         <Button href={headerCta.href} size="sm" variant="primary" class="max-sm:hidden" arrow>
           {headerCta.label}
         </Button>

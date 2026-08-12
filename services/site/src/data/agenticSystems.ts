@@ -84,7 +84,7 @@ const agFr: PracticeContent = {
   flowLegendDefault: "L'exécution",
   darkTitle: "Un agent doit pouvoir échouer proprement.",
   darkLead:
-    "Un outil qui tombe, une sortie hors format, une boucle qui s'emballe : ces trois cas arrivent en production, pas en démo. On les traite comme des chemins nominaux — repli, coupe-circuit, arrêt net — plutôt que comme des exceptions qu'on découvrira plus tard.",
+    "Un outil qui tombe, une sortie hors format, une boucle qui s'emballe : ces trois cas arrivent en production, pas en démo. On les traite comme des chemins nominaux (repli, coupe-circuit, arrêt net) plutôt que comme des exceptions qu'on découvrira plus tard.",
   pipelineTools: [
     { name: "LangChain", si: "Langchain" },
     { name: "Temporal", si: "" },
@@ -140,7 +140,7 @@ const agEn: PracticeContent = {
   flowLegendDefault: "The run",
   darkTitle: "An agent has to be able to fail cleanly.",
   darkLead:
-    "A tool that goes down, an output off-schema, a loop that runs away: all three happen in production, not in the demo. We treat them as normal paths — fallback, circuit breaker, hard stop — rather than as exceptions to be discovered later.",
+    "A tool that goes down, an output off-schema, a loop that runs away: all three happen in production, not in the demo. We treat them as normal paths (fallback, circuit breaker, hard stop) rather than as exceptions to be discovered later.",
   pipelineTools: [
     { name: "LangChain", si: "Langchain" },
     { name: "Temporal", si: "" },

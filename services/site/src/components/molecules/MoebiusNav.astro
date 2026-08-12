@@ -114,7 +114,7 @@ const painted = [...facets].sort((a, b) => a.depth - b.depth);
                 href={item.href}
                 data-moebius-seg={facet.index}
                 style={`--depth:${facet.depth.toFixed(3)};--facing:${facet.facing.toFixed(3)}`}
-                aria-label={`${item.label} — ${item.index}`}
+                aria-label={`${item.label}, ${item.index}`}
               >
                 <path class="mb-seg__face" d={facet.d} data-moebius-face />
                 <g class="mb-seg__label" data-moebius-label transform={`translate(${facet.cx} ${facet.cy})`}>

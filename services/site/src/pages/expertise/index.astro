@@ -1,18 +1,4 @@
 ---
-/**
- * /expertise — the hub above the six practice pages.
- *
- * It gets the SAME hero treatment as a full practice page (`ExpertiseHero` over
- * the `xp-hero` media slot), because it is the page a visitor lands on from the
- * mega-menu or from search and the typographic hero read as a stub next to its
- * own children. The slot decides: no footage yet → `MediaBackdrop` draws its
- * designed pending state, which is a finished surface, not a hole.
- *
- * The job of the page is picking, not describing: six summaries all read as
- * competent engineering, so each card leads with the symptom that makes it the
- * right door (`entryPoint` in `data/expertise.ts`). `ApproachSection` then
- * answers the question that follows — "what would working together look like?".
- */
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHero from "@organisms/PageHero.astro";
 import ExpertiseHero from "@organisms/ExpertiseHero.astro";
@@ -31,7 +17,7 @@ const expertise = getExpertise(locale);
 const heroMedia = getMediaItem(locale, "xp-hero");
 ---
 
-<PageLayout title={t("expertise.title")} description={t("expertise.metaDescription")} dragon>
+<PageLayout title={t("expertise.title")} description={t("expertise.metaDescription")}>
   {
     heroMedia ? (
       <ExpertiseHero

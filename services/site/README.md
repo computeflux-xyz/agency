@@ -27,7 +27,7 @@ src/
 ├── components/
 │   ├── atoms/        # Logo, Button, Tag, Divider, Field, Icon, Eyebrow, ScrambleText
 │   ├── molecules/    # SectionHeader, ExpertiseCard, ArticleCard, JobCard,
-│   │                 #   FaqAccordion, NewsletterForm, StatBlock, ApiNotice
+│   │                 #   FaqAccordion, StatBlock, ApiNotice
 │   └── organisms/    # Header (mega-menu + mobile drawer), Footer, Hero,
 │                     #   PageHero, ApproachSection, CtaSection
 ├── layouts/          # BaseLayout (all SEO), PageLayout, ArticleLayout  (templates)

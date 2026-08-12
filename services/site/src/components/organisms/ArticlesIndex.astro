@@ -9,6 +9,7 @@ import PageHero from "@organisms/PageHero.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import ArticleCard from "@molecules/ArticleCard.astro";
 import Divider from "@atoms/Divider.astro";
+import Icon from "@atoms/Icon.astro";
 import { readingTime, slugify } from "@lib/utils";
 import { site } from "@lib/site";
 import { createApiClient, type ArticleType, type Topic } from "@lib/api";
@@ -103,6 +104,9 @@ if (source === "content") {
   topics = [...set].map(([slug, name]) => ({ name, slug }));
 }
 
+const activeTopicLabel = topics.find((tp) => tp.slug === activeTopic)?.name ?? activeTopic;
+const hasFilters = Boolean(q || activeTopic);
+
 const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
 /** Build an articles URL for the active locale, overriding some params. */
@@ -130,7 +134,7 @@ const chipBase =
   "inline-flex items-center rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-widest transition-colors";
 ---
 
-<PageLayout title={title} description={description} jsonLd={jsonLd} dragon>
+<PageLayout title={title} description={description} jsonLd={jsonLd}>
   <PageHero eyebrow={t("articles.eyebrow")} title={title} lead={description} />
 
   <section class="container-flux pb-24">
@@ -171,12 +175,21 @@ const chipBase =
             </a>
           ))
         }
+        {hasFilters && (
+          <a
+            href={articlesPath}
+            class:list={[chipBase, "gap-1.5 border-dashed border-ink-400 text-ink-400 hover:border-ink-50 hover:text-ink-50"]}
+          >
+            <Icon name="close" size={11} />
+            {t("articles.clearFilters")}
+          </a>
+        )}
       </div>
     </div>
 
     <Divider
       class="mt-6"
-      label={`${total} ${total === 1 ? t("articles.countOne") : t("articles.countMany")}${q ? ` · “${q}”` : ""}${activeTopic ? ` · ${activeTopic}` : ""}`}
+      label={`${total} ${total === 1 ? t("articles.countOne") : t("articles.countMany")}${q ? ` · “${q}”` : ""}${activeTopic ? ` · ${activeTopicLabel}` : ""}`}
     />
 
     {

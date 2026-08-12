@@ -1,28 +1,6 @@
-/**
- * Deep copy for the /expertise/inference-optimization page.
- *
- * Same shape and same organism as the other full practice pages (see
- * `practiceContent.ts` and `PracticeDetail.astro`) — only the argument changes.
- * French-first, English mirror.
- *
- * The argument: every optimisation here is a trade against quality, so the page
- * sells the bench before it sells the technique. The five stages are therefore
- * the serving path with the two things we own placed on it — the batching every
- * request passes through, and the quality set a change has to clear before it
- * ships.
- *
- * No invented measurements anywhere: the sketch draws topology, not data. In
- * particular nothing on this page states a speed-up or a saving: those belong to
- * a given engagement's bench, not to a marketing page.
- */
-
 import type { Locale } from "@i18n";
 import type { PracticeContent, PracticeFlow } from "@data/practiceContent";
 
-/* Stage ids are shared across locales; only the mono labels differ. The stencils
-   in `PipelineSketch` are position-based, so the order carries meaning: the load
-   that arrives → the boundary every request crosses → the gate a change has to
-   clear → the store that absorbs repetition → the board the buyer reads. */
 const flowFr: PracticeFlow = {
   nodes: [
     { id: "req", label: "Requêtes", tone: "default" },
@@ -56,19 +34,16 @@ const flowEn: PracticeFlow = {
 };
 
 const ioFr: PracticeContent = {
-  /* Le hero est fait d'images de mesure et de gain sous contrainte : soufflerie,
-     arrêt au stand, matière retirée d'un bloc, échappement d'horlogerie. Le
-     titre garde la même logique — l'ordre des opérations, pas la promesse. */
   heroTitle: "Rien ne s'optimise avant d'être mesuré.",
   heroLead:
     "Quantification, batching continu, cache et décodage spéculatif : on fait baisser la latence de queue et la facture, avec un banc qui prouve que la qualité n'a pas bougé.",
   overviewEyebrow: "Vue d'ensemble",
   overviewTitle: "Un gain non mesuré n'est pas un gain.",
   overviewBullets: [
-    "Un banc reproductible d'abord : latence médiane et de queue, débit, coût par requête, sur votre trafic — pas sur un classement public.",
+    "Un banc reproductible d'abord : latence médiane et de queue, débit, coût par requête, sur votre trafic, pas sur un classement public.",
     "Quantification et distillation, avec le jeu de qualité qui décide si ça sort. Une précision réduite qui dégrade les réponses n'est pas une optimisation.",
     "Architecture de service : batching continu, cache de préfixes et décodage spéculatif, réglés ensemble parce qu'ils interagissent.",
-    "Chemin critique sur mesure quand le moteur générique ne suffit plus — là seulement, et avec la mesure qui le justifie.",
+    "Chemin critique sur mesure quand le moteur générique ne suffit plus : là seulement, et avec la mesure qui le justifie.",
   ],
   overviewCta: "Faisons baisser votre facture d'inférence",
   pipelineEyebrow: "Comment on construit",
@@ -82,7 +57,7 @@ const ioFr: PracticeContent = {
   flowLegendDefault: "Le chemin",
   darkTitle: "La latence de queue est celle qu'on ressent.",
   darkLead:
-    "Une médiane flatteuse cache les requêtes qui font abandonner vos utilisateurs. On règle sur la latence de queue et sur le coût par requête, et on publie les deux avant et après — sinon il n'y a rien à comparer.",
+    "Une médiane flatteuse cache les requêtes qui font abandonner vos utilisateurs. On règle sur la latence de queue et sur le coût par requête, et on publie les deux avant et après, sinon il n'y a rien à comparer.",
   pipelineTools: [
     { name: "vLLM", si: "Vllm" },
     { name: "PyTorch", si: "Pytorch" },
@@ -122,10 +97,10 @@ const ioEn: PracticeContent = {
   overviewEyebrow: "Overview",
   overviewTitle: "An unmeasured gain is not a gain.",
   overviewBullets: [
-    "A reproducible bench first: median and tail latency, throughput, cost per request, on your traffic — not on a public leaderboard.",
+    "A reproducible bench first: median and tail latency, throughput, cost per request, on your traffic, not on a public leaderboard.",
     "Quantization and distillation, with the quality set deciding whether it ships. Reduced precision that degrades answers is not an optimisation.",
     "Serving architecture: continuous batching, prefix caching and speculative decoding, tuned together because they interact.",
-    "A custom hot path when the generic engine is no longer enough — only then, and only with the measurement that justifies it.",
+    "A custom hot path when the generic engine is no longer enough: only then, and only with the measurement that justifies it.",
   ],
   overviewCta: "Bring your inference bill down",
   pipelineEyebrow: "How we build",
@@ -139,7 +114,7 @@ const ioEn: PracticeContent = {
   flowLegendDefault: "The path",
   darkTitle: "Tail latency is the one people feel.",
   darkLead:
-    "A flattering median hides the requests that make your users give up. We tune on tail latency and cost per request, and we publish both before and after — otherwise there is nothing to compare.",
+    "A flattering median hides the requests that make your users give up. We tune on tail latency and cost per request, and we publish both before and after, otherwise there is nothing to compare.",
   pipelineTools: [
     { name: "vLLM", si: "Vllm" },
     { name: "PyTorch", si: "Pytorch" },

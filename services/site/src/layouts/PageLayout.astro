@@ -14,19 +14,12 @@ interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   canonical?: string;
-  /** Enable the decorative dragon animation (static marketing pages only). */
   dragon?: boolean;
 }
 const { dragon = false, ...rest } = Astro.props;
 ---
 
 <BaseLayout {...rest}>
-  {/*
-      Decorative per-page background underlay (e.g. the hero photo). Layered with
-      positive z-indexes: underlay z:0 < dragon z:1 < content z:2, so the dragon
-      flies in front of the photo yet the text stays above the dragon. Using
-      z:0 (not z:-1) keeps the layer above the <body> canvas background.
-  */}
   <div class="page-underlay pointer-events-none" aria-hidden="true">
     <slot name="underlay" />
   </div>

@@ -1,11 +1,5 @@
 import type { Locale } from "./config";
 
-/**
- * UI string dictionary.
- * English is the complete reference and French keys that are missing fall back to
- * English at lookup time (see `useTranslations`), so a partially translated
- * dictionary still renders. Add keys to `en` first.
- */
 export const ui = {
   en: {
     // Site meta
@@ -24,7 +18,6 @@ export const ui = {
     "nav.contact": "Contact",
     "nav.articles": "Articles",
     "nav.caseStudies": "Case studies",
-    "nav.newsletter": "Newsletter",
     "nav.bookCall": "Book a call",
     "nav.privacy": "Privacy",
     "cta.contact": "Contact",
@@ -41,23 +34,18 @@ export const ui = {
     "nav.expertise.agentsDesc": "Agents that survive production.",
     "nav.expertise.data": "Data engineering",
     "nav.expertise.dataDesc": "Clean data, solid architecture.",
+    "nav.expertise.bareMetal": "Bare metal & compute",
+    "nav.expertise.bareMetalDesc": "Hardware sized, then actually run.",
     "nav.engagements": "Engagements",
     "nav.engagementsDesc": "Scoping, build and team embed.",
-    "nav.caseStudiesDesc": "Selected work with real outcomes.",
-    "nav.whitePapersDesc": "Free technical deep dives.",
-    "nav.whitePapersDesc2": "Long-form technical reports.",
-    "nav.byTopic": "By topic",
-    "nav.topic.inference": "Inference & cost",
-    "nav.topic.agentic": "Agentic AI",
-    "nav.topic.data": "Data pipelines",
-    "nav.topic.performance": "Performance",
+    "nav.bookCallDesc": "Thirty minutes on your problem.",
+    "nav.company.cta": "Read about the studio",
     "nav.read": "Read",
     "nav.articlesDesc": "Field notes and engineering essays.",
     "nav.aboutDesc": "Who we are.",
     "nav.careersDesc": "Join the studio.",
     "nav.faqDesc": "Common questions.",
     "nav.contactDesc": "Talk to us.",
-    "nav.resources": "Resources",
 
     // Language switcher
     "lang.switch": "Language",
@@ -86,15 +74,15 @@ export const ui = {
     "articles.prev": "← Prev",
     "articles.next": "Next →",
     "articles.pagination": "Pagination",
-    "articles.ctaEyebrow": "Stay in the loop",
-    "articles.ctaTitle": "Get new essays by email",
+    "articles.ctaEyebrow": "Talk to us",
+    "articles.ctaTitle": "Recognised one of these problems?",
     "articles.ctaLead":
-      "Occasional, technical, no fluff. Subscribe to the Computeflux newsletter.",
+      "These are the systems we work on every day. Tell us where yours breaks and we will tell you how we would approach it.",
 
     // Article detail
     "article.preparing": "This article is being prepared and will be available shortly.",
 
-    // Home — hero
+    // Home (hero)
     "hero.eyebrow": "Data & AI engineering · fully remote",
     "hero.top": "Data, AI and systems engineering. 100% remote.",
     "hero.subrow":
@@ -114,22 +102,22 @@ export const ui = {
     "hero.photo.b": "Execution",
     "hero.scroll": "Scroll",
 
-    // Home — diagnostic section (case nav + content cards)
+    // Home (diagnostic section (case nav + content cards))
     "diag.causeLabel": "What is usually going on",
     "diag.actionLabel": "What we do",
 
-    // Home — cases section header (the ten-case rotation)
+    // Home (cases section header (the ten-case rotation))
     "diagHome.eyebrow": "Typical cases",
     "diagHome.title": "A few typical cases we treat on a regular basis.",
     "diagHome.more": "See the expertise",
 
-    // Home — "your problems" revealing deck
+    // Home ("your problems" revealing deck)
     "vostro.eyebrow": "Your problems",
     "vostro.title": "Six problems we solve from day one.",
-    "vostro.sub": "Scroll. Each card is a real 2026 need — pick yours, we'll tell you how we'd approach it.",
+    "vostro.sub": "Scroll. Each card is a real 2026 need. Pick yours and we'll tell you how we'd approach it.",
     "vostro.cta": "Book a call",
 
-    // Home — our own systems in production
+    // Home (our own systems in production)
     "systems.eyebrow": "Our own systems",
     "systems.title.a": "We don't just advise.",
     "systems.title.hl": "We run our own platforms.",
@@ -140,7 +128,7 @@ export const ui = {
     "systems.visit": "Visit the site",
     "systems.source": "Source code",
 
-    // Home — what we do
+    // Home (what we do)
     "practices.eyebrow": "What we do",
     "practices.title": "Our technical expertise gives us an end-to-end approach.",
     "practices.lead.a": "Most suppliers stop at the edge of their own layer.",
@@ -148,55 +136,42 @@ export const ui = {
     "practices.lead.hl": "go down into the low layers of cloud and bare-metal systems to optimise performance and costs",
     "practices.lead.c": "while keeping the solutions understandable at knowledge handover. No black boxes, no AI hyphen-slop.",
     "practices.learnMore": "Learn more",
-    // Pyramid layers, base → apex (labels shown on the pyramid levels)
+    // Pyramid layers, base -> apex (labels shown on the pyramid levels)
     "practices.layer.1": "Bare metal & compute",
     "practices.layer.2": "Data engineering",
     "practices.layer.3": "AI engineering",
     "practices.layer.4": "Semantic",
     "practices.layer.5": "API",
 
-    // Home — sovereignty, energy and cost structure
-    "sov.eyebrow": "Sovereignty & cost",
-    "sov.title": "Your data has no reason to cross the Atlantic.",
-    "sov.lead": "We design and operate data and AI systems at European providers — OVHcloud, Scaleway, Hetzner — or on hardware you own. Not out of principle: because energy, law and cost structure all point that way, and because an open stack lets you leave whenever you want.",
-    "sov.photo.label": "Trade-offs",
-    "sov.c1.title": "Energy is the limiting factor again",
-    "sov.c1.body": "Data centres consumed around 415 TWh of electricity in 2024, close to 1.5% of world consumption, and the IEA projects roughly 945 TWh by 2030. Counting AI and crypto with them, the same agency saw the total passing 1,000 TWh as early as 2026. In practice: capacity is booked years ahead, the price of a kWh belongs in the architecture equation, and the idea that compute gets cheaper forever is no longer a given. What you pay per token, someone pays first in megawatts.",
-    "sov.c1.action": "So we measure what you actually consume, size accordingly, and move heavy batch work to the hours when electricity is cheapest and least carbon-intensive.",
-    "sov.c2.title": "Variable or fixed cost is a decision, not a religion",
-    "sov.c2.body": "Metered billing is excellent when the load is irregular or unknown. It turns into a tax when the load is heavy and predictable: nightly training, hot storage, continuous ingestion. The historical lock-in was getting data out; the European Data Act removed it — switching charges are being phased out and disappear entirely in January 2027. Migrating is a calculation again, not a punishment.",
-    "sov.c3.title": "The law follows the provider, not the location of the disk",
-    "sov.c3.body": "The CLOUD Act lets US authorities compel an American operator to hand over data it controls, including data stored in Europe; and since the Schrems II judgment, a transfer to the United States requires demonstrable supplementary safeguards. A European provider, a SecNumCloud qualification or your own hardware are not marketing arguments: they are the only answers that survive the question “who can be compelled?”.",
-    "sov.c4.title": "Portability is a technical property, not a contract clause",
-    "sov.c4.body": "Open formats and replaceable engines: a lakehouse in Parquet and Iceberg can be read elsewhere, an open-weight model served by vLLM redeploys onto other GPUs, a cluster described in OpenTofu rebuilds at another provider. We avoid services whose API is the entire product — that is what makes the cost of leaving quantifiable from day one.",
-    "sov.stackLabel": "What we build on",
-    "sov.stackNote": "Nothing on this list belongs to a single vendor.",
+    "sov.sectionLabel": "Sovereignty & portability",
+    "sov.lead": "Choosing where a workload runs also decides who can be compelled to hand over its data, and what it costs you to leave. We build on European providers or on machines you own, with formats and engines you can take elsewhere.",
+    "sov.c1.title": "The law follows the provider, not the location of the disk",
+    "sov.c1.body": "The CLOUD Act lets US authorities compel an American operator to hand over data it controls, including data stored in Europe, and since the Schrems II judgment a transfer to the United States requires demonstrable supplementary safeguards. A European provider, a SecNumCloud qualification or your own hardware are the answers that survive the question “who can be compelled?”.",
+    "sov.c2.title": "Portability is a technical property, not a contract clause",
+    "sov.c2.body": "Open formats and replaceable engines: a lakehouse in Parquet and Iceberg is readable elsewhere, an open-weight model served by vLLM redeploys onto other GPUs, a cluster described in OpenTofu rebuilds at another provider. We avoid services whose API is the whole product, which is what keeps the cost of leaving quantifiable.",
+    "sov.c3.title": "Metered or fixed is a decision, not a doctrine",
+    "sov.c3.body": "Metered billing is the right answer on irregular load. On heavy, predictable load, it becomes a tax: nightly training, hot storage, continuous ingestion. The historical lock-in was getting the data out, and the European Data Act phases out switching charges, so migrating is arithmetic again.",
     "sov.sourcesLabel": "Sources",
-    "sov.sourceAria": "Source {n}",
-    "sov.cta": "Talk about infrastructure",
 
-    // Sovereignty expertise page deep-dive
-    "sovPage.steps": "Our approach",
-
-    // Reused by the "why" section — the dragon can burn these words
+    // Reused by the "why" section
     "home.thesis.slideware": "slideware",
     "home.thesis.vanity": "empty promises",
     "home.thesis.or": "or",
     "home.thesis.hype": "hype",
 
-    // Home — case studies (API-driven, hidden when empty)
+    // Home (case studies (API-driven, hidden when empty))
     "home.work.eyebrow": "Case studies",
     "home.work.title": "What it looks like for real",
     "home.work.lead": "Anonymized client work, published only with their consent.",
     "home.work.all": "All case studies",
 
-    // Home — writing (API-driven, hidden when empty)
+    // Home (writing (API-driven, hidden when empty))
     "home.writing.eyebrow": "Field notes",
     "home.writing.title": "What we write when we've learned something",
     "home.writing.lead": "No recycled industry news. Field reports, with the numbers when we're allowed to publish them.",
     "home.writing.all": "All articles",
 
-    // Approach section (home + expertise) — simplified, no rigid cards
+    // Approach section (home + expertise)
     "approach.eyebrow": "How we work",
     "approach.title": "Three ways to work together",
     "approach.lead": "No catch-all retainer. Every engagement targets an outcome written down before we start.",
@@ -207,7 +182,7 @@ export const ui = {
     "approach.s2.desc": "We design and ship the system: inference engine, agent architecture, pipeline, hardware foundation. Milestone by milestone, with code your team can take over.",
     "approach.s2.meta": "Build",
     "approach.s3.title": "We strengthen your team",
-    "approach.s3.desc": "We plug into your team, work in your repository, level up your engineers — and leave when you no longer need us.",
+    "approach.s3.desc": "We plug into your team, work in your repository, level up your engineers, then leave when you no longer need us.",
     "approach.s3.meta": "Embed",
     "common.readMore": "Read more",
     "common.readLess": "Show less",
@@ -219,7 +194,7 @@ export const ui = {
     // CTA section (default copy)
     "cta.eyebrow": "Let's work together",
     "cta.title": "A system to make hold in production?",
-    "cta.lead": "Book thirty minutes. We'll tell you straight whether it's for us — and if not, who to call.",
+    "cta.lead": "Book thirty minutes. We'll tell you straight whether it's for us, and if not, who to call.",
     "cta.studies": "See our work",
 
     // Expertise
@@ -239,7 +214,7 @@ export const ui = {
     "expertise.related.title": "The rest of the practice.",
     /* Shown under every practice page, so it cannot name one of them. */
     "expertise.related.lead":
-      "A practice rarely arrives on its own. The others sit on the same surface — pick the one your problem actually starts in.",
+      "A practice rarely arrives on its own. The others sit on the same surface. Pick the one your problem actually starts in.",
     "expertise.all": "All expertise",
     "expertise.cta.eyebrow": "Not sure where to start?",
     "expertise.cta.title": "Book a scoping call",
@@ -361,19 +336,6 @@ export const ui = {
     "faq.ctaTitle": "Didn't find your answer?",
     "faq.ctaLead": "Ask us directly. We reply to every message ourselves.",
 
-    // Newsletter
-    "newsletter.title": "Newsletter",
-    "newsletter.metaDescription":
-      "Occasional, technical, no fluff. Subscribe to the Computeflux newsletter.",
-    "newsletter.hero.eyebrow": "Newsletter",
-    "newsletter.hero.title": "No fluff. Just engineering.",
-    "newsletter.hero.lead":
-      "One email when we have something genuinely useful to share. No spam, unsubscribe in one click.",
-    "newsletter.topicsTitle": "What you'll get",
-    "newsletter.topic1": "Inference techniques that actually move the numbers",
-    "newsletter.topic2": "Field notes on agents in production",
-    "newsletter.topic3": "Data engineering that holds up",
-
     // Privacy
     "privacy.title": "Privacy",
     "privacy.metaDescription": "How Computeflux handles your data.",
@@ -385,10 +347,9 @@ export const ui = {
       "We keep this simple, because our data practices are simple. We collect the least we can, we don't sell anything, and you can ask us to delete your data at any time.",
     "privacy.collectTitle": "What we collect",
     "privacy.collectBody":
-      "Only what you send us: the contact, booking and newsletter forms (name, email, phone if you provide it, and your message). Basic, privacy-friendly analytics on page views, without invasive tracking.",
+      "Only what you send us: the contact and booking forms (name, email, phone if you provide it, and your message). Basic, privacy-friendly analytics on page views, without invasive tracking.",
     "privacy.useTitle": "How we use it",
-    "privacy.useBody":
-      "To reply to you, prepare a call, or send the newsletter if you subscribed. Nothing else.",
+    "privacy.useBody": "To reply to you and to prepare a call. Nothing else.",
     "privacy.analyticsTitle": "Analytics",
     "privacy.analyticsBody":
       "We use privacy-friendly analytics without third-party advertising cookies.",
@@ -516,11 +477,6 @@ export const ui = {
     "apiNotice.badge": "Coming soon",
     "apiNotice.preview": "Preview.",
     "apiNotice.body": "This feature is on its way. In the meantime, write to us and we'll help you directly.",
-
-    // Newsletter form
-    "newsletterForm.label": "Email address",
-    "newsletterForm.placeholder": "you@company.com",
-    "newsletterForm.subscribe": "Subscribe",
   },
   fr: {
     // Site meta
@@ -539,7 +495,6 @@ export const ui = {
     "nav.contact": "Contact",
     "nav.articles": "Articles",
     "nav.caseStudies": "Études de cas",
-    "nav.newsletter": "Newsletter",
     "nav.bookCall": "Réserver un appel",
     "nav.privacy": "Confidentialité",
     "cta.contact": "Contact",
@@ -556,23 +511,18 @@ export const ui = {
     "nav.expertise.agentsDesc": "Des agents qui survivent à la production.",
     "nav.expertise.data": "Ingénierie de données",
     "nav.expertise.dataDesc": "Des données propres, une architecture solide.",
+    "nav.expertise.bareMetal": "Bare metal & calcul",
+    "nav.expertise.bareMetalDesc": "Du matériel dimensionné, puis exploité.",
     "nav.engagements": "Missions",
     "nav.engagementsDesc": "Cadrage, développement et renfort d'équipe.",
-    "nav.caseStudiesDesc": "Des réalisations avec de vrais résultats.",
-    "nav.whitePapersDesc": "Des analyses techniques gratuites.",
-    "nav.whitePapersDesc2": "Des rapports techniques de fond.",
-    "nav.byTopic": "Par sujet",
-    "nav.topic.inference": "Inférence & coût",
-    "nav.topic.agentic": "IA agentique",
-    "nav.topic.data": "Pipelines de données",
-    "nav.topic.performance": "Performance",
+    "nav.bookCallDesc": "Trente minutes sur votre problème.",
+    "nav.company.cta": "Découvrir le studio",
     "nav.read": "À lire",
     "nav.articlesDesc": "Notes de terrain et essais d'ingénierie.",
     "nav.aboutDesc": "Qui sommes-nous.",
     "nav.careersDesc": "Rejoignez le studio.",
     "nav.faqDesc": "Questions fréquentes.",
     "nav.contactDesc": "Parlez-nous.",
-    "nav.resources": "Ressources",
 
     // Language switcher
     "lang.switch": "Langue",
@@ -601,10 +551,10 @@ export const ui = {
     "articles.prev": "← Précédent",
     "articles.next": "Suivant →",
     "articles.pagination": "Pagination",
-    "articles.ctaEyebrow": "Restez informé",
-    "articles.ctaTitle": "Recevez les nouveaux essais par e-mail",
+    "articles.ctaEyebrow": "Parlons-en",
+    "articles.ctaTitle": "Vous avez reconnu l'un de ces problèmes ?",
     "articles.ctaLead":
-      "Occasionnel, technique, sans superflu. Abonnez-vous à la newsletter Computeflux.",
+      "Ce sont les systèmes sur lesquels nous travaillons tous les jours. Dites-nous où le vôtre casse, on vous dira comment nous l'aborderions.",
 
     // Article detail
     "article.preparing": "Cet article est en préparation et sera bientôt disponible.",
@@ -641,7 +591,7 @@ export const ui = {
     // Home — deck révélateur « vos problématiques »
     "vostro.eyebrow": "Vos problématiques",
     "vostro.title": "Six problèmes qu'on règle dès le premier jour.",
-    "vostro.sub": "Faites défiler. Chaque carte est un besoin réel de 2026 — prenez le vôtre, on vous dira comment on l'aborderait.",
+    "vostro.sub": "Faites défiler. Chaque carte est un besoin réel de 2026. Prenez le vôtre, on vous dira comment on l'aborderait.",
     "vostro.cta": "Réserver un appel",
 
     // Home — nos propres systèmes en production
@@ -670,48 +620,35 @@ export const ui = {
     "practices.layer.4": "Sémantique",
     "practices.layer.5": "API",
 
-    // Home — souveraineté, énergie et structure de coûts
-    "sov.eyebrow": "Souveraineté & coûts",
-    "sov.title": "Vos données n'ont aucune raison de traverser l'Atlantique.",
-    "sov.lead": "Nous concevons et exploitons des systèmes data et IA chez des hébergeurs européens — OVHcloud, Scaleway, Hetzner — ou sur du matériel qui vous appartient. Pas par principe : parce que l'énergie, le droit et la structure de coûts vont dans ce sens, et parce qu'un stack ouvert vous laisse partir quand vous voulez.",
-    "sov.photo.label": "Arbitrage",
-    "sov.c1.title": "L'énergie est redevenue le facteur limitant",
-    "sov.c1.body": "Les centres de données ont consommé environ 415 TWh d'électricité en 2024, près de 1,5 % de la consommation mondiale, et l'AIE projette autour de 945 TWh en 2030. En y ajoutant l'IA et la crypto, la même agence voyait le total dépasser 1 000 TWh dès 2026. Concrètement : la capacité se réserve des années à l'avance, le prix du kWh entre dans l'équation d'architecture, et l'idée que le calcul coûtera toujours moins cher n'est plus un acquis. Ce qui se paie au token se paie d'abord en mégawatts.",
-    "sov.c1.action": "Donc on mesure ce que vous consommez réellement, on dimensionne en conséquence, et on décale les traitements lourds vers les heures où l'électricité est la moins chère et la moins carbonée.",
-    "sov.c2.title": "Coût variable ou coût fixe : c'est une décision, pas une religion",
-    "sov.c2.body": "La facturation à l'usage est excellente quand la charge est irrégulière ou inconnue. Elle devient un impôt quand la charge est lourde et prévisible : entraînement nocturne, stockage chaud, ingestion continue. Le verrou historique, c'était de faire sortir les données ; le Data Act européen l'a levé — les frais de changement de fournisseur s'éteignent progressivement et disparaissent en janvier 2027. Migrer redevient un calcul, plus une punition.",
-    "sov.c3.title": "Le droit suit le fournisseur, pas l'emplacement du disque",
-    "sov.c3.body": "Le CLOUD Act permet aux autorités américaines d'exiger d'un opérateur américain les données qu'il contrôle, y compris stockées en Europe ; et depuis l'arrêt Schrems II, un transfert vers les États-Unis exige des garanties supplémentaires démontrables. Un hébergeur européen, une qualification SecNumCloud ou votre propre matériel ne sont pas des arguments marketing : ce sont les seules réponses qui tiennent à la question « qui peut être contraint ? ».",
-    "sov.c4.title": "La portabilité est une propriété technique, pas une clause de contrat",
-    "sov.c4.body": "Formats ouverts et moteurs interchangeables : un lakehouse en Parquet et Iceberg se relit ailleurs, un modèle à poids ouverts servi par vLLM se redéploie sur d'autres GPU, un cluster décrit en OpenTofu se reconstruit chez un autre hébergeur. On évite les services dont l'API est tout le produit — c'est ce qui rend le coût de sortie chiffrable dès le premier jour.",
-    "sov.stackLabel": "Ce sur quoi nous construisons",
-    "sov.stackNote": "Rien dans cette liste n'appartient à un seul fournisseur.",
+    "sov.sectionLabel": "Souveraineté & portabilité",
+    "sov.lead": "Choisir où tourne une charge décide aussi qui peut être contraint de livrer ses données, et ce qu'il vous coûtera de partir. Nous construisons chez des hébergeurs européens ou sur des machines qui vous appartiennent, avec des formats et des moteurs que vous pouvez emporter ailleurs.",
+    "sov.c1.title": "Le droit suit le fournisseur, pas l'emplacement du disque",
+    "sov.c1.body": "Le CLOUD Act permet aux autorités américaines d'exiger d'un opérateur américain les données qu'il contrôle, y compris stockées en Europe, et depuis l'arrêt Schrems II, un transfert vers les États-Unis exige des garanties supplémentaires démontrables. Un hébergeur européen, une qualification SecNumCloud ou votre propre matériel sont les réponses qui tiennent à la question « qui peut être contraint ? ».",
+    "sov.c2.title": "La portabilité est une propriété technique, pas une clause de contrat",
+    "sov.c2.body": "Formats ouverts et moteurs interchangeables : un lakehouse en Parquet et Iceberg se relit ailleurs, un modèle à poids ouverts servi par vLLM se redéploie sur d'autres GPU, un cluster décrit en OpenTofu se reconstruit chez un autre hébergeur. On évite les services dont l'API est tout le produit, et c'est ce qui garde le coût de sortie chiffrable.",
+    "sov.c3.title": "À l'usage ou au forfait : c'est une décision, pas une doctrine",
+    "sov.c3.body": "La facturation à l'usage est la bonne réponse sur une charge irrégulière. Sur une charge lourde et prévisible, elle devient un impôt : entraînement nocturne, stockage chaud, ingestion continue. Le verrou historique, c'était de faire sortir les données, et le Data Act européen éteint les frais de changement de fournisseur : migrer redevient un calcul.",
     "sov.sourcesLabel": "Sources",
-    "sov.sourceAria": "Source {n}",
-    "sov.cta": "Parler d'infrastructure",
 
-    // Page expertise souveraineté — approfondissement
-    "sovPage.steps": "Notre approche",
-
-    // Réutilisées par la section « pourquoi » — le dragon peut brûler ces mots
+    // Réutilisées par la section « pourquoi »
     "home.thesis.slideware": "des slides",
     "home.thesis.vanity": "de fausses promesses",
     "home.thesis.or": "ni",
     "home.thesis.hype": "de hype",
 
-    // Home — études de cas (API, masquée si vide)
+    // Home (études de cas (API, masquée si vide))
     "home.work.eyebrow": "Études de cas",
     "home.work.title": "Ce que ça donne en vrai",
     "home.work.lead": "Des cas clients anonymisés, publiés uniquement avec leur accord.",
     "home.work.all": "Toutes les études",
 
-    // Home — notes de terrain (API, masquée si vide)
+    // Home (notes de terrain (API, masquée si vide))
     "home.writing.eyebrow": "Notes de terrain",
     "home.writing.title": "Ce qu'on écrit quand on a appris quelque chose",
     "home.writing.lead": "Pas de veille recopiée. Des retours d'expérience, avec les chiffres quand on a le droit de les publier.",
     "home.writing.all": "Tous les articles",
 
-    // Approach section (home + expertise) — simplified, no rigid cards
+    // Approach section (home + expertise)
     "approach.eyebrow": "Notre façon de travailler",
     "approach.title": "Trois manières de travailler ensemble",
     "approach.lead": "Pas de forfait fourre-tout. Chaque mission vise un résultat écrit noir sur blanc avant qu'on commence.",
@@ -722,7 +659,7 @@ export const ui = {
     "approach.s2.desc": "On conçoit et on livre le système : moteur d'inférence, architecture d'agents, pipeline, socle matériel. Par jalons, avec du code que vos équipes peuvent reprendre.",
     "approach.s2.meta": "Développement",
     "approach.s3.title": "On renforce votre équipe",
-    "approach.s3.desc": "On s'intègre à votre équipe, on travaille dans votre dépôt, on fait monter vos ingénieurs — et on part quand vous n'avez plus besoin de nous.",
+    "approach.s3.desc": "On s'intègre à votre équipe, on travaille dans votre dépôt, on fait monter vos ingénieurs, puis on part quand vous n'avez plus besoin de nous.",
     "approach.s3.meta": "Renfort",
     "common.readMore": "Lire la suite",
     "common.readLess": "Réduire",
@@ -734,7 +671,7 @@ export const ui = {
     // CTA section (default copy)
     "cta.eyebrow": "Travaillons ensemble",
     "cta.title": "Un système à faire tenir en production ?",
-    "cta.lead": "Réservez trente minutes. On vous dira franchement si c'est pour nous — et sinon, vers qui aller.",
+    "cta.lead": "Réservez trente minutes. On vous dira franchement si c'est pour nous, et sinon, vers qui aller.",
     "cta.studies": "Voir les réalisations",
 
     // Expertise
@@ -752,9 +689,8 @@ export const ui = {
     "expertise.capabilities": "Ce que nous faisons",
     "expertise.related": "Autres pratiques",
     "expertise.related.title": "Le reste de la pratique.",
-    /* Affiché sous chaque page de pratique : ne peut donc en nommer aucune. */
     "expertise.related.lead":
-      "Une pratique arrive rarement seule. Les autres sont sur la même surface — choisissez celle où votre problème commence vraiment.",
+      "Une pratique arrive rarement seule. Les autres sont sur la même surface : choisissez celle où votre problème commence vraiment.",
     "expertise.all": "Toute l'expertise",
     "expertise.cta.eyebrow": "Vous ne savez pas par où commencer ?",
     "expertise.cta.title": "Réservez un appel de cadrage",
@@ -876,19 +812,6 @@ export const ui = {
     "faq.ctaTitle": "Vous n'avez pas trouvé votre réponse ?",
     "faq.ctaLead": "Demandez-nous directement. On répond à chaque message nous-mêmes.",
 
-    // Newsletter
-    "newsletter.title": "Newsletter",
-    "newsletter.metaDescription":
-      "Occasionnel, technique, sans superflu. Abonnez-vous à la newsletter Computeflux.",
-    "newsletter.hero.eyebrow": "Newsletter",
-    "newsletter.hero.title": "Pas de superflu. De l'ingénierie.",
-    "newsletter.hero.lead":
-      "Un e-mail quand on a quelque chose de vraiment utile à partager. Pas de spam, désabonnement en un clic.",
-    "newsletter.topicsTitle": "Ce que vous recevrez",
-    "newsletter.topic1": "Des techniques d'inférence qui font vraiment bouger les chiffres",
-    "newsletter.topic2": "Des retours de terrain sur les agents en production",
-    "newsletter.topic3": "De l'ingénierie de données qui tient",
-
     // Privacy
     "privacy.title": "Confidentialité",
     "privacy.metaDescription": "Comment Computeflux traite vos données.",
@@ -900,10 +823,9 @@ export const ui = {
       "On fait simple, parce que nos pratiques le sont. On collecte le minimum, on ne vend rien, et vous pouvez nous demander de supprimer vos données à tout moment.",
     "privacy.collectTitle": "Ce que nous collectons",
     "privacy.collectBody":
-      "Uniquement ce que vous nous envoyez : les formulaires de contact, de rendez-vous et de newsletter (nom, e-mail, téléphone si vous le donnez, et votre message). Des statistiques de fréquentation basiques et respectueuses de la vie privée, sans pistage intrusif.",
+      "Uniquement ce que vous nous envoyez : les formulaires de contact et de rendez-vous (nom, e-mail, téléphone si vous le donnez, et votre message). Des statistiques de fréquentation basiques et respectueuses de la vie privée, sans pistage intrusif.",
     "privacy.useTitle": "Comment nous les utilisons",
-    "privacy.useBody":
-      "Pour vous répondre, préparer un appel, ou vous envoyer la newsletter si vous vous y êtes abonné. Rien d'autre.",
+    "privacy.useBody": "Pour vous répondre et préparer un appel. Rien d'autre.",
     "privacy.analyticsTitle": "Statistiques",
     "privacy.analyticsBody":
       "Nous utilisons une solution de statistiques respectueuse de la vie privée, sans cookies publicitaires tiers.",
@@ -1032,10 +954,6 @@ export const ui = {
     "apiNotice.preview": "Aperçu.",
     "apiNotice.body": "Cette fonctionnalité arrive. En attendant, écrivez-nous et on vous aide directement.",
 
-    // Newsletter form
-    "newsletterForm.label": "Adresse e-mail",
-    "newsletterForm.placeholder": "vous@entreprise.com",
-    "newsletterForm.subscribe": "S'abonner",
   },
 } satisfies Record<Locale, Record<string, string>>;
 

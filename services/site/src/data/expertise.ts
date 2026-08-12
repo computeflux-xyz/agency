@@ -1,15 +1,3 @@
-/**
- * Expertise / service lines. Powers the /expertise landing, the satellite
- * /expertise/[slug] pages, the mega-menu and footer.
- *
- * Copy is French-first (the agency is French); English mirrors it. Content is
- * locale-aware via getExpertise(locale) / getExpertiseItem(locale, slug).
- *
- * No unprovable numbers, no programming-language lists. The framing targets
- * the people who buy this: teams that need AI engineers, data engineers and
- * data architects to get things into production.
- */
-
 import type { Locale } from "@i18n";
 
 export type Capability = {
@@ -19,23 +7,12 @@ export type Capability = {
 
 export type Expertise = {
   slug: string;
-  /** Two-digit index used as a mono label in the UI (e.g. "01"). */
   index: string;
   title: string;
-  /** Short label for compact contexts (cards, menu). */
   shortTitle: string;
   tagline: string;
-  /** One-paragraph summary used on cards and meta description. */
   summary: string;
-  /** Longer intro shown on the detail page. */
   intro: string;
-  /**
-   * The symptom that sends someone to THIS practice rather than a neighbouring
-   * one, written to complete "Start here if…". Six summaries all read as
-   * competent engineering; only the symptom tells a visitor which door is
-   * theirs, so the /expertise hub leads with it. Phrased from the buyer's side
-   * (what they are living with), never from ours (what we sell).
-   */
   entryPoint: string;
   capabilities: Capability[];
 };
@@ -190,9 +167,9 @@ const expertiseFr: Expertise[] = [
     summary:
       "Serveurs dédiés, GPU, stockage et réseau : dimensionner puis exploiter du matériel physique pour les charges lourdes et régulières que le cloud facture trop cher.",
     intro:
-      "Le cloud n'est pas toujours la réponse, et le bare metal non plus. Sur des charges lourdes et régulières — entraînement, traitement massif, stockage chaud — la facture à l'usage finit par dépasser le prix du matériel. Nous mesurons ce que vous consommez réellement, nous dimensionnons, puis nous exploitons : placement mémoire, réseau, disques, ordonnancement des tâches. Nous faisons tourner les deux modèles, donc nous n'avons aucune raison de vous pousser vers l'un plutôt que l'autre.",
+      "Le cloud n'est pas toujours la réponse, et le bare metal non plus. Sur des charges lourdes et régulières, entraînement, traitement massif ou stockage chaud, la facture à l'usage finit par dépasser le prix du matériel. Nous mesurons ce que vous consommez réellement, nous dimensionnons, puis nous exploitons : placement mémoire, réseau, disques, ordonnancement des tâches. Le même choix décide aussi de la juridiction qui s'applique à vos données et de ce qu'il vous coûtera de partir : la souveraineté se traite ici. Nous faisons tourner les deux modèles, donc nous n'avons aucune raison de vous pousser vers l'un plutôt que l'autre.",
     entryPoint:
-      "vous payez une charge lourde et régulière au prix du cloud à l'usage.",
+      "vous payez une charge lourde et régulière au prix du cloud à l'usage, ou vos données ne doivent pas quitter l'Europe.",
     capabilities: [
       {
         title: "Dimensionnement",
@@ -214,40 +191,10 @@ const expertiseFr: Expertise[] = [
         description:
           "Sauvegardes, bascule et supervision, pour qu'une panne matérielle reste un incident et non un arrêt.",
       },
-    ],
-  },
-  {
-    slug: "sovereignty",
-    index: "06",
-    title: "Souveraineté & portabilité",
-    shortTitle: "Souveraineté",
-    tagline: "Vos données n'ont aucune raison de traverser l'Atlantique.",
-    summary:
-      "Nous concevons et exploitons des systèmes data et IA chez des hébergeurs européens ou sur votre propre matériel : portables, chiffrables, et sous votre contrôle juridique.",
-    intro:
-      "La souveraineté n'est pas une option de repli : c'est une propriété d'architecture. Vos données n'ont aucune raison de traverser l'Atlantique. Nous concevons des systèmes data et IA chez des hébergeurs européens — OVHcloud, Scaleway, Hetzner — ou sur du matériel qui vous appartient. Pas par principe : parce que l'énergie, le droit et la structure de coûts vont dans ce sens, et parce qu'un stack ouvert vous laisse partir quand vous voulez. Chaque choix se justifie par une mesure ou une contrainte juridique, pas par une promesse.",
-    entryPoint:
-      "vos données ne doivent pas quitter l'Europe, ou vous devez pouvoir partir quand vous voulez.",
-    capabilities: [
       {
-        title: "Juridiction & droit",
+        title: "Souveraineté & portabilité",
         description:
-          "Le CLOUD Act et l'arrêt Schrems II : nous choisissons des hébergeurs et des qualifications — SecNumCloud — qui survivent à la question « qui peut être contraint ? ».",
-      },
-      {
-        title: "Portabilité technique",
-        description:
-          "Formats ouverts et moteurs interchangeables : Parquet, Iceberg, modèles à poids ouverts, infra décrite en code. Le coût de sortie reste chiffrable du premier jour.",
-      },
-      {
-        title: "Énergie & coût de structure",
-        description:
-          "Le kWh appartient à l'équation. On dimensionne en conséquence et on décale les charges lourdes vers les heures les moins chères et les moins carbonées.",
-      },
-      {
-        title: "Cycle de vie",
-        description:
-          "Sauvegardes, bascule et reprise, sur votre matériel comme chez un hébergeur européen, avec le même niveau de rigueur.",
+          "Hébergeurs européens ou vos propres machines, formats ouverts et moteurs interchangeables : le coût de sortie reste chiffrable et la question « qui peut être contraint ? » garde une réponse.",
       },
     ],
   },
@@ -403,9 +350,9 @@ const expertiseEn: Expertise[] = [
     summary:
       "Dedicated servers, GPUs, storage and network: sizing and then actually running physical hardware for the heavy, steady workloads the cloud overcharges for.",
     intro:
-      "The cloud is not always the answer, and neither is bare metal. On heavy, steady workloads — training, bulk processing, hot storage — the metered bill eventually passes the price of the hardware. We measure what you actually consume, size it, then run it: memory placement, network, disks, job scheduling. We operate both models, so we have no reason to push you towards either.",
+      "The cloud is not always the answer, and neither is bare metal. On heavy, steady workloads such as training, bulk processing or hot storage, the metered bill eventually passes the price of the hardware. We measure what you actually consume, size it, then run it: memory placement, network, disks, job scheduling. The same choice also decides which jurisdiction applies to your data and what it would cost you to leave: sovereignty is handled here. We operate both models, so we have no reason to push you towards either.",
     entryPoint:
-      "you are paying metered cloud prices for a heavy, steady workload.",
+      "you are paying metered cloud prices for a heavy, steady workload, or your data must not leave Europe.",
     capabilities: [
       {
         title: "Sizing",
@@ -415,7 +362,7 @@ const expertiseEn: Expertise[] = [
       {
         title: "Systems operation",
         description:
-          "NUMA placement, network and storage tuning, job scheduling — where the gap between hardware bought and hardware used is decided.",
+          "NUMA placement, network and storage tuning, job scheduling: this is where the gap between hardware bought and hardware used is decided.",
       },
       {
         title: "GPU compute",
@@ -427,40 +374,10 @@ const expertiseEn: Expertise[] = [
         description:
           "Backups, failover and monitoring, so a hardware failure stays an incident rather than an outage.",
       },
-    ],
-  },
-  {
-    slug: "sovereignty",
-    index: "06",
-    title: "Sovereignty & portability",
-    shortTitle: "Sovereignty",
-    tagline: "Your data has no reason to cross the Atlantic.",
-    summary:
-      "We design and operate data and AI systems at European providers or on your own hardware: portable, quantifiable, and under your legal control.",
-    intro:
-      "Sovereignty is not a fallback option: it is an architectural property. Your data has no reason to cross the Atlantic. We design data and AI systems at European providers — OVHcloud, Scaleway, Hetzner — or on hardware you own. Not out of principle: because energy, law and cost structure all point that way, and because an open stack lets you leave whenever you want. Every choice is justified by a measurement or a legal constraint, not a promise.",
-    entryPoint:
-      "your data must not leave Europe, or you need to be able to walk away.",
-    capabilities: [
       {
-        title: "Jurisdiction & law",
+        title: "Sovereignty & portability",
         description:
-          "The CLOUD Act and the Schrems II judgment: we choose providers and qualifications — SecNumCloud — that survive the question “who can be compelled?”.",
-      },
-      {
-        title: "Technical portability",
-        description:
-          "Open formats and replaceable engines: Parquet, Iceberg, open-weight models, infrastructure-as-code. The exit cost stays quantifiable from day one.",
-      },
-      {
-        title: "Energy & cost structure",
-        description:
-          "The kWh belongs in the architecture equation. We size accordingly and move heavy loads to the least expensive, least carbon-intensive hours.",
-      },
-      {
-        title: "Lifecycle",
-        description:
-          "Backups, failover and recovery, on your hardware or at a European provider, to the same standard of rigour.",
+          "European providers or machines you own, open formats and replaceable engines: the cost of leaving stays quantifiable and “who can be compelled?” keeps an answer.",
       },
     ],
   },
@@ -471,15 +388,12 @@ const byLocale: Record<Locale, Expertise[]> = {
   en: expertiseEn,
 };
 
-/** All expertise entries for a locale (falls back to English). */
 export function getExpertise(locale: Locale): Expertise[] {
   return byLocale[locale] ?? expertiseEn;
 }
 
-/** A single expertise entry by slug for a locale. */
 export function getExpertiseItem(locale: Locale, slug: string): Expertise | undefined {
   return getExpertise(locale).find((e) => e.slug === slug);
 }
 
-/** Slugs are locale-independent; used by getStaticPaths. */
 export const expertiseSlugs = expertiseEn.map((e) => e.slug);

@@ -1,41 +1,16 @@
-/**
- * Homepage practices — the five layers of our stack (copy + tooling).
- *
- * The pyramid in `organisms/PracticesSection.astro` reads from the bottom up,
- * from the raw hardware to the served product:
- *
- *   API        (apex)  — Inference & performance
- *   Semantic           — Agentic systems
- *   AI engineering     — models
- *   Data engineering   — pipelines
- *   Bare metal         (base)— the compute elements everything stands on
- *
- * Copy lives here (French-first, English mirror) because, like `expertise.ts` /
- * `systems.ts` / `diagnostics.ts`, it is long-form content with a real tooling
- * payload. Every tool/language carries a `reason`: a one-line explanation of
- * why that icon belongs on THAT pyramid layer, shown in a hover popup on the
- * practice card. Tools are real Simple Icons slugs (`atoms/TechMark.astro`).
- */
 import type { Locale } from "@i18n";
 
-/** A tool/language used on this layer, with why it sits on that layer. */
 export type PracticeTool = {
-  /** Brand name. */
   name: string;
-  /** Simple Icons slug (see `atoms/TechMark.astro`). */
   si: string;
-  /** Localized "why this belongs on this pyramid layer" (hover popup). */
   reason: string;
 };
 
 export type Practice = {
-  /** `01`..`05`, the card's ordinal reference. */
   index: string;
   title: string;
   body: string;
-  /** Canonical `/expertise/<slug>` page. */
   path: string;
-  /** One of the brand accents: data | ai | agents | metal | inference. */
   accent: string;
   tools: PracticeTool[];
 };
@@ -90,7 +65,7 @@ const fr: Practice[] = [
   {
     index: "04",
     title: "Bare metal & calcul",
-    body: "Serveurs dédiés, GPU, stockage et réseau, bien exploités. Quand la charge est lourde et régulière, le matériel bat le cloud — et pour la souveraineté, vos données restent sous votre contrôle, pas sous celui d'un opérateur américain.",
+    body: "Serveurs dédiés, GPU, stockage et réseau, bien exploités. Quand la charge est lourde et régulière, le matériel bat le cloud, et pour la souveraineté, vos données restent sous votre contrôle, pas sous celui d'un opérateur américain.",
     path: "/expertise/bare-metal",
     accent: "metal",
     tools: [
@@ -136,7 +111,7 @@ const en: Practice[] = [
       { name: "Spark", si: "Apachespark", reason: "Distributed processing for the heavy batch loads." },
       { name: "Flink", si: "Apacheflink", reason: "Stateful, real-time processing of your streams." },
       { name: "Rust", si: "Rust", reason: "Type-safe, fast workers for the bytes crossing the boundary." },
-      { name: "OCaml", si: "Ocaml", reason: "Business rules encoded as types — contracts that can't drift." },
+      { name: "OCaml", si: "Ocaml", reason: "Business rules encoded as types: contracts that can't drift." },
     ],
   },
   {
@@ -156,7 +131,7 @@ const en: Practice[] = [
   {
     index: "03",
     title: "Agentic systems",
-    body: "Bounded loops, verifiable tool calls, explicit fallbacks and trajectory-level evaluation. Agents you can hand a real business process to — and that survive production.",
+    body: "Bounded loops, verifiable tool calls, explicit fallbacks and trajectory-level evaluation. Agents you can hand a real business process to, and that survive production.",
     path: "/expertise/agentic-systems",
     accent: "agents",
     tools: [
@@ -169,7 +144,7 @@ const en: Practice[] = [
   {
     index: "04",
     title: "Bare metal & compute",
-    body: "Dedicated servers, GPUs, storage and network, well run. When the load is heavy and steady, hardware beats the cloud — and for sovereignty, your data stays under your control, not a US operator's.",
+    body: "Dedicated servers, GPUs, storage and network, well run. When the load is heavy and steady, hardware beats the cloud, and for sovereignty, your data stays under your control, not a US operator's.",
     path: "/expertise/bare-metal",
     accent: "metal",
     tools: [
@@ -184,7 +159,7 @@ const en: Practice[] = [
   {
     index: "05",
     title: "Inference & performance",
-    body: "Quantization, continuous batching, caching, speculative decoding, on vLLM, llama.cpp, SGLang or TensorRT, or a custom inference server when the path is critical. Served where you decide — including self-hosted, for sovereignty. Measured before and after.",
+    body: "Quantization, continuous batching, caching, speculative decoding, on vLLM, llama.cpp, SGLang or TensorRT, or a custom inference server when the path is critical. Served where you decide, including self-hosted, for sovereignty. Measured before and after.",
     path: "/expertise/inference-optimization",
     accent: "inference",
     tools: [

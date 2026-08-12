@@ -130,7 +130,6 @@ export type JobApplicationPayload = {
   message: string;
   cvUrl?: string;
 };
-export type NewsletterPayload = { email: string };
 
 export type ListArticlesParams = {
   types?: ArticleType[];
@@ -162,7 +161,6 @@ export interface ComputefluxApi {
   submitContact(payload: ContactPayload): Promise<{ ok: true }>;
   requestMeeting(payload: MeetingPayload): Promise<{ ok: true }>;
   applyForJob(payload: JobApplicationPayload): Promise<{ ok: true }>;
-  subscribeNewsletter(payload: NewsletterPayload): Promise<{ ok: true }>;
 }
 
 const mapTopic = (t: DtosTopicResp): Topic => ({
@@ -420,9 +418,6 @@ class HttpApi implements ComputefluxApi {
   }
   applyForJob(): Promise<{ ok: true }> {
     throw new NotImplementedError("applyForJob");
-  }
-  subscribeNewsletter(): Promise<{ ok: true }> {
-    throw new NotImplementedError("subscribeNewsletter");
   }
 }
 

@@ -8,14 +8,14 @@ featured: false
 
 Everyone has seen the demo: an agent that plans, calls tools, and gets the job
 done. Then it hits production and falls apart. The gap is almost never the
-model — it's the engineering around it.
+model, it's the engineering around it.
 
 ## Demos hide the failure modes
 
 A demo runs a handful of happy-path scenarios. Production runs thousands of
 messy ones: flaky tools, ambiguous inputs, partial failures, adversarial
-users. The behaviors that make an agent *feel* magical in a demo — open-ended
-reasoning, autonomous tool use — are exactly the ones that go wrong at scale
+users. The behaviors that make an agent *feel* magical in a demo, open-ended
+reasoning and autonomous tool use, are exactly the ones that go wrong at scale
 without guardrails.
 
 ## What closes the gap

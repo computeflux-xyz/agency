@@ -1,90 +1,23 @@
-/**
- * MEDIA INVENTORY — the single file to edit once the images are chosen.
- *
- * Every photograph on the site is referenced from this file, never from the
- * markup. When you have the final medias dataset, come here and fill in the
- * `src` / `src2x` of each entry (`null` keeps the placeholder panel), plus the
- * localized human copy if you want it shown as-is. Nothing else changes.
- *
- * Image pipeline:
- *   - `src`     : 800px-wide asset, e.g. "/photos/de-ingestion-800.webp".
- *   - `src2x`   : 1600px-wide asset, served as the retina `2x` srcset candidate.
- *   - `video`   : an .mp4 / .webm path. When set it WINS over `src` and plays
- *                 muted, looped and inline as a backdrop; `poster` (or `src`) is
- *                 the still shown before the first frame decodes and on
- *                 `prefers-reduced-motion`. A backdrop video is decoration, so
- *                 `MediaBackdrop` only downloads it on wide viewports and never
- *                 under `save-data` — always ship a `poster`, it is what phones
- *                 and metered connections actually get.
- *                 Keep the MASTER file out of `public/` (it would ship): put it
- *                 in `services/site/media-src/` and commit the web derivative:
- *                   ffmpeg -i media-src/de-hero-source.mp4 -an \
- *                     -vf "scale=1280:-2,fps=24" -c:v libx264 -crf 30 \
- *                     -preset slow -pix_fmt yuv420p -movflags +faststart \
- *                     public/video/de-hero-1280.mp4
- *                   ffmpeg -ss 1 -i media-src/de-hero-source.mp4 -frames:v 1 \
- *                     -vf scale=1280:-2 f.png
- *                   cwebp -q 74 f.png -o public/video/de-hero-poster-1280.webp
- *   - `ratio`   : CSS aspect ratio of the frame ("4/3", "3/4", "16/9"…). Keep it
- *                 stable between the placeholder and the final image so the
- *                 layout does not jump when the asset lands.
- *   - `corner`  : which corner the photo's chamfer is cut from (FramedPhoto).
- *
- * The `label` / `alt` / `placeholderTitle` / `note` fields are localized human
- * copy (French-first, English mirror) and can be rewritten freely. `note` is an
- * editorial brief shown on the placeholder panel so you remember what the slot
- * is for.
- */
-
 import type { Locale } from "@i18n";
 
 export type MediaCorner = "tl" | "tr" | "bl" | "br";
 
 export type MediaItem = {
-  /** Stable id; used by organisms to pick the media for a slot. */
   slug: string;
-  /** 800px-wide asset. `null` renders the placeholder panel instead. */
   src: string | null;
-  /** 1600px-wide asset for the retina `2x` srcset candidate. */
   src2x?: string;
-  /** Video file for a moving backdrop. Wins over `src` when both are set. */
   video?: string | null;
-  /** Still frame for the video (falls back to `src`). */
   poster?: string | null;
   corner: MediaCorner;
-  /** CSS aspect-ratio for the frame, e.g. "4/3", "3/4", "16/9". */
   ratio: string;
-  /** Real alt text, or "" when the photo is purely decorative. */
   alt: string;
-  /** One-word thematic label revealed on hover once the photo is live. */
   label: string;
-  /** Mono enum shown on the placeholder panel. */
   placeholderTitle: string;
-  /** Editorial brief for the editor, shown on the placeholder panel. */
   note: string;
 };
 
-/**
- * HERO FOOTAGE — the one place that says which practices have their film.
- *
- * `seedance.py` (repo root) generates five 5s clips per practice, chains them
- * and writes the two web derivatives at fixed paths:
- *
- *   services/site/public/video/<key>-hero-1280.mp4
- *   services/site/public/video/<key>-hero-poster-1280.webp
- *
- * So a hero goes live by adding its key to this set — one word, both locales —
- * and never by editing eight lines twice. A key that is NOT in the set keeps the
- * designed "media pending" backdrop in `MediaBackdrop`, which is a finished
- * state, not a broken one: no 404, no empty <video>, copy still legible.
- *
- * Keys: `ai` AI engineering · `de` data engineering · `bm` bare metal ·
- * `ag` agentic systems · `io` inference · `xp` the /expertise hub.
- */
 const HERO_FOOTAGE = new Set(["ai", "de", "bm", "ag", "io", "xp"]);
 
-/** The `video` / `poster` pair for a practice's hero slot, or nulls while the
-    footage is still to be generated. */
 function heroVideo(key: string): Pick<MediaItem, "video" | "poster"> {
   return HERO_FOOTAGE.has(key)
     ? { video: `/video/${key}-hero-1280.mp4`, poster: `/video/${key}-hero-poster-1280.webp` }
@@ -105,8 +38,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "ag-overview-a",
-    /* Stock : la revue humaine — le point d'arrêt dont parle la page. Natif
-       800×574 ≈ 7/5. */
     src: "/photos/reason-measure-800.webp",
     src2x: "/photos/reason-measure-1600.webp",
     corner: "br",
@@ -124,7 +55,7 @@ const mediaFr: MediaItem[] = [
     alt: "Trajectoire d'une exécution d'agent affichée à l'écran",
     label: "Parcours",
     placeholderTitle: "Photo · Parcours",
-    note: "Capture : la trajectoire d'une exécution — appels d'outils, durées, reprise après échec.",
+    note: "Capture : la trajectoire d'une exécution, appels d'outils, durées, reprise après échec.",
   },
   {
     slug: "ai-hero",
@@ -139,7 +70,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "ai-overview-a",
-    /* Stock : quelqu'un au travail, concentré. Natif 2482×1370 ≈ 16/9. */
     src: "/photos/ai-overview-focus-800.webp",
     src2x: "/photos/ai-overview-focus-1600.webp",
     corner: "br",
@@ -151,7 +81,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "ai-overview-b",
-    /* Stock : allées de salle machine — ce qui sert le modèle. Natif 16/9. */
     src: "/photos/ai-overview-racks-800.webp",
     src2x: "/photos/ai-overview-racks-1600.webp",
     corner: "tl",
@@ -174,8 +103,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "bm-overview-a",
-    /* Stock : trois ingénieurs autour d'une machine ouverte, carte visible.
-       C'est littéralement le sujet de la page. Natif 800×451 ≈ 16/9. */
     src: "/photos/reason-remote-800.webp",
     src2x: "/photos/reason-remote-1600.webp",
     corner: "br",
@@ -183,11 +110,10 @@ const mediaFr: MediaItem[] = [
     alt: "Ingénieurs inspectant une machine ouverte équipée d'une carte graphique",
     label: "Matériel",
     placeholderTitle: "Photo · Matériel",
-    note: "Shoot : montage ou inspection d'une machine — carte, refroidissement, câblage. Vue atelier, pas de pose.",
+    note: "Shoot : montage ou inspection d'une machine, carte, refroidissement, câblage. Vue atelier, pas de pose.",
   },
   {
     slug: "bm-overview-b",
-    /* Stock : allée de salle machine, rendu 3D. Natif 800×450 = 16/9. */
     src: "/photos/reason-baremetal-800.webp",
     src2x: "/photos/reason-baremetal-1600.webp",
     corner: "tl",
@@ -195,12 +121,10 @@ const mediaFr: MediaItem[] = [
     alt: "Allée de baies dans une salle machine",
     label: "Parc",
     placeholderTitle: "Photo · Parc",
-    note: "Shoot : le parc en exploitation — baies, câblage, allée froide.",
+    note: "Shoot : le parc en exploitation, baies, câblage, allée froide.",
   },
   {
     slug: "de-hero",
-    /* Trail-running footage: the pace the copy talks about. `src` stays null —
-       the poster is the still, and it is also all a phone downloads. */
     src: null,
     ...heroVideo("de"),
     corner: "br",
@@ -212,9 +136,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "de-overview-a",
-    /* Stock, in place of the shoot: a Spark job's monitoring screen. Native
-       1275×720, so `ratio` follows the file — cropping a dashboard hides the
-       part that makes it readable. */
     src: "/photos/de-overview-spark-800.webp",
     src2x: "/photos/de-overview-spark-1275.webp",
     corner: "br",
@@ -226,7 +147,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "de-overview-b",
-    /* Stock: a whiteboard mid-design session. Native 966×684 ≈ 7/5. */
     src: "/photos/de-overview-whiteboard-800.webp",
     src2x: "/photos/de-overview-whiteboard-966.webp",
     corner: "tl",
@@ -279,7 +199,6 @@ const mediaFr: MediaItem[] = [
   },
   {
     slug: "io-overview-a",
-    /* Stock : un tableau couvert de notation d'optimisation. Natif 600×800 = 3/4. */
     src: "/photos/hero-whiteboard-800.webp",
     src2x: "/photos/hero-whiteboard-1600.webp",
     corner: "br",
@@ -297,7 +216,7 @@ const mediaFr: MediaItem[] = [
     alt: "Banc de mesure d'inférence affiché à l'écran",
     label: "Banc",
     placeholderTitle: "Photo · Banc",
-    note: "Capture : le banc — latence médiane et de queue, débit, coût par requête, avant/après.",
+    note: "Capture : le banc, latence médiane et de queue, débit, coût par requête, avant/après.",
   },
   {
     slug: "xp-hero",
@@ -322,7 +241,7 @@ const mediaEn: MediaItem[] = [
     alt: "",
     label: "Agents",
     placeholderTitle: "Video · Agentic systems hero",
-    note: "Looping wide shot (mp4/webm, muted): autonomy under watch, a handover, a stop. Keep the centre dark or low-contrast — the title sits on it.",
+    note: "Looping wide shot (mp4/webm, muted): autonomy under watch, a handover, a stop. Keep the centre dark or low-contrast: the title sits on it.",
   },
   {
     slug: "ag-overview-a",
@@ -343,7 +262,7 @@ const mediaEn: MediaItem[] = [
     alt: "An agent run's trajectory shown on screen",
     label: "Trajectory",
     placeholderTitle: "Photo · Trajectory",
-    note: "Screenshot: one run's trajectory — tool calls, durations, recovery after a failure.",
+    note: "Screenshot: one run's trajectory, with tool calls, durations and recovery after a failure.",
   },
   {
     slug: "ai-hero",
@@ -398,7 +317,7 @@ const mediaEn: MediaItem[] = [
     alt: "Engineers inspecting an open machine fitted with a graphics card",
     label: "Hardware",
     placeholderTitle: "Photo · Hardware",
-    note: "Shot: a machine being built or inspected — card, cooling, cabling. Workshop view, not a pose.",
+    note: "Shot: a machine being built or inspected, with card, cooling and cabling visible. Workshop view, not a pose.",
   },
   {
     slug: "bm-overview-b",
@@ -409,7 +328,7 @@ const mediaEn: MediaItem[] = [
     alt: "Rows of racks in a machine room",
     label: "Fleet",
     placeholderTitle: "Photo · Fleet",
-    note: "Shot: the fleet in operation — racks, cabling, cold aisle.",
+    note: "Shot: the fleet in operation, with racks, cabling and a cold aisle.",
   },
   {
     slug: "de-hero",
@@ -504,7 +423,7 @@ const mediaEn: MediaItem[] = [
     alt: "An inference bench displayed on screen",
     label: "Bench",
     placeholderTitle: "Photo · Bench",
-    note: "Screenshot: the bench — median and tail latency, throughput, cost per request.",
+    note: "Screenshot: the bench, with median and tail latency, throughput and cost per request.",
   },
   {
     slug: "xp-hero",
@@ -524,23 +443,19 @@ const byLocale: Record<Locale, MediaItem[]> = {
   en: mediaEn,
 };
 
-/** Badge shown on every slot still waiting for its asset. */
 const pendingByLocale: Record<Locale, string> = {
   fr: "Médias à venir",
   en: "Media coming soon",
 };
 
-/** Media for a locale (falls back to French, the reference locale). */
 export function getMedia(locale: Locale): MediaItem[] {
   return byLocale[locale] ?? mediaFr;
 }
 
-/** A single media entry by slug for a locale. */
 export function getMediaItem(locale: Locale, slug: string): MediaItem | undefined {
   return getMedia(locale).find((m) => m.slug === slug);
 }
 
-/** Localized "media pending" badge, so components stay locale-agnostic. */
 export function getMediaPending(locale: Locale): string {
   return pendingByLocale[locale] ?? pendingByLocale.fr;
 }

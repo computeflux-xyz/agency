@@ -12,12 +12,10 @@ const locale = getLocale(Astro);
 const t = useTranslations(locale);
 const faqs = getFaq(locale);
 const faqCategories = getFaqCategories(locale);
-
-// FAQPage structured data (rich results) from all Q&As.
 const jsonLd = faqSchema(faqs.map((f) => ({ question: f.question, answer: f.answer })));
 ---
 
-<PageLayout title={t("faq.title")} description={t("faq.metaDescription")} jsonLd={jsonLd} dragon>
+<PageLayout title={t("faq.title")} description={t("faq.metaDescription")} jsonLd={jsonLd}>
   <PageHero eyebrow={t("faq.hero.eyebrow")} title={t("faq.hero.title")} lead={t("faq.hero.lead")} />
 
   <section class="container-prose pb-24">

@@ -18,14 +18,13 @@ const principles = [
 ];
 ---
 
-<PageLayout title={t("about.title")} description={t("about.metaDescription")} dragon>
+<PageLayout title={t("about.title")} description={t("about.metaDescription")}>
   <PageHero
     eyebrow={t("about.hero.eyebrow")}
     title={t("about.hero.title")}
     lead={t("about.hero.lead")}
   />
 
-  <!-- Narrative -->
   <section class="container-prose pb-8">
     <Divider label={t("about.studio")} />
     <div class="prose-flux py-12">
@@ -35,7 +34,6 @@ const principles = [
     </div>
   </section>
 
-  <!-- Principles -->
   <section class="container-flux py-12 md:py-16">
     <Divider label={t("about.principles")} />
     <div class="grid gap-4 py-12 md:grid-cols-2" data-reveal-stagger="80">
@@ -56,7 +54,6 @@ const principles = [
     </div>
   </section>
 
-  <!-- Facts -->
   <section class="container-flux py-12">
     <div
       class="grid gap-8 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-ink-900/40 p-8 sm:grid-cols-3 md:p-12"

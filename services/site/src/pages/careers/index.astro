@@ -35,7 +35,7 @@ const jsonLd = jobs.map((job) => ({
 const rolesLabel = jobs.length === 1 ? t("careers.openRolesOne") : t("careers.openRolesMany");
 ---
 
-<PageLayout title={t("careers.title")} description={t("careers.metaDescription")} jsonLd={jsonLd} dragon>
+<PageLayout title={t("careers.title")} description={t("careers.metaDescription")} jsonLd={jsonLd}>
   <PageHero
     eyebrow={t("careers.hero.eyebrow")}
     title={t("careers.hero.title")}
