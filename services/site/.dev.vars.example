@@ -3,5 +3,12 @@ API_BASE_URL=http://localhost:8080
 # Bearer token the worker sends to site-api (guards POST /api/contact + admin routes).
 # Locally this must match site-api's CONFIG_CONTACT_TOKEN (see services/site-api).
 API_TOKEN=local-dev-contact-token
-# PUBLIC_UMAMI_SRC=https://cloud.umami.is/script.js
-# PUBLIC_UMAMI_WEBSITE_ID=00000000-0000-0000-0000-000000000000
+# Cookieless analytics (Umami). Production values live in wrangler.toml [vars];
+# locally, point at a port-forwarded instance of the cluster deployment:
+#   kubectl port-forward svc/umami 3000:3000
+# PUBLIC_UMAMI_HOST_URL is only needed when script.js and /api/send are not
+# siblings (they are here, unlike behind the gateway subpath). Leave these
+# commented out to run the site with no analytics at all.
+# PUBLIC_UMAMI_SRC=http://localhost:3000/script.js
+# PUBLIC_UMAMI_WEBSITE_ID=38e1c36a-f114-46f0-a870-46554f6b59c9
+# PUBLIC_UMAMI_TAG=local

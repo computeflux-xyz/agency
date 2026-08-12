@@ -433,6 +433,11 @@ export const ui = {
     "careers.perk2": "Remote-friendly, based in France.",
     "careers.perk3": "Real problems, in production, not slideware.",
     "careers.perk4": "You keep learning on hard, worthwhile work.",
+    "careers.closedLabel": "NO OPEN ROLES",
+    "careers.closedTitle": "We're not actively hiring at the moment.",
+    "careers.closedLead":
+      "No open positions right now. If you're a senior engineer working on AI or data in production, write to us anyway. We keep good applications on file.",
+    "careers.closedCta": "Send an open application",
 
     // Studies index
     "studies.title": "Case studies",
@@ -909,6 +914,11 @@ export const ui = {
     "careers.perk2": "Télétravail bienvenu, basés en France.",
     "careers.perk3": "De vrais problèmes, en production, pas des slides.",
     "careers.perk4": "Vous apprenez sans cesse sur des sujets exigeants et utiles.",
+    "careers.closedLabel": "AUCUN POSTE OUVERT",
+    "careers.closedTitle": "Nous ne recrutons pas activement pour le moment.",
+    "careers.closedLead":
+      "Aucun poste ouvert actuellement. Si vous êtes ingénieur senior sur l'IA ou la data en production, écrivez-nous quand même. Nous gardons les bonnes candidatures.",
+    "careers.closedCta": "Envoyer une candidature spontanée",
 
     // Studies index
     "studies.title": "Études de cas",

@@ -26,7 +26,6 @@ Do not implement the API part yet but this could be as a next step. I want ALL t
 * Possibility to download "white paper" assets we might expose for free. (when we'll have an API)
 * Possibility to "book" an appointment to meet us. (when we'll have an API)
 * Possibility to apply for a job through our simple minimalist portal. (when we'll have an API)
-* Register for a newsletter (when we'll have an API)
 * Have an FAQ
 * Must be mobile responsive
 

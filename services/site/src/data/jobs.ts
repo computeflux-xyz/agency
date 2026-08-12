@@ -113,8 +113,12 @@ const jobsEn: Job[] = [
 
 const byLocale: Record<Locale, Job[]> = { fr: jobsFr, en: jobsEn };
 
-/** All jobs for a locale (falls back to English). */
+/** Master switch: when false, no role pages are built and /careers shows a "not hiring" notice. */
+export const hiringOpen = false;
+
+/** All jobs for a locale (falls back to English). Empty while hiring is closed. */
 export function getJobs(locale: Locale): Job[] {
+  if (!hiringOpen) return [];
   return byLocale[locale] ?? jobsEn;
 }
 
@@ -124,4 +128,4 @@ export function getJob(locale: Locale, slug: string): Job | undefined {
 }
 
 /** Slugs are locale-independent; used by getStaticPaths. */
-export const jobSlugs = jobsEn.map((j) => j.slug);
+export const jobSlugs = hiringOpen ? jobsEn.map((j) => j.slug) : [];

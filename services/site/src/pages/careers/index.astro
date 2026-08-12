@@ -57,15 +57,33 @@ const rolesLabel = jobs.length === 1 ? t("careers.openRolesOne") : t("careers.op
   </section>
 
   <section class="container-flux py-12 md:py-16">
-    <Divider label={`${jobs.length} ${rolesLabel}`} />
-    <div class="flex flex-col gap-4 py-12" data-reveal-stagger="80">
-      {jobs.map((job) => <JobCard job={job} href={localizedPath(`/careers/${job.slug}`, locale)} cta={t("careers.viewRole")} />)}
-    </div>
-    <p class="text-center text-sm text-ink-400" data-reveal>
-      {t("careers.noRoleLead")}
-      <a href={`mailto:${site.email}?subject=Open application`} class="text-flux-blue hover:underline">
-        {t("careers.noRoleTitle")} →
-      </a>
-    </p>
+    <Divider label={jobs.length === 0 ? t("careers.closedLabel") : `${jobs.length} ${rolesLabel}`} />
+    {
+      jobs.length === 0 ? (
+        <div class="py-12" data-reveal>
+          <div class="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-ink-900/40 p-8 text-center md:p-12">
+            <p class="text-lg font-medium text-ink-100">{t("careers.closedTitle")}</p>
+            <p class="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-ink-300">{t("careers.closedLead")}</p>
+            <a href={localizedPath("/contact", locale)} class="mt-6 inline-block text-sm text-flux-blue hover:underline">
+              {t("careers.closedCta")} →
+            </a>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div class="flex flex-col gap-4 py-12" data-reveal-stagger="80">
+            {jobs.map((job) => (
+              <JobCard job={job} href={localizedPath(`/careers/${job.slug}`, locale)} cta={t("careers.viewRole")} />
+            ))}
+          </div>
+          <p class="text-center text-sm text-ink-400" data-reveal>
+            {t("careers.noRoleLead")}
+            <a href={`mailto:${site.email}?subject=Open application`} class="text-flux-blue hover:underline">
+              {t("careers.noRoleTitle")} →
+            </a>
+          </p>
+        </>
+      )
+    }
   </section>
 </PageLayout>
