@@ -196,6 +196,8 @@ func NewServer(ctx context.Context) (*app.AppServer, error) {
 		NewBuilder(ctx).
 		WithHost(cfg.Server.Host).
 		WithPort(cfg.Server.Port).
+		WithReadTimeout(30 * time.Second).
+		WithWriteTimeout(90 * time.Second).
 		WithRoutes(routes)
 
 	return app.

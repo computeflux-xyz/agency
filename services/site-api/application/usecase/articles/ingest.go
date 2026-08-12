@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/computeflux-xyz/agency/services/site-api/application/contracts"
 	errorx "github.com/computeflux-xyz/agency/services/site-api/application/error"
 	"github.com/computeflux-xyz/agency/services/site-api/models"
@@ -38,6 +40,11 @@ func NewIngestUseCase(store contracts.ArticleWriteStorage, blobs contracts.BlobS
 }
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+
+// blobProbeConcurrency caps the in-flight R2 HEAD/presign calls made per
+// begin/commit. High enough to keep a 150-file build under a second, low enough
+// not to exhaust the shared S3 client's connection pool.
+const blobProbeConcurrency = 16
 
 // Begin validates the submission, computes the version prefix + manifest,
 // persists a draft version, and returns presigned PUT URLs for the blobs that
@@ -103,10 +110,12 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		coverURL  string
 	)
 
-	for _, f := range req.Files {
+	keys := make([]string, len(req.Files))
+	for i, f := range req.Files {
 		key := path.Join(prefix, f.Path)
 		url := uc.blobs.PublicURL(key)
 		isEntry := f.Path == entrypoint
+		keys[i] = key
 
 		manifest.Files = append(manifest.Files, models.ManifestFile{
 			Path:         f.Path,
@@ -122,24 +131,59 @@ func (uc *IngestUseCase) Begin(ctx context.Context, req contracts.IngestBeginReq
 		if req.CoverPath != "" && f.Path == req.CoverPath {
 			coverURL = url
 		}
+	}
 
-		exists, err := uc.blobs.ObjectExists(ctx, key)
-		if err != nil {
-			return resp, errorx.NewExternal(errorx.CodeExternalService, "storage unavailable", err)
-		}
+	// One HEAD (and, when missing, one signature) per file. A built Observable
+	// tree is 50-150 files, so doing this serially costs one R2 round trip per
+	// file and pushed the whole request past the server's write timeout. The
+	// results are collected per index, so uploads/skipped stay in file order.
+	type blobPlan struct {
+		exists bool
+		putURL string
+	}
 
-		if exists {
+	plans := make([]blobPlan, len(req.Files))
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(blobProbeConcurrency)
+	for i, f := range req.Files {
+		i, f := i, f
+		g.Go(func() error {
+			exists, err := uc.blobs.ObjectExists(gctx, keys[i])
+			if err != nil {
+				return errorx.NewExternal(errorx.CodeExternalService, "storage unavailable", err)
+			}
+
+			if exists {
+				plans[i] = blobPlan{exists: true}
+				return nil
+			}
+
+			putURL, err := uc.blobs.PresignPut(gctx, keys[i], f.ContentType, uc.cfg.PresignTTL)
+			if err != nil {
+				return errorx.NewExternal(errorx.CodeExternalService, "could not presign upload", err)
+			}
+
+			plans[i] = blobPlan{putURL: putURL}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return resp, err
+	}
+
+	for i, f := range req.Files {
+		if plans[i].exists {
 			skipped = append(skipped, f.Path)
 			continue
 		}
 
-		putURL, err := uc.blobs.PresignPut(ctx, key, f.ContentType, uc.cfg.PresignTTL)
-		if err != nil {
-			return resp, errorx.NewExternal(errorx.CodeExternalService, "could not presign upload", err)
-		}
-
 		uploads = append(uploads, contracts.IngestUpload{
-			Path: f.Path, Key: key, URL: url, PutURL: putURL, ContentType: f.ContentType,
+			Path:        f.Path,
+			Key:         keys[i],
+			URL:         manifest.Files[i].URL,
+			PutURL:      plans[i].putURL,
+			ContentType: f.ContentType,
 		})
 	}
 
@@ -218,15 +262,32 @@ func (uc *IngestUseCase) Commit(ctx context.Context, req contracts.IngestCommitR
 		return nil, err
 	}
 
-	var missing []string
-	for _, f := range ver.Manifest.Files {
-		exists, err := uc.blobs.ObjectExists(ctx, f.Key)
-		if err != nil {
-			_ = uc.store.FailIngest(ctx, req.JobID, "storage check failed: "+err.Error())
-			return nil, errorx.NewExternal(errorx.CodeExternalService, "storage unavailable", err)
-		}
+	// Same fan-out as Begin: one HEAD per manifest file, bounded, collected by
+	// index so the reported missing list keeps manifest order.
+	found := make([]bool, len(ver.Manifest.Files))
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(blobProbeConcurrency)
+	for i, f := range ver.Manifest.Files {
+		i, key := i, f.Key
+		g.Go(func() error {
+			exists, err := uc.blobs.ObjectExists(gctx, key)
+			if err != nil {
+				return err
+			}
 
-		if !exists {
+			found[i] = exists
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		_ = uc.store.FailIngest(ctx, req.JobID, "storage check failed: "+err.Error())
+		return nil, errorx.NewExternal(errorx.CodeExternalService, "storage unavailable", err)
+	}
+
+	var missing []string
+	for i, f := range ver.Manifest.Files {
+		if !found[i] {
 			missing = append(missing, f.Path)
 		}
 	}
