@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-team-topology",
+  "type": "blog",
+  "topics": ["semantic-layer", "data-engineering", "architecture"],
+  "authors": ["gabriel-mougard"],
+  "featured": true,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "A semantic layer is a team boundary",
+      "shortdesc": "The report engine we built is not a technology decision — it is two teams joined by one API contract, and everything else follows from that line.",
+      "longdesc": "Part 1 of a series on building a semantic-layer report engine: why reporting today is a manual pipeline, and how splitting the system into an app plane and an analytics plane joined by a single API contract dissolves the tickets, the drift and the stale decks.",
+      "readingMinutes": 7,
+      "seoTitle": "A semantic layer is a team boundary",
+      "seoDescription": "Why a semantic layer is first an organizational interface: two teams, one API contract. Part 1 of a series on building a governed report engine."
+    }
+  }
+}
