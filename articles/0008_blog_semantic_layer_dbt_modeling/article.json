@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-dbt-modeling",
+  "type": "blog",
+  "topics": ["semantic-layer", "dbt", "metricflow", "data-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "Metrics are contracts, not columns",
+      "shortdesc": "From raw warehouse tables to governed metrics: the dbt + MetricFlow stack, layer by layer, with the YAML that does the work.",
+      "longdesc": "Part 2 of a series on building a semantic-layer report engine: sources, staging, marts, semantic models and metric definitions in dbt + MetricFlow — and why a metric is a versioned contract, not a column.",
+      "readingMinutes": 8,
+      "seoTitle": "Metrics are contracts, not columns",
+      "seoDescription": "The dbt + MetricFlow model stack: staging, marts, semantic models and governed metrics. Part 2 of a series on building a semantic-layer report engine."
+    }
+  }
+}
