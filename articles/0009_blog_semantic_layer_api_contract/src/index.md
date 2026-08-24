@@ -1,5 +1,5 @@
 ---
-title: The boundary API: three endpoints, zero hand-written SQL
+title: The boundary API, three endpoints, zero hand-written SQL
 toc: false
 ---
 
