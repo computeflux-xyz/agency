@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-api-contract",
+  "type": "blog",
+  "topics": ["semantic-layer", "api-design", "metricflow", "data-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "The boundary API: three endpoints, zero hand-written SQL",
+      "shortdesc": "The /query contract, the manifest version, and how a self-hosted MetricFlow server hot-reloads its truth without downtime.",
+      "longdesc": "Part 3 of a series on building a semantic-layer report engine: the Semantic Layer API in detail — the selection request, the Arrow/JSON response, manifest_version as a safety belt, and the dbt-runner loop that keeps the engine current.",
+      "readingMinutes": 7,
+      "seoTitle": "The boundary API: three endpoints, zero hand-written SQL",
+      "seoDescription": "Designing the Semantic Layer API: /metrics, /catalog, /query, manifest versions and hot-reloading a MetricFlow engine. Part 3 of a series."
+    }
+  }
+}

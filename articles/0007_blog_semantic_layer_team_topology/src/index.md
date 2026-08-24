@@ -96,13 +96,13 @@ Both of these are consequences of the team split: the app team has no business t
 Eight parts, each readable on its own:
 
 1. **This one.** The thesis: two teams but one contract.
-2. [Metrics are contracts, not columns](https://computeflux.xyz/articles/semantic-layer-dbt-modeling) : the dbt + MetricFlow model stack, from raw tables to governed metrics.
-3. [The boundary API](https://computeflux.xyz/articles/semantic-layer-api-contract) : the `/query` contract, manifest versions, and hot-reloading a live engine.
-4. [Reports that run live](https://computeflux.xyz/articles/semantic-layer-live-runtime) : the skeleton, scope resolution, and Arrow IPC over HTTP/2.
-5. [The cache that can't lie](https://computeflux.xyz/articles/semantic-layer-caching) : single-flight, canonical keys, and why a cached number is still a correct number.
-6. [A database for report definitions](https://computeflux.xyz/articles/semantic-layer-config-model) : the MySQL model and its templates, blocks, workspaces, and soft references to a third-party source of truth.
-7. [When your metrics drift](https://computeflux.xyz/articles/semantic-layer-drift-compat) : aliases, the drift demo, and failing the CI build instead of production.
-8. [A warehouse in a shoebox](https://computeflux.xyz/articles/semantic-layer-laptop-warehouse) : faking BigQuery on a laptop so the whole stack runs offline.
+2. [Metrics are contracts, not columns](https://computeflux.xyz/en/articles/semantic-layer-dbt-modeling) : the dbt + MetricFlow model stack, from raw tables to governed metrics.
+3. [The boundary API](https://computeflux.xyz/en/articles/semantic-layer-api-contract) : the `/query` contract, manifest versions, and hot-reloading a live engine.
+4. [Reports that run live](https://computeflux.xyz/en/articles/semantic-layer-live-runtime) : the skeleton, scope resolution, and Arrow IPC over HTTP/2.
+5. [The cache that can't lie](https://computeflux.xyz/en/articles/semantic-layer-caching) : single-flight, canonical keys, and why a cached number is still a correct number.
+6. [A database for report definitions](https://computeflux.xyz/en/articles/semantic-layer-config-model) : the MySQL model and its templates, blocks, workspaces, and soft references to a third-party source of truth.
+7. [When your metrics drift](https://computeflux.xyz/en/articles/semantic-layer-drift-compat) : aliases, the drift demo, and failing the CI build instead of production.
+8. [A warehouse in a shoebox](https://computeflux.xyz/en/articles/semantic-layer-laptop-warehouse) : faking BigQuery on a laptop so the whole stack runs offline.
 
 The system in this series is a proof of concept: real code, real moving data, real footguns running locally against an emulated warehouse. It is not the only way to build a semantic layer, and part 8 is about exactly where the PoC cheats. But the boundary, the contract, and the failure modes are the same ones you will meet at production scale, which is why we bothered.
 
@@ -110,7 +110,7 @@ The one idea to leave with, before the code starts: **a semantic layer is not a 
 
 ---
 
-<div class="small muted">Part 1 of 8. Next: <a href="https://computeflux.xyz/articles/semantic-layer-dbt-modeling">Metrics are contracts, not columns</a>.</div>
+<div class="small muted">Part 1 of 8. Next: <a href="https://computeflux.xyz/en/articles/semantic-layer-dbt-modeling">Metrics are contracts, not columns</a>.</div>
 
 <style>
 .hero { text-align: center; margin: 2rem 0 3rem; }

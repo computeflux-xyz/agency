@@ -12,7 +12,7 @@ const cover = FileAttachment("cover.png");
   <h2>Part 2: the dbt + MetricFlow stack, from raw warehouse tables to governed metric definitions.</h2>
 </div>
 
-The analytics team's side of the [contract from part 1](https://computeflux.xyz/articles/semantic-layer-team-topology) is a dbt project. It owns everything from the warehouse table names up to the definition of "CTR". The app team only ever sees the top layer (metric names and dimension names) which is exactly the point: **the physical schema becomes an implementation detail of a YAML file.**
+The analytics team's side of the [contract from part 1](https://computeflux.xyz/en/articles/semantic-layer-team-topology) is a dbt project. It owns everything from the warehouse table names up to the definition of "CTR". The app team only ever sees the top layer (metric names and dimension names) which is exactly the point: **the physical schema becomes an implementation detail of a YAML file.**
 
 In the PoC the warehouse holds four pre-aggregated tables that carry the models reports actually query: an hourly demand table (`demand_monitoring_lite`), its supply-side mirror (`supply_monitoring_lite`), a daily delivery-quality table, and a daily deal-pacing table. Grain matters here: one row per *(date, hour) × every dimension* on the hourly tables, so a campaign-week scans megabytes, not terabytes. Raw event tables (impression-level logs, the bid funnel) are seeded and staged but deliberately not surfaced yet (more on that at the end).
 
@@ -228,7 +228,7 @@ Nothing in this article is visible to the app team except the last two layers. T
 
 ---
 
-<div class="small muted">Part 2 of 8. Next: <a href="https://computeflux.xyz/articles/semantic-layer-api-contract">The boundary API: three endpoints, zero hand-written SQL</a>.</div>
+<div class="small muted">Part 2 of 8. Next: <a href="https://computeflux.xyz/en/articles/semantic-layer-api-contract">The boundary API: three endpoints, zero hand-written SQL</a>.</div>
 
 <style>
 .hero { text-align: center; margin: 2rem 0 3rem; }
