@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-live-runtime",
+  "type": "blog",
+  "topics": ["semantic-layer", "arrow", "architecture", "performance"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "No snapshots but reports that run live",
+      "shortdesc": "The report skeleton, scope resolution in Go, and why the browser queries the semantic layer directly with Arrow IPC over HTTP/2.",
+      "longdesc": "Part 4 of a series on building a semantic-layer report engine: the live query runtime resolving scope into per-block query specs, fanning out from the browser over HTTP/2, and shipping columnar Arrow to React.",
+      "readingMinutes": 8,
+      "seoTitle": "Semantic layer: no snapshots but reports that run live",
+      "seoDescription": "Running reports as live queries: the skeleton, Go scope resolution and Arrow IPC over HTTP/2. Part 4 of a series on semantic-layer report engines."
+    }
+  }
+}
