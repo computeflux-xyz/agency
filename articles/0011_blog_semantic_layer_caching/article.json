@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-caching",
+  "type": "blog",
+  "topics": ["semantic-layer", "caching", "performance", "data-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "Semantic layer: the caching framework",
+      "shortdesc": "Single-flight, canonical cache keys and manifest-versioned invalidation. How a semantic layer serves repeats for free without serving stale numbers.",
+      "longdesc": "Part 5 of a series on building a semantic-layer report engine: the in-process result cache, canonical keys, single-flight coalescing, hit/miss/coalesced states, TTLs, deadlines, and why the manifest version makes a cached result correct by construction.",
+      "readingMinutes": 7,
+      "seoTitle": "Semantic layer: the caching framework",
+      "seoDescription": "Caching semantic queries correctly: single-flight, canonical keys and manifest-versioned invalidation. Part 5 of a series on semantic-layer report engines."
+    }
+  }
+}
