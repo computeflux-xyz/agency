@@ -51,7 +51,7 @@ This is a boring file. That's its whole virtue: when the warehouse moves, exactl
 
 ## Layer 2: staging, a 1:1 clean view
 
-```sql
+```sql run=false
 -- staging/stg_demand_hourly.sql
 select
     event_time, date, hour,
@@ -72,7 +72,7 @@ Staging is where you make peace with the warehouse's naming sins without fixing 
 
 ## Layer 3: marts, the conformed facts
 
-```sql
+```sql run=false
 -- marts/fct_demand_hourly.sql
 select * from {{ ref('stg_demand_hourly') }}
 ```
