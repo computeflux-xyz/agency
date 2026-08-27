@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-config-model",
+  "type": "blog",
+  "topics": ["semantic-layer", "database-design", "architecture", "mysql"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "A database for report definitions",
+      "shortdesc": "Templates, blocks, descriptors, workspaces: the MySQL schema behind the builder, and why config and data must never share a database.",
+      "longdesc": "Part 6 of a series on building a semantic-layer report engine: the config model — templates as aggregates, blocks as rows with JSON config, descriptors as a governed mirror, workspaces with soft CRM references, and the one-active-assignment trick.",
+      "readingMinutes": 8,
+      "seoTitle": "A database for report definitions",
+      "seoDescription": "Modeling report definitions in MySQL: templates, blocks, descriptors, workspaces and soft CRM references. Part 6 of a series on semantic-layer report engines."
+    }
+  }
+}
