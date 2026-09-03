@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-drift-compat",
+  "type": "blog",
+  "topics": ["semantic-layer", "compatibility", "ci-cd", "data-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "When your metrics drift",
+      "shortdesc": "A saved report references semantic objects that evolve independently. Treat the ref like a public API and the drift problem mostly solves itself.",
+      "longdesc": "Part 7 of a series on building a semantic-layer report engine: treating semantic refs as a public API, aliases for renames, per-block degradation, and a CI gate that fails the pull request instead of production.",
+      "readingMinutes": 7,
+      "seoTitle": "Semantic layer: When your metrics drift",
+      "seoDescription": "Drift and compatibility in a semantic layer: refs as a public API, alias maps, and CI impact analysis. Part 7 of a series on semantic-layer report engines."
+    }
+  }
+}
