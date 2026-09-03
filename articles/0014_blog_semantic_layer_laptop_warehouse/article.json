@@ -1,0 +1,19 @@
+{
+  "slug": "semantic-layer-laptop-warehouse",
+  "type": "blog",
+  "topics": ["semantic-layer", "testing", "developer-experience", "data-engineering"],
+  "authors": ["gabriel-mougard"],
+  "featured": false,
+  "cover": "cover.png",
+  "locales": {
+    "en": {
+      "entry": "index.html",
+      "title": "A warehouse in a shoebox for our semantic layer",
+      "shortdesc": "How the whole stack runs offline: a patched BigQuery emulator, a RAM-backed store, and a traffic generator that keeps the data moving.",
+      "longdesc": "Part 8 of a series on building a semantic-layer report engine: the local harness involving patching a BigQuery emulator so dbt runs on it, capping storage with tmpfs, and feeding it realistic moving data from a parquet landing zone.",
+      "readingMinutes": 6,
+      "seoTitle": "A warehouse in a shoebox",
+      "seoDescription": "Running a semantic-layer stack offline: a patched BigQuery emulator, tmpfs storage caps and a traffic generator. Part 8 of a series."
+    }
+  }
+}
