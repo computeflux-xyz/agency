@@ -161,7 +161,7 @@ The schema is deliberately boring. Boring means the interesting parts of the sys
 
 ---
 
-<div class="small muted">Part 6 of 8. Next: <a href="https://computeflux.xyz/en/blog/semantic-layer-drift-compat">Semantic layer: when your metrics drift</a>.</div>
+<div class="small muted">Part 6 of 8. Next: <a href="https://computeflux.xyz/en/articles/semantic-layer-drift-compat">Semantic layer: when your metrics drift</a>.</div>
 
 <style>
 .hero { text-align: center; margin: 2rem 0 3rem; }
