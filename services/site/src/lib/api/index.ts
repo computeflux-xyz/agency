@@ -41,6 +41,7 @@ export type ArticleSummary = {
   id: string;
   type: ArticleType;
   slug: string;
+  lang: string;
   title: string;
   shortdesc: string;
   coverImage: string | null;
@@ -190,6 +191,7 @@ const mapSummary = (a: DtosArticleSummaryResp): ArticleSummary => ({
   id: a.id ?? "",
   type: (a.type as ArticleType) ?? "blog",
   slug: a.slug ?? "",
+  lang: a.lang ?? "",
   title: a.title ?? "",
   shortdesc: a.shortdesc ?? "",
   coverImage: a.coverImage ?? null,

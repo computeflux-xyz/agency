@@ -38,9 +38,14 @@ type TopicWithCount struct {
 }
 
 type ArticleReadStorage interface {
+	// ListArticles returns one row per logical article: the requested
+	// translation when it exists, otherwise the canonical-locale (`en`) row.
 	ListArticles(ctx context.Context, filter ArticleListFilter) (ArticleListResult, error)
+	// GetPublishedArticleBySlug reads one article, falling back to the
+	// canonical locale when the requested translation is absent.
 	GetPublishedArticleBySlug(ctx context.Context, slug string, lang models.Lang) (*models.Article, error)
-	ListTopics(ctx context.Context) ([]TopicWithCount, error)
+	// ListTopics counts, per topic, the articles a reader of `lang` can open.
+	ListTopics(ctx context.Context, lang models.Lang) ([]TopicWithCount, error)
 }
 
 type IngestJobInput struct {

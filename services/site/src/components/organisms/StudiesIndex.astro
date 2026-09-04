@@ -3,6 +3,10 @@
 // the URL, requests that language from site-api (falling back to the bundled
 // content collection when the API is unreachable), and keeps every link inside
 // the locale. Rendered by both /studies (fr) and /en/studies.
+//
+// site-api returns one row per logical study: the translation when it exists,
+// the canonical english edition otherwise. Cards whose `lang` is not the active
+// locale are badged rather than hidden.
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHero from "@organisms/PageHero.astro";
@@ -37,6 +41,7 @@ type Card = {
   readingTime: number;
   cover?: string | null;
   featured: boolean;
+  lang?: string;
 };
 
 const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
@@ -79,6 +84,7 @@ if (apiBaseUrl) {
       readingTime: a.readingTime,
       cover: a.coverImage,
       featured: a.featured,
+      lang: a.lang,
     }));
     const seen = new Map<string, Topic>();
     for (const study of allStudies.items) {
@@ -234,6 +240,7 @@ const chipBase =
               date={study.date}
               readingTime={study.readingTime}
               cover={study.cover}
+              lang={study.lang}
               origin="studies_index"
               position={(page - 1) * PAGE_SIZE + index + 1}
             />

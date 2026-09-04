@@ -4,12 +4,12 @@
 // requested translation is absent) and embeds the built R2 artifact in a
 // sandboxed iframe. Falls back to the bundled markdown content collection when
 // the API is unreachable or the slug is unknown. Rendered by both
-// /articles/[slug] (en) and /fr/articles/[slug].
+// /articles/[slug] (fr, unprefixed) and /en/articles/[slug].
 import { getCollection, render } from "astro:content";
 import ArticleLayout from "@layouts/ArticleLayout.astro";
 import ObservableEmbed from "@organisms/ObservableEmbed.astro";
 import { createApiClient, ApiError, type ArticleDocument } from "@lib/api";
-import { localeFromPath, useTranslations } from "@i18n";
+import { isLocale, localeFromPath, LOCALE_SHORT, useTranslations } from "@i18n";
 
 interface Props {
   slug: string;
@@ -44,6 +44,7 @@ if (!doc && !entry) {
 }
 
 const Fallback = entry ? (await render(entry)).Content : null;
+const fallbackLang = doc && isLocale(doc.lang) && doc.lang !== locale ? doc.lang : null;
 ---
 
 {
@@ -65,6 +66,14 @@ const Fallback = entry ? (await render(entry)).Content : null;
       seoDescription={doc.seoDescription}
       canonicalUrl={doc.canonicalUrl}
     >
+      {fallbackLang && (
+        <p class="mb-6 flex flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-ink-line)] px-4 py-2.5 font-mono text-xs text-ink-400">
+          <span class="rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] bg-ink-900 px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-widest text-ink-300">
+            {LOCALE_SHORT[fallbackLang]}
+          </span>
+          {t("content.langFallback")}
+        </p>
+      )}
       {doc.entryUrl ? (
         <ObservableEmbed src={doc.entryUrl} title={doc.title} />
       ) : (

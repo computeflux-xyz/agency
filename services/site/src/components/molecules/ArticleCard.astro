@@ -2,7 +2,7 @@
 import Tag from "@atoms/Tag.astro";
 import Icon from "@atoms/Icon.astro";
 import { formatDate } from "@lib/utils";
-import { getLocale, useTranslations } from "@i18n";
+import { getLocale, isLocale, LOCALE_SHORT, useTranslations } from "@i18n";
 
 interface Props {
   href: string;
@@ -14,6 +14,7 @@ interface Props {
   readingTime?: number;
   cover?: string | null;
   featured?: boolean;
+  lang?: string;
   class?: string;
   /** Analytics: where the card is rendered (index grid, home rail, related...). */
   origin?: string;
@@ -30,12 +31,14 @@ const {
   readingTime,
   cover,
   featured = false,
+  lang,
   class: className = "",
   origin = "list",
   position,
 } = Astro.props;
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
+const fallbackLang = lang && isLocale(lang) && lang !== locale ? lang : null;
 ---
 
 <a
@@ -78,6 +81,17 @@ const t = useTranslations(locale);
     >
       {kind === "study" ? t("articleCard.study") : t("articleCard.article")}
     </span>
+    {
+      fallbackLang && (
+        <span
+          class="absolute right-3 top-3 rounded-[var(--radius-sm)] border border-[var(--color-ink-line)] bg-ink-950/90 px-2.5 py-1 font-mono text-[0.6rem] font-medium uppercase tracking-widest text-ink-300"
+          title={t("content.langFallback")}
+        >
+          {LOCALE_SHORT[fallbackLang]}
+          <span class="sr-only"> — {t("content.langFallback")}</span>
+        </span>
+      )
+    }
   </div>
 
   <div class:list={["flex flex-1 flex-col gap-4 p-6", featured ? "md:justify-center md:p-8" : ""]}>

@@ -20,7 +20,7 @@ func NewArticleHandler(reader pcontracts.ArticleReader) *ArticleHandler {
 
 // HandleListArticles godoc
 // @Summary      List published articles
-// @Description  Paginated list of published articles/studies with topic, type and full-text filters.
+// @Description  Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical `en` edition when that translation does not exist.
 // @Tags         articles
 // @Produce      json
 // @Param        types     query    string false "Comma-separated types: blog,study"
@@ -72,13 +72,14 @@ func (h *ArticleHandler) HandleGetArticle(c *gin.Context) {
 
 // HandleListTopics godoc
 // @Summary      List topics
-// @Description  Curated taxonomy with published-article counts.
+// @Description  Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`.
 // @Tags         articles
 // @Produce      json
+// @Param        lang query string false "Content language: en (default) | fr"
 // @Success      200 {array} dtos.TopicResp
 // @Router       /api/topics [get]
 func (h *ArticleHandler) HandleListTopics(c *gin.Context) {
-	topics, err := h.reader.ListTopics(c.Request.Context())
+	topics, err := h.reader.ListTopics(c.Request.Context(), models.ParseLang(c.Query("lang")))
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -9,8 +9,9 @@
  * There is deliberately no fallback to `astro:content`; the homepage no longer
  * serves bundled markdown.
  *
- * `lang` filters rows on the list endpoint with no fallback, so an empty French
- * (or English) section is an expected state rather than a bug.
+ * `lang` selects the translation when one exists and the canonical english
+ * edition otherwise, so a row here may not be in the active locale.
+ * An empty section still means the API returned nothing at all.
  *
  * Depends on the host page being server-rendered (`export const prerender =
  * false` in src/pages/index.astro): `Astro.locals.runtime.env` does not exist at
@@ -40,6 +41,7 @@ type Card = {
   date?: string;
   readingTime?: number;
   cover: string | null;
+  lang?: string;
 };
 
 const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
@@ -68,6 +70,7 @@ if (apiBaseUrl) {
         date: a.datePublished || undefined,
         readingTime: a.readingTime > 0 ? a.readingTime : undefined,
         cover: a.coverImage ?? null,
+        lang: a.lang,
       }));
   } catch (err) {
     // Expected failures (missing rows, 4xx, cold start against a paused API)
@@ -116,6 +119,7 @@ const hasCards = cards.length > 0;
             date={card.date}
             readingTime={card.readingTime}
             cover={card.cover}
+            lang={card.lang}
             origin="home_studies"
             position={index + 1}
           />

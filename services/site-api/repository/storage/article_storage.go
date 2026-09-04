@@ -89,9 +89,10 @@ func (s *articleStorage) filtered(ctx context.Context, f contracts.ArticleListFi
 		lang = models.LangDefault
 	}
 
+	langSQL, langArgs := langVisibility("articles", lang, status)
 	q := s.db.WithContext(ctx).Model(&dao.Article{}).
 		Where("articles.status = ?", string(status)).
-		Where("articles.lang = ?", string(lang))
+		Where(langSQL, langArgs...)
 	if includeType && len(f.Types) > 0 {
 		types := make([]string, len(f.Types))
 		for i, t := range f.Types {
@@ -106,11 +107,8 @@ func (s *articleStorage) filtered(ctx context.Context, f contracts.ArticleListFi
 	}
 
 	if strings.TrimSpace(f.Search) != "" {
-		if lang == models.LangFR {
-			q = q.Where("articles.search_tsv_fr @@ plainto_tsquery('french', ?)", f.Search)
-		} else {
-			q = q.Where("articles.search_tsv @@ plainto_tsquery('english', ?)", f.Search)
-		}
+		searchSQL, searchArgs := searchMatch("articles", lang, f.Search)
+		q = q.Where(searchSQL, searchArgs...)
 	}
 
 	if len(f.TopicSlugs) > 0 {
@@ -123,6 +121,47 @@ func (s *articleStorage) filtered(ctx context.Context, f contracts.ArticleListFi
 	}
 
 	return q
+}
+
+// langVisibility restricts a query over `articles` (aliased `alias`) to the rows
+// a reader of `lang` should see: the translation when one is published,
+// otherwise the canonical-locale row. `en` is the canonical, always-complete
+// locale, so a request for it never falls back.
+//
+// This mirrors GetPublishedArticleBySlug: a study or article that was never
+// translated is still listed, in English, rather than vanishing from the
+// French index.
+func langVisibility(alias string, lang models.Lang, status models.ArticleStatus) (string, []any) {
+	if lang == "" {
+		lang = models.LangDefault
+	}
+
+	if status == "" {
+		status = models.ArticleStatusPublished
+	}
+
+	if lang == models.LangDefault {
+		return fmt.Sprintf("%s.lang = ?", alias), []any{string(lang)}
+	}
+
+	sql := fmt.Sprintf(`(%[1]s.lang = ? OR (%[1]s.lang = ? AND NOT EXISTS (
+			SELECT 1 FROM articles tr
+			 WHERE tr.slug = %[1]s.slug AND tr.lang = ? AND tr.status = ?)))`, alias)
+	return sql, []any{string(lang), string(models.LangDefault), string(lang), string(status)}
+}
+
+// searchMatch matches a row against the text-search vector of its OWN language.
+// With the locale fallback in play one result set mixes `fr` rows with canonical
+// `en` ones, and a french tsquery run over an english vector matches almost
+// nothing, so the config cannot be chosen from the requested locale alone.
+func searchMatch(alias string, lang models.Lang, term string) (string, []any) {
+	if lang != models.LangFR {
+		return fmt.Sprintf("%s.search_tsv @@ plainto_tsquery('english', ?)", alias), []any{term}
+	}
+
+	sql := fmt.Sprintf(`((%[1]s.lang = ? AND %[1]s.search_tsv_fr @@ plainto_tsquery('french', ?))
+			OR (%[1]s.lang <> ? AND %[1]s.search_tsv @@ plainto_tsquery('english', ?)))`, alias)
+	return sql, []any{string(models.LangFR), term, string(models.LangFR), term}
 }
 
 func (s *articleStorage) applyOrder(q *gorm.DB, sort contracts.ArticleSort) *gorm.DB {
@@ -292,7 +331,11 @@ func (s *articleStorage) authorsForArticle(ctx context.Context, articleID string
 	return out, nil
 }
 
-func (s *articleStorage) ListTopics(ctx context.Context) ([]contracts.TopicWithCount, error) {
+func (s *articleStorage) ListTopics(ctx context.Context, lang models.Lang) ([]contracts.TopicWithCount, error) {
+	if lang == "" {
+		lang = models.LangDefault
+	}
+
 	rows := []struct {
 		ID           string
 		Slug         string
@@ -301,11 +344,14 @@ func (s *articleStorage) ListTopics(ctx context.Context) ([]contracts.TopicWithC
 		SortOrder    int
 		ArticleCount int64
 	}{}
+
+	langSQL, langArgs := langVisibility("a", lang, models.ArticleStatusPublished)
+	joinArgs := append([]any{string(models.ArticleStatusPublished)}, langArgs...)
 	if err := s.db.WithContext(ctx).
 		Table("topics t").
 		Select("t.id, t.slug, t.name, t.description, t.sort_order, COUNT(a.id) AS article_count").
 		Joins("LEFT JOIN article_topics at ON at.topic_id = t.id").
-		Joins("LEFT JOIN articles a ON a.id = at.article_id AND a.status = 'published'").
+		Joins("LEFT JOIN articles a ON a.id = at.article_id AND a.status = ? AND "+langSQL, joinArgs...).
 		Group("t.id").
 		Order("t.sort_order, t.name").
 		Scan(&rows).Error; err != nil {

@@ -28,6 +28,10 @@ func (uc *ReadUseCase) GetArticle(ctx context.Context, slug string, lang models.
 	return uc.store.GetPublishedArticleBySlug(ctx, slug, lang)
 }
 
-func (uc *ReadUseCase) ListTopics(ctx context.Context) ([]contracts.TopicWithCount, error) {
-	return uc.store.ListTopics(ctx)
+func (uc *ReadUseCase) ListTopics(ctx context.Context, lang models.Lang) ([]contracts.TopicWithCount, error) {
+	if lang == "" {
+		lang = models.LangDefault
+	}
+
+	return uc.store.ListTopics(ctx, lang)
 }

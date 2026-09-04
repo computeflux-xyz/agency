@@ -305,7 +305,7 @@ const docTemplate = `{
         },
         "/api/articles": {
             "get": {
-                "description": "Paginated list of published articles/studies with topic, type and full-text filters.",
+                "description": "Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical ` + "`" + `en` + "`" + ` edition when that translation does not exist.",
                 "produces": [
                     "application/json"
                 ],
@@ -524,7 +524,7 @@ const docTemplate = `{
         },
         "/api/topics": {
             "get": {
-                "description": "Curated taxonomy with published-article counts.",
+                "description": "Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in ` + "`" + `lang` + "`" + `.",
                 "produces": [
                     "application/json"
                 ],
@@ -532,6 +532,14 @@ const docTemplate = `{
                     "articles"
                 ],
                 "summary": "List topics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Content language: en (default) | fr",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

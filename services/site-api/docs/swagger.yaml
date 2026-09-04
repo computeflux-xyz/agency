@@ -681,8 +681,9 @@ paths:
       - admin
   /api/articles:
     get:
-      description: Paginated list of published articles/studies with topic, type and
-        full-text filters.
+      description: 'Paginated list of published articles/studies with topic, type
+        and full-text filters. One row per logical article: the requested translation,
+        or the canonical `en` edition when that translation does not exist.'
       parameters:
       - description: 'Comma-separated types: blog,study'
         in: query
@@ -827,7 +828,14 @@ paths:
       - meetings
   /api/topics:
     get:
-      description: Curated taxonomy with published-article counts.
+      description: 'Curated taxonomy with published-article counts. Counts follow
+        the same locale fallback as the listing: one per logical article visible in
+        `lang`.'
+      parameters:
+      - description: 'Content language: en (default) | fr'
+        in: query
+        name: lang
+        type: string
       produces:
       - application/json
       responses:

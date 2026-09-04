@@ -10,7 +10,7 @@ import (
 type ArticleReader interface {
 	ListArticles(ctx context.Context, filter appcontracts.ArticleListFilter) (appcontracts.ArticleListResult, error)
 	GetArticle(ctx context.Context, slug string, lang models.Lang) (*models.Article, error)
-	ListTopics(ctx context.Context) ([]appcontracts.TopicWithCount, error)
+	ListTopics(ctx context.Context, lang models.Lang) ([]appcontracts.TopicWithCount, error)
 }
 
 type ArticleIngester interface {

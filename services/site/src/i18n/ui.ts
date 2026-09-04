@@ -478,6 +478,10 @@ export const ui = {
     "articleCard.article": "Article",
     "articleCard.readTime": "min read",
 
+    // Shown when the piece has no translation for the active locale and the
+    // canonical english edition is served instead.
+    "content.langFallback": "Not translated yet (showing the EN version).",
+
     // API notice
     "apiNotice.badge": "Coming soon",
     "apiNotice.preview": "Preview.",
@@ -958,6 +962,10 @@ export const ui = {
     "articleCard.study": "Étude de cas",
     "articleCard.article": "Article",
     "articleCard.readTime": "min de lecture",
+
+    // Shown when the piece has no translation for the active locale and the
+    // canonical english edition is served instead.
+    "content.langFallback": "Pas encore traduit en français (édition EN affichée).",
 
     // API notice
     "apiNotice.badge": "Bientôt disponible",
