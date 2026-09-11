@@ -45,7 +45,10 @@ type ArticleReadStorage interface {
 	// canonical locale when the requested translation is absent.
 	GetPublishedArticleBySlug(ctx context.Context, slug string, lang models.Lang) (*models.Article, error)
 	// ListTopics counts, per topic, the articles a reader of `lang` can open.
-	ListTopics(ctx context.Context, lang models.Lang) ([]TopicWithCount, error)
+	// `types` narrows the count to those content types (empty = every type);
+	// without it a topic carried only by case studies would still be offered as
+	// a filter on the articles index, where it matches nothing.
+	ListTopics(ctx context.Context, lang models.Lang, types []models.ArticleType) ([]TopicWithCount, error)
 }
 
 type IngestJobInput struct {

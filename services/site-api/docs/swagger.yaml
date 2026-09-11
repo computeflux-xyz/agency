@@ -830,8 +830,13 @@ paths:
     get:
       description: 'Curated taxonomy with published-article counts. Counts follow
         the same locale fallback as the listing: one per logical article visible in
-        `lang`.'
+        `lang`. Pass `types` to count a single content type, so an index page only
+        offers filters that match something.'
       parameters:
+      - description: 'Comma-separated types: blog,study (default: every type)'
+        in: query
+        name: types
+        type: string
       - description: 'Content language: en (default) | fr'
         in: query
         name: lang
@@ -845,6 +850,10 @@ paths:
             items:
               $ref: '#/definitions/dtos.TopicResp'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.ErrorResp'
       summary: List topics
       tags:
       - articles

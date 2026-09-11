@@ -37,6 +37,11 @@ export interface ArticlesApiApiArticlesSlugGetRequest {
     lang?: string;
 }
 
+export interface ArticlesApiApiTopicsGetRequest {
+    types?: string;
+    lang?: string;
+}
+
 /**
  * ArticlesApi - interface
  * 
@@ -45,7 +50,7 @@ export interface ArticlesApiApiArticlesSlugGetRequest {
  */
 export interface ArticlesApiInterface {
     /**
-     * Paginated list of published articles/studies with topic, type and full-text filters.
+     * Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical `en` edition when that translation does not exist.
      * @summary List published articles
      * @param {string} [types] Comma-separated types: blog,study
      * @param {string} [topics] Comma-separated topic slugs
@@ -62,7 +67,7 @@ export interface ArticlesApiInterface {
     apiArticlesGetRaw(requestParameters: ArticlesApiApiArticlesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosPaginatedArticlesResp>>;
 
     /**
-     * Paginated list of published articles/studies with topic, type and full-text filters.
+     * Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical `en` edition when that translation does not exist.
      * List published articles
      */
     apiArticlesGet(requestParameters: ArticlesApiApiArticlesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosPaginatedArticlesResp>;
@@ -85,19 +90,21 @@ export interface ArticlesApiInterface {
     apiArticlesSlugGet(requestParameters: ArticlesApiApiArticlesSlugGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosArticleDetailResp>;
 
     /**
-     * Curated taxonomy with published-article counts.
+     * Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`. Pass `types` to count a single content type, so an index page only offers filters that match something.
      * @summary List topics
+     * @param {string} [types] Comma-separated types: blog,study (default: every type)
+     * @param {string} [lang] Content language: en (default) | fr
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArticlesApiInterface
      */
-    apiTopicsGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtosTopicResp>>>;
+    apiTopicsGetRaw(requestParameters: ArticlesApiApiTopicsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtosTopicResp>>>;
 
     /**
-     * Curated taxonomy with published-article counts.
+     * Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`. Pass `types` to count a single content type, so an index page only offers filters that match something.
      * List topics
      */
-    apiTopicsGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtosTopicResp>>;
+    apiTopicsGet(requestParameters: ArticlesApiApiTopicsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtosTopicResp>>;
 
 }
 
@@ -107,7 +114,7 @@ export interface ArticlesApiInterface {
 export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface {
 
     /**
-     * Paginated list of published articles/studies with topic, type and full-text filters.
+     * Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical `en` edition when that translation does not exist.
      * List published articles
      */
     async apiArticlesGetRaw(requestParameters: ArticlesApiApiArticlesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtosPaginatedArticlesResp>> {
@@ -161,7 +168,7 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
     }
 
     /**
-     * Paginated list of published articles/studies with topic, type and full-text filters.
+     * Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical `en` edition when that translation does not exist.
      * List published articles
      */
     async apiArticlesGet(requestParameters: ArticlesApiApiArticlesGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtosPaginatedArticlesResp> {
@@ -213,11 +220,19 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
     }
 
     /**
-     * Curated taxonomy with published-article counts.
+     * Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`. Pass `types` to count a single content type, so an index page only offers filters that match something.
      * List topics
      */
-    async apiTopicsGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtosTopicResp>>> {
+    async apiTopicsGetRaw(requestParameters: ArticlesApiApiTopicsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtosTopicResp>>> {
         const queryParameters: any = {};
+
+        if (requestParameters['types'] != null) {
+            queryParameters['types'] = requestParameters['types'];
+        }
+
+        if (requestParameters['lang'] != null) {
+            queryParameters['lang'] = requestParameters['lang'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -235,11 +250,11 @@ export class ArticlesApi extends runtime.BaseAPI implements ArticlesApiInterface
     }
 
     /**
-     * Curated taxonomy with published-article counts.
+     * Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`. Pass `types` to count a single content type, so an index page only offers filters that match something.
      * List topics
      */
-    async apiTopicsGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtosTopicResp>> {
-        const response = await this.apiTopicsGetRaw(initOverrides);
+    async apiTopicsGet(requestParameters: ArticlesApiApiTopicsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtosTopicResp>> {
+        const response = await this.apiTopicsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

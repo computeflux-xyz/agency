@@ -3,8 +3,10 @@ import Logo from "@atoms/Logo.astro";
 import Button from "@atoms/Button.astro";
 import Icon from "@atoms/Icon.astro";
 import LanguageSwitcher from "@molecules/LanguageSwitcher.astro";
-import { getPrimaryNav, getHeaderCta } from "@data/navigation";
-import { getLocale, localizedPath, useTranslations } from "@i18n";
+import { getPrimaryNav, getHeaderCta, type MegaColumn, type NavItem } from "@data/navigation";
+import { latestContent, type LatestEntry } from "@lib/nav-latest";
+import { formatDate } from "@lib/utils";
+import { DATE_LOCALE, getLocale, isLocale, LOCALE_SHORT, localizedPath, useTranslations } from "@i18n";
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
@@ -12,6 +14,63 @@ const primaryNav = getPrimaryNav(t, locale);
 const headerCta = getHeaderCta(t, locale);
 const contactHref = localizedPath("/contact", locale);
 const bookHref = localizedPath("/book", locale);
+const runtimeEnv = (Astro.locals as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+const apiBaseUrl = runtimeEnv?.API_BASE_URL ?? import.meta.env.API_BASE_URL;
+
+const [latestStudies, latestArticles] = await Promise.all([
+  latestContent({ apiBaseUrl, locale, type: "study" }),
+  latestContent({ apiBaseUrl, locale, type: "blog" }),
+]);
+
+function entryMeta(entry: LatestEntry): string {
+  return [
+    entry.date ? formatDate(entry.date, DATE_LOCALE[locale]) : null,
+    entry.readingTime ? `${entry.readingTime} ${t("articleCard.readTime")}` : null,
+    entry.lang && isLocale(entry.lang) && entry.lang !== locale ? LOCALE_SHORT[entry.lang] : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function latestColumn(
+  heading: string,
+  entries: LatestEntry[],
+  allLabel: string,
+  allHref: string,
+): MegaColumn {
+  return {
+    heading,
+    links: [
+      ...entries.map((entry) => ({
+        label: entry.title,
+        href: entry.href,
+        description: entryMeta(entry),
+      })),
+      { label: allLabel, href: allHref },
+    ],
+  };
+}
+
+const latestColumns: MegaColumn[] = [];
+if (latestStudies.length) {
+  latestColumns.push(
+    latestColumn(t("nav.latestStudies"), latestStudies, t("home.work.all"), localizedPath("/studies", locale)),
+  );
+}
+
+if (latestArticles.length) {
+  latestColumns.push(
+    latestColumn(t("nav.latestArticles"), latestArticles, t("home.writing.all"), localizedPath("/articles", locale)),
+  );
+}
+
+function usesLatest(item: NavItem): boolean {
+  return Boolean(item.mega?.latest) && latestColumns.length > 0;
+}
+
+function megaColumns(item: NavItem): MegaColumn[] {
+  return usesLatest(item) ? latestColumns : (item.mega?.columns ?? []);
+}
 ---
 
 <header
@@ -53,10 +112,13 @@ const bookHref = localizedPath("/book", locale);
               {item.mega && (
                 <div
                   data-analytics-section={`megamenu:${item.label}`}
-                  class="invisible fixed inset-x-0 top-[3.1rem] z-10 mx-auto w-[min(52rem,92vw)] translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:top-[3.6rem] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100"
+                  class:list={[
+                    "invisible fixed inset-x-0 top-[3.1rem] z-10 mx-auto translate-y-2 pt-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:top-[3.6rem] [.is-open_&]:visible [.is-open_&]:translate-y-0 [.is-open_&]:opacity-100",
+                    usesLatest(item) ? "w-[min(62rem,94vw)]" : "w-[min(52rem,92vw)]",
+                  ]}
                 >
                   <div class="overflow-hidden rounded-[var(--radius-lg)] border border-ink-50 bg-surface shadow-[6px_8px_0_0_var(--color-ink-50)]">
-                    <div class="grid grid-cols-[1.1fr_1fr] gap-0">
+                    <div class:list={["grid gap-0", usesLatest(item) ? "grid-cols-[0.85fr_1.15fr]" : "grid-cols-[1.1fr_1fr]"]}>
                       {item.mega.feature ? (
                         <a
                           href={item.mega.feature.href}
@@ -131,11 +193,11 @@ const bookHref = localizedPath("/book", locale);
                       <div
                         class:list={[
                           "grid gap-6 p-7",
-                          item.mega.columns.length > 1 ? "grid-cols-2" : "grid-cols-1",
+                          megaColumns(item).length > 1 ? "grid-cols-2" : "grid-cols-1",
                           !item.mega.feature ? "col-span-2 grid-cols-3" : "",
                         ]}
                       >
-                        {item.mega.columns.map((col) => (
+                        {megaColumns(item).map((col) => (
                           <div class="flex flex-col gap-3">
                             <span class="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-ink-400">
                               {col.heading}
@@ -245,7 +307,7 @@ const bookHref = localizedPath("/book", locale);
               <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-[.is-open]:grid-rows-[1fr]">
                 <div class="overflow-hidden">
                   <div class="flex flex-col gap-4 pb-5">
-                    {item.mega.columns.map((col) => (
+                    {megaColumns(item).map((col) => (
                       <div class="flex flex-col gap-1">
                         <span class="font-mono text-[0.6rem] font-medium uppercase tracking-widest text-ink-500">
                           {col.heading}

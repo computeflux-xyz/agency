@@ -16,7 +16,7 @@ All URIs are relative to *http://localhost*
 
 List published articles
 
-Paginated list of published articles/studies with topic, type and full-text filters.
+Paginated list of published articles/studies with topic, type and full-text filters. One row per logical article: the requested translation, or the canonical &#x60;en&#x60; edition when that translation does not exist.
 
 ### Example
 
@@ -172,11 +172,11 @@ No authorization required
 
 ## apiTopicsGet
 
-> Array&lt;DtosTopicResp&gt; apiTopicsGet()
+> Array&lt;DtosTopicResp&gt; apiTopicsGet(types, lang)
 
 List topics
 
-Curated taxonomy with published-article counts.
+Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in &#x60;lang&#x60;. Pass &#x60;types&#x60; to count a single content type, so an index page only offers filters that match something.
 
 ### Example
 
@@ -191,8 +191,15 @@ async function example() {
   console.log("🚀 Testing @computeflux/site-api-client SDK...");
   const api = new ArticlesApi();
 
+  const body = {
+    // string | Comma-separated types: blog,study (default: every type) (optional)
+    types: types_example,
+    // string | Content language: en (default) | fr (optional)
+    lang: lang_example,
+  } satisfies ApiTopicsGetRequest;
+
   try {
-    const data = await api.apiTopicsGet();
+    const data = await api.apiTopicsGet(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -205,7 +212,11 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **types** | `string` | Comma-separated types: blog,study (default: every type) | [Optional] [Defaults to `undefined`] |
+| **lang** | `string` | Content language: en (default) | fr | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -225,6 +236,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

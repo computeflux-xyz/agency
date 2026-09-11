@@ -72,14 +72,22 @@ func (h *ArticleHandler) HandleGetArticle(c *gin.Context) {
 
 // HandleListTopics godoc
 // @Summary      List topics
-// @Description  Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`.
+// @Description  Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in `lang`. Pass `types` to count a single content type, so an index page only offers filters that match something.
 // @Tags         articles
 // @Produce      json
+// @Param        types query string false "Comma-separated types: blog,study (default: every type)"
 // @Param        lang query string false "Content language: en (default) | fr"
 // @Success      200 {array} dtos.TopicResp
+// @Failure      400 {object} dtos.ErrorResp
 // @Router       /api/topics [get]
 func (h *ArticleHandler) HandleListTopics(c *gin.Context) {
-	topics, err := h.reader.ListTopics(c.Request.Context(), models.ParseLang(c.Query("lang")))
+	types, err := parseArticleTypes(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	topics, err := h.reader.ListTopics(c.Request.Context(), models.ParseLang(c.Query("lang")), types)
 	if err != nil {
 		_ = c.Error(err)
 		return

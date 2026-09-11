@@ -42,6 +42,8 @@ export const ui = {
     "nav.company.cta": "Read about the studio",
     "nav.read": "Read",
     "nav.articlesDesc": "Field notes and engineering essays.",
+    "nav.latestStudies": "Latest case studies",
+    "nav.latestArticles": "Latest articles",
     "nav.aboutDesc": "Who we are.",
     "nav.careersDesc": "Join the studio.",
     "nav.faqDesc": "Common questions.",
@@ -57,6 +59,13 @@ export const ui = {
     "footer.work": "Work",
     "footer.company": "Company",
     "footer.engage": "Engage",
+
+    // Filter chips (shared by the articles and case-study indexes)
+    "filters.group": "Filter by topic",
+    "filters.addTopic": "Add topic",
+    "filters.removeTopic": "Remove topic",
+    "filters.more": "more",
+    "filters.less": "Show fewer",
 
     // Articles index
     "articles.title": "Articles",
@@ -528,6 +537,8 @@ export const ui = {
     "nav.company.cta": "Découvrir le studio",
     "nav.read": "À lire",
     "nav.articlesDesc": "Notes de terrain et essais d'ingénierie.",
+    "nav.latestStudies": "Dernières études de cas",
+    "nav.latestArticles": "Derniers articles",
     "nav.aboutDesc": "Qui sommes-nous.",
     "nav.careersDesc": "Rejoignez le studio.",
     "nav.faqDesc": "Questions fréquentes.",
@@ -543,6 +554,13 @@ export const ui = {
     "footer.work": "Réalisations",
     "footer.company": "Entreprise",
     "footer.engage": "Contact",
+
+    // Filter chips (shared by the articles and case-study indexes)
+    "filters.group": "Filtrer par thème",
+    "filters.addTopic": "Ajouter le thème",
+    "filters.removeTopic": "Retirer le thème",
+    "filters.more": "de plus",
+    "filters.less": "Réduire",
 
     // Articles index
     "articles.title": "Articles",

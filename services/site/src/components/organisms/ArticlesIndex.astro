@@ -13,8 +13,8 @@ import PageHero from "@organisms/PageHero.astro";
 import CtaSection from "@organisms/CtaSection.astro";
 import ArticleCard from "@molecules/ArticleCard.astro";
 import Divider from "@atoms/Divider.astro";
-import Icon from "@atoms/Icon.astro";
-import { readingTime, slugify } from "@lib/utils";
+import TopicFilter from "@molecules/TopicFilter.astro";
+import { contentIndexUrl, parseTopicParams, readingTime, slugify } from "@lib/utils";
 import { site } from "@lib/site";
 import { createApiClient, type ArticleType, type Topic } from "@lib/api";
 import { localeFromPath, localizedPath, useTranslations } from "@i18n";
@@ -29,7 +29,7 @@ const articlesPath = localizedPath("/articles", locale);
 const PAGE_SIZE = 6;
 const params = Astro.url.searchParams;
 const q = (params.get("q") ?? "").trim();
-const activeTopic = params.get("topic") ?? "";
+const activeTopics = parseTopicParams(params);
 const page = Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1);
 
 type Card = {
@@ -58,13 +58,13 @@ if (apiBaseUrl) {
     const [list, topicList] = await Promise.all([
       api.listArticles({
         types: ["blog"] as ArticleType[],
-        topics: activeTopic ? [activeTopic] : undefined,
+        topics: activeTopics.length ? activeTopics : undefined,
         search: q || undefined,
         sort: "featured",
         page,
         pageSize: PAGE_SIZE,
       }),
-      api.listTopics(),
+      api.listTopics({ types: ["blog"] as ArticleType[] }),
     ]);
     total = list.total;
     cards = list.items.map((a) => ({
@@ -78,7 +78,7 @@ if (apiBaseUrl) {
       featured: a.featured,
       lang: a.lang,
     }));
-    topics = topicList.filter((tp) => (tp.articleCount ?? 0) > 0);
+    topics = topicList;
     source = "api";
   } catch {
     source = "content";
@@ -89,11 +89,13 @@ if (source === "content") {
   const entries = (await getCollection("articles", ({ data }) => !data.draft)).sort(
     (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
   );
-  const filtered = entries.filter(
-    (e) =>
-      (!activeTopic || e.data.topics.map(slugify).includes(activeTopic)) &&
-      (!q || `${e.data.title} ${e.data.description}`.toLowerCase().includes(q.toLowerCase())),
-  );
+  const filtered = entries.filter((e) => {
+    const slugs = e.data.topics.map(slugify);
+    return (
+      (activeTopics.length === 0 || activeTopics.some((slug) => slugs.includes(slug))) &&
+      (!q || `${e.data.title} ${e.data.description}`.toLowerCase().includes(q.toLowerCase()))
+    );
+  });
   total = filtered.length;
   cards = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((e) => ({
     href: localizedPath(`/articles/${e.id}`, locale),
@@ -105,28 +107,26 @@ if (source === "content") {
     cover: e.data.cover ?? null,
     featured: e.data.featured,
   }));
-  const set = new Map<string, string>();
-  entries.forEach((e) => e.data.topics.forEach((tp) => set.set(slugify(tp), tp)));
-  topics = [...set].map(([slug, name]) => ({ name, slug }));
+
+  const counts = new Map<string, Topic>();
+  entries.forEach((e) =>
+    e.data.topics.forEach((name) => {
+      const slug = slugify(name);
+      const entry = counts.get(slug);
+      if (entry) entry.articleCount = (entry.articleCount ?? 0) + 1;
+      else counts.set(slug, { name, slug, articleCount: 1 });
+    }),
+  );
+  topics = [...counts.values()];
 }
 
-const activeTopicLabel = topics.find((tp) => tp.slug === activeTopic)?.name ?? activeTopic;
-const hasFilters = Boolean(q || activeTopic);
+const activeTopicLabels = activeTopics.map(
+  (slug) => topics.find((tp) => tp.slug === slug)?.name ?? slug,
+);
 
 const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-/** Build an articles URL for the active locale, overriding some params. */
-function buildUrl(overrides: { topic?: string | null; q?: string | null; page?: number | null }): string {
-  const p = new URLSearchParams();
-  const topic = overrides.topic !== undefined ? overrides.topic : activeTopic;
-  const query = overrides.q !== undefined ? overrides.q : q;
-  const pg = overrides.page !== undefined ? overrides.page : page;
-  if (topic) p.set("topic", topic);
-  if (query) p.set("q", query);
-  if (pg && pg > 1) p.set("page", String(pg));
-  const s = p.toString();
-  return s ? `${articlesPath}?${s}` : articlesPath;
-}
+const pageUrl = (n: number) => contentIndexUrl(articlesPath, { topics: activeTopics, q, page: n });
 
 const origin = Astro.site?.origin ?? site.url;
 const jsonLd = {
@@ -136,8 +136,6 @@ const jsonLd = {
   url: new URL(articlesPath, origin).href,
   publisher: { "@id": `${site.url}/#organization` },
 };
-const chipBase =
-  "inline-flex items-center rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-widest transition-colors";
 ---
 
 <PageLayout title={title} description={description} jsonLd={jsonLd}>
@@ -151,7 +149,7 @@ const chipBase =
         class="flex w-full max-w-xl items-center gap-2"
         data-analytics-form="articles_search"
       >
-        {activeTopic && <input type="hidden" name="topic" value={activeTopic} />}
+        {activeTopics.map((slug) => <input type="hidden" name="topic" value={slug} />)}
         <input
           type="search"
           name="q"
@@ -168,44 +166,27 @@ const chipBase =
         </button>
       </form>
 
-      <div class="flex flex-wrap gap-2" data-analytics-section="articles_filters">
-        <a
-          href={buildUrl({ topic: null, page: null })}
-          data-analytics="topic_filter"
-          data-analytics-topic="all"
-          class:list={[chipBase, !activeTopic ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
-        >
-          {t("articles.filterAll")}
-        </a>
-        {
-          topics.map((tp) => (
-            <a
-              href={buildUrl({ topic: tp.slug, page: null })}
-              data-analytics="topic_filter"
-              data-analytics-topic={tp.slug}
-              class:list={[chipBase, activeTopic === tp.slug ? "border-ink-50 bg-ink-50 text-ink-950" : "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50"]}
-            >
-              {tp.name}
-              {typeof tp.articleCount === "number" && <span class="ml-1.5 opacity-60">{tp.articleCount}</span>}
-            </a>
-          ))
-        }
-        {hasFilters && (
-          <a
-            href={articlesPath}
-            data-analytics="filters_clear"
-            class:list={[chipBase, "gap-1.5 border-dashed border-ink-400 text-ink-400 hover:border-ink-50 hover:text-ink-50"]}
-          >
-            <Icon name="close" size={11} />
-            {t("articles.clearFilters")}
-          </a>
-        )}
-      </div>
+      <TopicFilter
+        topics={topics}
+        active={activeTopics}
+        basePath={articlesPath}
+        q={q}
+        section="articles_filters"
+        labels={{
+          group: t("filters.group"),
+          all: t("articles.filterAll"),
+          clear: t("articles.clearFilters"),
+          more: t("filters.more"),
+          less: t("filters.less"),
+          add: t("filters.addTopic"),
+          remove: t("filters.removeTopic"),
+        }}
+      />
     </div>
 
     <Divider
       class="mt-6"
-      label={`${total} ${total === 1 ? t("articles.countOne") : t("articles.countMany")}${q ? ` · “${q}”` : ""}${activeTopic ? ` · ${activeTopicLabel}` : ""}`}
+      label={`${total} ${total === 1 ? t("articles.countOne") : t("articles.countMany")}${q ? ` · “${q}”` : ""}${activeTopicLabels.length ? ` · ${activeTopicLabels.join(" · ")}` : ""}`}
     />
 
     {
@@ -245,7 +226,7 @@ const chipBase =
           data-analytics-section="articles_pagination"
         >
           <a
-            href={buildUrl({ page: page - 1 })}
+            href={pageUrl(page - 1)}
             aria-disabled={page <= 1}
             data-analytics="pagination"
             data-analytics-direction="prev"
@@ -256,7 +237,7 @@ const chipBase =
           </a>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <a
-              href={buildUrl({ page: n })}
+              href={pageUrl(n)}
               aria-current={n === page ? "page" : undefined}
               data-analytics="pagination"
               data-analytics-direction="jump"
@@ -267,7 +248,7 @@ const chipBase =
             </a>
           ))}
           <a
-            href={buildUrl({ page: page + 1 })}
+            href={pageUrl(page + 1)}
             aria-disabled={page >= totalPages}
             data-analytics="pagination"
             data-analytics-direction="next"

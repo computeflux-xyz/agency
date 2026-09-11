@@ -58,3 +58,24 @@ export function slugify(text: string): string {
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-");
 }
+
+export function parseTopicParams(params: URLSearchParams): string[] {
+  const raw = [...params.getAll("topic"), ...params.getAll("topics")];
+  return [...new Set(raw.flatMap((v) => v.split(",")).map((v) => v.trim()).filter(Boolean))];
+}
+
+export function contentIndexUrl(
+  basePath: string,
+  state: { topics?: string[]; q?: string; page?: number },
+): string {
+  const p = new URLSearchParams();
+  (state.topics ?? []).forEach((slug) => p.append("topic", slug));
+  if (state.q) p.set("q", state.q);
+  if (state.page && state.page > 1) p.set("page", String(state.page));
+  const query = p.toString();
+  return query ? `${basePath}?${query}` : basePath;
+}
+
+export function toggleTopic(selected: string[], slug: string): string[] {
+  return selected.includes(slug) ? selected.filter((s) => s !== slug) : [...selected, slug];
+}

@@ -23,6 +23,7 @@ export type NavItem = {
       image?: string;
       image2x?: string;
     };
+    latest?: boolean;
     columns: MegaColumn[];
   };
 };
@@ -82,6 +83,7 @@ export function getPrimaryNav(t: T, locale: Locale): NavItem[] {
           image: "/photos/mega-studies-640.webp",
           image2x: "/photos/mega-studies-1280.webp",
         },
+        latest: true,
         columns: [
           {
             heading: t("nav.read"),

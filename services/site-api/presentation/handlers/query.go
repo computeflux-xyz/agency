@@ -62,6 +62,22 @@ func boolPtrParam(c *gin.Context, key string) *bool {
 	return &b
 }
 
+// parseArticleTypes reads the `types`/`type` CSV query parameter shared by the
+// article listing and the topic taxonomy.
+func parseArticleTypes(c *gin.Context) ([]models.ArticleType, error) {
+	var out []models.ArticleType
+	for _, raw := range csvParam(c, "types", "type") {
+		t, ok := models.ParseArticleType(raw)
+		if !ok {
+			return nil, errorx.NewBadRequest("invalid type %q (want blog or study)", raw)
+		}
+
+		out = append(out, t)
+	}
+
+	return out, nil
+}
+
 func parseArticleListFilter(c *gin.Context) (contracts.ArticleListFilter, error) {
 	f := contracts.ArticleListFilter{
 		TopicSlugs: csvParam(c, "topics", "topic"),
@@ -71,14 +87,12 @@ func parseArticleListFilter(c *gin.Context) (contracts.ArticleListFilter, error)
 		Pagination: parsePagination(c),
 	}
 
-	for _, raw := range csvParam(c, "types", "type") {
-		t, ok := models.ParseArticleType(raw)
-		if !ok {
-			return f, errorx.NewBadRequest("invalid type %q (want blog or study)", raw)
-		}
-
-		f.Types = append(f.Types, t)
+	types, err := parseArticleTypes(c)
+	if err != nil {
+		return f, err
 	}
+
+	f.Types = types
 
 	switch strings.ToLower(c.Query("sort")) {
 	case "", "default", "featured":

@@ -331,7 +331,11 @@ func (s *articleStorage) authorsForArticle(ctx context.Context, articleID string
 	return out, nil
 }
 
-func (s *articleStorage) ListTopics(ctx context.Context, lang models.Lang) ([]contracts.TopicWithCount, error) {
+// ListTopics counts the published articles behind every topic, for the locale
+// the reader is on. `types` narrows that count to a subset of content types:
+// the count is what the chip on an index page advertises, so counting studies
+// into the articles index offers filters that match nothing once clicked.
+func (s *articleStorage) ListTopics(ctx context.Context, lang models.Lang, types []models.ArticleType) ([]contracts.TopicWithCount, error) {
 	if lang == "" {
 		lang = models.LangDefault
 	}
@@ -346,12 +350,23 @@ func (s *articleStorage) ListTopics(ctx context.Context, lang models.Lang) ([]co
 	}{}
 
 	langSQL, langArgs := langVisibility("a", lang, models.ArticleStatusPublished)
+	joinSQL := "LEFT JOIN articles a ON a.id = at.article_id AND a.status = ? AND " + langSQL
 	joinArgs := append([]any{string(models.ArticleStatusPublished)}, langArgs...)
+	if len(types) > 0 {
+		names := make([]string, len(types))
+		for i, t := range types {
+			names[i] = string(t)
+		}
+
+		joinSQL += " AND a.type IN ?"
+		joinArgs = append(joinArgs, names)
+	}
+
 	if err := s.db.WithContext(ctx).
 		Table("topics t").
 		Select("t.id, t.slug, t.name, t.description, t.sort_order, COUNT(a.id) AS article_count").
 		Joins("LEFT JOIN article_topics at ON at.topic_id = t.id").
-		Joins("LEFT JOIN articles a ON a.id = at.article_id AND a.status = ? AND "+langSQL, joinArgs...).
+		Joins(joinSQL, joinArgs...).
 		Group("t.id").
 		Order("t.sort_order, t.name").
 		Scan(&rows).Error; err != nil {

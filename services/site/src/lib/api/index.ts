@@ -142,6 +142,10 @@ export type ListArticlesParams = {
   pageSize?: number;
 };
 
+export type ListTopicsParams = {
+  types?: ArticleType[];
+};
+
 export type ApiClientOptions = {
   baseUrl: string;
   token?: string;
@@ -153,7 +157,7 @@ export type ApiClientOptions = {
 export interface ComputefluxApi {
   listArticles(params?: ListArticlesParams): Promise<Paginated<ArticleSummary>>;
   getArticle(slug: string): Promise<ArticleDocument>;
-  listTopics(): Promise<Topic[]>;
+  listTopics(params?: ListTopicsParams): Promise<Topic[]>;
   listWhitePapers(params?: { featured?: boolean }): Promise<WhitePaper[]>;
   getWhitePaper(slug: string): Promise<WhitePaper>;
   requestWhitePaper(slug: string, payload: WhitePaperRequestPayload): Promise<{ ok: true; lang: string }>;
@@ -324,9 +328,12 @@ class HttpApi implements ComputefluxApi {
     }
   }
 
-  async listTopics(): Promise<Topic[]> {
+  async listTopics(params: ListTopicsParams = {}): Promise<Topic[]> {
     try {
-      return (await this.articles.apiTopicsGet()).map(mapTopic);
+      const res = await this.articles.apiTopicsGet({
+        types: params.types?.length ? params.types.join(",") : undefined,
+      });
+      return (res ?? []).map(mapTopic);
     } catch (e) {
       throw await asError(e);
     }

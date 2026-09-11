@@ -1,0 +1,172 @@
+---
+/**
+ * Topic chips for a content index (articles, case studies).
+ *
+ * Three things the previous inline version got wrong, and why this exists:
+ *
+ * 1. The chip set has to come from the SAME content type as the listing. A
+ *    topic carried only by case studies used to show up on /articles with a
+ *    non-zero count and returned nothing once clicked. Callers pass an already
+ *    type-scoped taxonomy (`listTopics({ types })`); topics that count zero are
+ *    dropped here, so a topic left behind by a deleted article disappears.
+ * 2. Filtering is additive: a click toggles one topic in or out of the
+ *    selection instead of replacing it, and the counts stay on the chips so
+ *    the reader can see what a chip is worth before spending a page load.
+ * 3. Everything is a plain link, so filtering works with no JavaScript. The
+ *    only interactive part is the overflow toggle, and that is a CSS
+ *    checkbox — no script, no hydration.
+ *
+ * Active chips sort first, which is also what keeps them out of the collapsed
+ * overflow: the reader can always see and undo what is applied.
+ */
+import Icon from "@atoms/Icon.astro";
+import type { Topic } from "@lib/api";
+import { contentIndexUrl, toggleTopic } from "@lib/utils";
+
+interface Props {
+  /** Taxonomy for this content type. Zero-count topics are ignored. */
+  topics: Topic[];
+  /** Currently selected slugs. */
+  active: string[];
+  /** Index path for the active locale, e.g. `/en/articles`. */
+  basePath: string;
+  /** Current search term, carried through every chip link. */
+  q?: string;
+  labels: {
+    group: string;
+    all: string;
+    clear: string;
+    more: string;
+    less: string;
+    add: string;
+    remove: string;
+  };
+  /** Analytics section id, e.g. `articles_filters`. */
+  section: string;
+  class?: string;
+}
+
+const {
+  topics,
+  active,
+  basePath,
+  q = "",
+  labels,
+  section,
+  class: className = "",
+} = Astro.props;
+
+/** Chips past this many collapse behind a "+n" toggle. */
+const VISIBLE = 8;
+
+const selected = new Set(active);
+const ranked = topics
+  .filter((tp) => tp.slug && (tp.articleCount ?? 0) > 0)
+  .map((tp) => ({ ...tp, on: selected.has(tp.slug) }))
+  .sort(
+    (a, b) =>
+      Number(b.on) - Number(a.on) ||
+      (b.articleCount ?? 0) - (a.articleCount ?? 0) ||
+      a.name.localeCompare(b.name),
+  );
+
+const shown = ranked.slice(0, VISIBLE);
+const overflow = ranked.slice(VISIBLE);
+const hasFilters = active.length > 0 || Boolean(q);
+
+// Unique per instance: two indexes never share a page, but the id is also what
+// the CSS-only overflow toggle hangs off, so keep it deterministic per section.
+const toggleId = `${section}-overflow`;
+
+// No `display` here on purpose: the overflow chips toggle between `hidden` and
+// `peer-checked:inline-flex`, and a plain `inline-flex` in the shared recipe
+// would tie on specificity with `hidden` and win on source order.
+const chipBase =
+  "items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs uppercase tracking-widest transition-colors";
+const chipOn = "border-ink-50 bg-ink-50 text-ink-950";
+const chipOff = "border-[var(--color-ink-line)] text-ink-300 hover:border-ink-50 hover:text-ink-50";
+
+// Nothing to filter and nothing filtered: a lone "all" chip is just noise.
+const render = ranked.length > 0 || hasFilters;
+---
+
+{render && (
+<div class:list={["flex flex-wrap items-center gap-2", className]} role="group" aria-label={labels.group} data-analytics-section={section}>
+  <input type="checkbox" id={toggleId} class="peer sr-only" aria-label={labels.more} />
+
+  <a
+    href={contentIndexUrl(basePath, { q })}
+    data-analytics="topic_filter"
+    data-analytics-topic="all"
+    aria-current={active.length === 0 ? "true" : undefined}
+    class:list={["inline-flex", chipBase, active.length === 0 ? chipOn : chipOff]}
+  >
+    {labels.all}
+  </a>
+
+  {
+    shown.map((tp) => (
+      <a
+        href={contentIndexUrl(basePath, { topics: toggleTopic(active, tp.slug), q })}
+        data-analytics="topic_filter"
+        data-analytics-topic={tp.slug}
+        data-analytics-action={tp.on ? "remove" : "add"}
+        aria-current={tp.on ? "true" : undefined}
+        aria-label={`${tp.on ? labels.remove : labels.add}: ${tp.name}`}
+        class:list={["inline-flex", chipBase, tp.on ? chipOn : chipOff]}
+      >
+        {tp.name}
+        <span class="opacity-60">{tp.articleCount}</span>
+        {tp.on && <Icon name="close" size={10} />}
+      </a>
+    ))
+  }
+
+  {
+    overflow.length > 0 && (
+      <Fragment>
+        {overflow.map((tp) => (
+          <a
+            href={contentIndexUrl(basePath, { topics: toggleTopic(active, tp.slug), q })}
+            data-analytics="topic_filter"
+            data-analytics-topic={tp.slug}
+            data-analytics-action="add"
+            aria-label={`${labels.add}: ${tp.name}`}
+            class:list={[chipBase, chipOff, "hidden peer-checked:inline-flex"]}
+          >
+            {tp.name}
+            <span class="opacity-60">{tp.articleCount}</span>
+          </a>
+        ))}
+        <label
+          for={toggleId}
+          class:list={["inline-flex", chipBase, chipOff, "cursor-pointer select-none peer-checked:hidden"]}
+        >
+          <Icon name="plus" size={10} />
+          {`${overflow.length} ${labels.more}`}
+        </label>
+        <label
+          for={toggleId}
+          class:list={[chipBase, chipOff, "hidden cursor-pointer select-none peer-checked:inline-flex"]}
+        >
+          <Icon name="minus" size={10} />
+          {labels.less}
+        </label>
+      </Fragment>
+    )
+  }
+
+  {
+    hasFilters && (
+      <a
+        href={basePath}
+        data-analytics="filters_clear"
+        class:list={["inline-flex", chipBase, "border-dashed border-ink-400 text-ink-400 hover:border-ink-50 hover:text-ink-50"]}
+      >
+        <Icon name="close" size={11} />
+        {labels.clear}
+      </a>
+    )
+  }
+</div>
+)}

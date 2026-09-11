@@ -524,7 +524,7 @@ const docTemplate = `{
         },
         "/api/topics": {
             "get": {
-                "description": "Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in ` + "`" + `lang` + "`" + `.",
+                "description": "Curated taxonomy with published-article counts. Counts follow the same locale fallback as the listing: one per logical article visible in ` + "`" + `lang` + "`" + `. Pass ` + "`" + `types` + "`" + ` to count a single content type, so an index page only offers filters that match something.",
                 "produces": [
                     "application/json"
                 ],
@@ -533,6 +533,12 @@ const docTemplate = `{
                 ],
                 "summary": "List topics",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated types: blog,study (default: every type)",
+                        "name": "types",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Content language: en (default) | fr",
@@ -548,6 +554,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/dtos.TopicResp"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorResp"
                         }
                     }
                 }
