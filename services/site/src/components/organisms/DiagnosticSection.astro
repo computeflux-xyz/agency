@@ -663,11 +663,17 @@ const items = cases.map((c, i) => ({
 
     let idx = 0;
     // The gauge runs only when the section is on screen and the card is not
-    // hovered — an off-screen carousel would burn frames and, worse, replay the
-    // sketch animations nobody is looking at.
+    // being read — an off-screen carousel would burn frames and, worse, replay
+    // the sketch animations nobody is looking at.
+    //
+    // Coarse pointers are NOT excluded. They used to be, which left the gauge
+    // frozen at zero and the section stuck on its first case for the whole of
+    // mobile: a touch device has no hover, so gating the timer on `isCoarse`
+    // did not pause the rotation, it cancelled it. What a phone needs is the
+    // touch pause registered below, not a dead timer.
     let onScreen = true;
     let hovered = false;
-    const timerOn = () => !isCoarse && !reduce && onScreen && !hovered;
+    const timerOn = () => !reduce && onScreen && !hovered;
     let progress = 0;
 
     const fillBar = (chip: HTMLElement) => chip.querySelector<HTMLElement>("[data-diag-fill] .qt-fill-bar");
@@ -882,12 +888,15 @@ const items = cases.map((c, i) => ({
       if (nowOver) pause();
       else resume();
     };
+    // Hover only exists on a fine pointer; on a phone `pointerover` fires once
+    // on tap and would latch the pause on.
     if (!isCoarse) rootEl.addEventListener("pointerover", onPauseHover);
 
-    if (panelArea && !isCoarse) {
-      // Touch: pause while touching the card (touch laptops with a fine pointer).
+    if (panelArea) {
+      // Touch: hold the gauge while a finger rests on the card, on any device.
       panelArea.addEventListener("touchstart", pause, { passive: true });
       panelArea.addEventListener("touchend", resume, { passive: true });
+      panelArea.addEventListener("touchcancel", resume, { passive: true });
     }
 
     /* Crossing the breakpoint — a rotated phone, a resized window — swaps list
