@@ -217,23 +217,25 @@ class WhitePaper(FPDF):
         P.rule(self, MARGIN_L, y, MARGIN_L + 26, strong, 0.7)
         self.set_y(y + 7.5)
 
-    def h2(self, num: str, title: str) -> None:
+    def h2(self, num: str, title: str, toc: bool = True) -> None:
         strong, _ = theme.accent(self.accent_name)
         title_h = P.measure(self, self.tr(title), CONTENT_W - 14, DISPLAY, "B", theme.PT_H2, 6.2)
         self.ensure(theme.SPACE_BEFORE_H2 + title_h + theme.SPACE_AFTER_H2 + 16)
         y = self.get_y() + theme.SPACE_BEFORE_H2
-        self.start_section(self.tr(f"{num}  {title}"), 1)
+        if toc:
+            self.start_section(self.tr(f"{num}  {title}"), 1)
         P.mono_label(self, MARGIN_L, y + 1.6, num, 8.4, strong, 0.5, style="B")
         P.text_block(self, MARGIN_L + 14, y, CONTENT_W - 14, self.tr(title),
                      DISPLAY, "B", theme.PT_H2, 6.2, theme.INK)
         self.set_y(y + title_h + theme.SPACE_AFTER_H2)
 
-    def h3(self, title: str) -> None:
+    def h3(self, title: str, toc: bool = True) -> None:
         strong, _ = theme.accent(self.accent_name)
         title_h = P.measure(self, self.tr(title), CONTENT_W, DISPLAY, "B", theme.PT_H3, 5.6)
         self.ensure(6 + title_h + 14)
         y = self.get_y() + 6
-        self.start_section(self.tr(title), 1)
+        if toc:
+            self.start_section(self.tr(title), 1)
         P.marker_square(self, MARGIN_L, y + 1.9, 1.6, strong)
         P.text_block(self, MARGIN_L + 4.5, y, CONTENT_W - 4.5, self.tr(title),
                      DISPLAY, "B", theme.PT_H3, 5.6, theme.INK)
@@ -533,9 +535,9 @@ class WhitePaper(FPDF):
             elif kind == "h1":
                 self.h1(block["title"])
             elif kind == "h2":
-                self.h2(block["num"], block["title"])
+                self.h2(block["num"], block["title"], block.get("toc", True))
             elif kind == "h3":
-                self.h3(block["title"])
+                self.h3(block["title"], block.get("toc", True))
             elif kind == "p":
                 self.para(block["text"])
             elif kind == "lead":

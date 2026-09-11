@@ -1,0 +1,44 @@
+@startuml
+' Complimentary diagnostic and paid proof-of-value decision path.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 26
+skinparam ranksep 28
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+rectangle "Qualified opportunity\n<size:10><color:#797263>one problem, one owner, existing evidence</color></size>" as qualified
+rectangle "ENGINEER-DAY 1: FRAME\n<size:10><color:#797263>workshop, system map, baseline, hypotheses</color></size>" as day1
+rectangle "ENGINEER-DAY 2: TEST AND REPORT\n<size:10><color:#797263>focused analysis, readout and short written note</color></size>" as day2
+rectangle "Diagnostic finding\n<size:10><color:#797263>likely cause, confidence, risk, missing evidence</color></size>" as readout
+rectangle "DECISION GATE\n<size:10><color:#797263>Is a bounded intervention justified?</color></size>" as decision #FDE7FB
+rectangle "Paid proof of value\n<size:10><color:#797263>baseline, small change, measurement, stop rule</color></size>" as pov
+rectangle "Instrument, refer or stop\n<size:10><color:#797263>no project manufactured from weak evidence</color></size>" as stop
+rectangle "Larger engagement\n<size:10><color:#797263>implement, verify and transfer after proof supports investment</color></size>" as larger
+
+qualified --> day1
+day1 --> day2
+day2 --> readout
+readout --> decision
+decision --> pov : yes
+decision --> stop : no
+pov --> larger : target met
+pov --> stop : target not met
+
+@enduml

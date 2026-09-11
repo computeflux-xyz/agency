@@ -1,0 +1,41 @@
+@startuml
+' Stable Computeflux intervention method.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 24
+skinparam ranksep 26
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+
+rectangle "01  PROBLEM\n<size:10><color:#797263>Define failed business outcome and consequence</color></size>" as problem
+rectangle "02  ASSESSMENT\n<size:10><color:#797263>Collect evidence, baseline system, test competing causes</color></size>" as assessment
+rectangle "03  ENGINEERING DECISION\n<size:10><color:#797263>Select smallest intervention that can change result</color></size>" as decision
+rectangle "04  IMPLEMENTATION\n<size:10><color:#797263>Build, test, migrate and release progressively</color></size>" as implementation
+rectangle "05  MEASUREMENT\n<size:10><color:#797263>Compare same journey under representative conditions</color></size>" as measurement
+rectangle "06  OUTCOME\n<size:10><color:#797263>Adopt, iterate, roll back or stop with evidence</color></size>" as outcome
+
+problem --> assessment
+assessment --> decision
+decision --> implementation
+implementation --> measurement
+measurement --> outcome
+outcome ..> assessment
+
+@enduml

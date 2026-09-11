@@ -1,0 +1,52 @@
+@startuml
+' From a first commercial signal to a measurable engineering outcome.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 24
+skinparam ranksep 30
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+skinparam package {
+  BackgroundColor #EDEAE3
+  BorderColor #DCD7CB
+  FontColor #575247
+  FontName "JetBrains Mono"
+  FontSize 11
+}
+
+package "XCLUSIVECLOUD: MARKET CONVERSATION" as market {
+  rectangle "Business symptom\n<size:10><color:#797263>slow, unreliable, expensive, blocked</color></size>" as symptom
+  rectangle "Business consequence\n<size:10><color:#797263>lost revenue, manual work, risk, delayed growth</color></size>" as consequence
+  rectangle "Initial evidence\n<size:10><color:#797263>scale, environment, incident, metric, owner</color></size>" as evidence
+}
+
+package "COMPUTEFLUX: ENGINEERING DECISION" as engineering {
+  rectangle "Technical assessment\n<size:10><color:#797263>trace, profile, map dependencies, test hypotheses</color></size>" as assessment
+  rectangle "Bounded intervention\n<size:10><color:#797263>smallest change that can move the target metric</color></size>" as intervention
+  rectangle "Measured outcome\n<size:10><color:#797263>latency, reliability, capacity, cost or delivery</color></size>" as outcome
+}
+
+symptom --> consequence
+consequence --> evidence
+evidence --> assessment : qualified handoff
+assessment --> intervention
+intervention --> outcome
+
+@enduml

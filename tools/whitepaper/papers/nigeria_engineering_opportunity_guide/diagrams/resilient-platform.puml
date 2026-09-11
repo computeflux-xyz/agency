@@ -1,0 +1,74 @@
+@startuml
+' Resilient service with interactive, asynchronous and operational paths.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 24
+skinparam ranksep 28
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  FontColor #201F1E
+  FontName "Space Grotesk"
+}
+skinparam queue {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  FontColor #201F1E
+  FontName "Space Grotesk"
+}
+skinparam package {
+  BackgroundColor #EDEAE3
+  BorderColor #DCD7CB
+  FontColor #575247
+  FontName "JetBrains Mono"
+  FontSize 11
+}
+
+rectangle "Customer and operator channels" as channels
+
+package "INTERACTIVE PATH" as interactive {
+  rectangle "Edge and gateway\n<size:10><color:#797263>identity, limits, cache, routing</color></size>" as edge
+  rectangle "Bounded application service\n<size:10><color:#797263>timeouts, concurrency, circuit breakers</color></size>" as service
+  database "System of record\n<size:10><color:#797263>durable business state</color></size>" as store
+}
+
+package "ASYNCHRONOUS PATH" as async {
+  queue "Durable work queue\n<size:10><color:#797263>retry policy, age, dead letters</color></size>" as queue
+  rectangle "Worker pool\n<size:10><color:#797263>idempotent, replayable, horizontally bounded</color></size>" as workers
+  rectangle "External systems\n<size:10><color:#797263>payments, telecoms, SaaS, partner APIs</color></size>" as external
+}
+
+rectangle "OpenTelemetry and service indicators\n<size:10><color:#797263>one trace across request, job, data and dependency</color></size>" as observe
+rectangle "Recovery procedures\n<size:10><color:#797263>tested restore, failover, rollback, operator runbooks</color></size>" as recovery
+
+channels --> edge
+edge --> service
+service --> store
+service --> queue : deferred work
+queue --> workers
+workers --> external
+workers --> store : durable result
+store ..> observe
+external ..> observe
+observe --> recovery : evidence during failure
+
+@enduml

@@ -100,6 +100,9 @@ otherwise it falls back to the English rules.
 `figure`, `image`, `contact`, `pagebreak`. The `Ressources` page is
 rendered last, from `RESOURCES`.
 
+Set `toc: false` on an `h2` or `h3` block to keep a detailed heading out of
+the one-page contents while preserving its visual hierarchy in the document.
+
 Use `application` where the reasoning is abstract enough that a reader could
 agree with it and still not know what it looks like — defining "correct",
 propagating access rights, routing by task difficulty. One anonymised case per

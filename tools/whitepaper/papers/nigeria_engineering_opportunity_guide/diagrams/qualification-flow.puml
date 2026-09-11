@@ -1,0 +1,44 @@
+@startuml
+' Partner qualification flow with explicit evidence and fit gates.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 28
+skinparam ranksep 30
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam ArrowFontName "JetBrains Mono"
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #797263
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+rectangle "XclusiveCloud hears a concrete symptom" as symptom
+rectangle "Record impact, scale, environment, history and owner" as brief
+rectangle "EVIDENCE GATE\n<size:10><color:#797263>Is enough evidence available?</color></size>" as evidence #FDE7FB
+rectangle "Collect one incident, metric or architecture view" as collect
+rectangle "Focused Computeflux technical conversation" as conversation
+rectangle "FIT GATE\n<size:10><color:#797263>Complex, consequential and within core capability?</color></size>" as fit #FDE7FB
+rectangle "Bounded diagnostic or scoped engagement" as proceed
+rectangle "Explain missing fit and stop early" as decline
+
+symptom --> brief
+brief --> evidence
+evidence --> conversation : yes
+evidence --> collect : not yet
+collect --> evidence : evidence added
+conversation --> fit
+fit --> proceed : yes
+fit --> decline : no
+
+@enduml

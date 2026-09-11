@@ -1,0 +1,55 @@
+@startuml
+' Asynchronous payment state flow: acceptance is not settlement.
+
+skinparam backgroundColor #F5F4EF
+skinparam defaultFontName "Space Grotesk"
+skinparam defaultFontSize 13
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundCorner 0
+skinparam padding 4
+skinparam nodesep 28
+skinparam ranksep 30
+skinparam ArrowColor #575247
+skinparam ArrowThickness 1
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #201F1E
+  BorderThickness 1
+  FontColor #201F1E
+  FontName "Space Grotesk"
+  FontSize 13
+}
+skinparam package {
+  BackgroundColor #EDEAE3
+  BorderColor #DCD7CB
+  FontColor #575247
+  FontName "JetBrains Mono"
+  FontSize 11
+}
+
+rectangle "Buyer request\n<size:10><color:#797263>payment details + idempotency key</color></size>" as buyer
+
+package "SUBMISSION" as submission {
+  rectangle "Idempotency boundary\n<size:10><color:#797263>return existing attempt or create exactly one</color></size>" as idempotency
+  rectangle "Durable transaction journal\n<size:10><color:#797263>store pending state and correlation id before external call</color></size>" as pending
+}
+
+rectangle "External payment rail\n<size:10><color:#797263>instruction accepted now, business result may arrive later</color></size>" as rail
+
+package "TWO COMPLETION PATHS" as completion {
+  rectangle "Callback path\n<size:10><color:#797263>authenticate delivery and apply final state once</color></size>" as callback
+  rectangle "Reconciliation path\n<size:10><color:#797263>query authoritative status when pending exceeds threshold</color></size>" as reconcile
+}
+
+rectangle "Final or controlled exception state\n<size:10><color:#797263>completed, failed, reversed, or evidence for operator action</color></size>" as final
+
+buyer --> idempotency
+idempotency --> pending
+pending --> rail
+rail --> callback
+rail --> reconcile
+callback --> final
+reconcile --> final
+
+@enduml
